@@ -11,12 +11,16 @@ extern "C" {
     pub fn real_slvs_create() -> *mut SolverSystem;
     pub fn real_slvs_destroy(sys: *mut SolverSystem);
     
+    pub fn real_slvs_add_point(sys: *mut SolverSystem, id: c_int, x: c_double, y: c_double, z: c_double) -> c_int;
+    pub fn real_slvs_add_line(sys: *mut SolverSystem, id: c_int, point1_id: c_int, point2_id: c_int) -> c_int;
     pub fn real_slvs_add_circle(sys: *mut SolverSystem, id: c_int, cx: c_double, cy: c_double, cz: c_double, radius: c_double) -> c_int;
     
+    pub fn real_slvs_add_fixed_constraint(sys: *mut SolverSystem, id: c_int, entity_id: c_int) -> c_int;
     pub fn real_slvs_add_distance_constraint(sys: *mut SolverSystem, id: c_int, entity1: c_int, entity2: c_int, distance: c_double) -> c_int;
     
     pub fn real_slvs_solve(sys: *mut SolverSystem) -> c_int;
     
+    pub fn real_slvs_get_point_position(sys: *mut SolverSystem, id: c_int, x: *mut c_double, y: *mut c_double, z: *mut c_double) -> c_int;
     pub fn real_slvs_get_circle_position(sys: *mut SolverSystem, id: c_int, cx: *mut c_double, cy: *mut c_double, cz: *mut c_double, radius: *mut c_double) -> c_int;
 }
 
@@ -35,6 +39,28 @@ impl Solver {
     }
     
     
+    pub fn add_point(&mut self, id: i32, x: f64, y: f64, z: f64) -> Result<(), String> {
+        unsafe {
+            let result = real_slvs_add_point(self.system, id, x, y, z);
+            if result == 0 {
+                Ok(())
+            } else {
+                Err(format!("Failed to add point {}", id))
+            }
+        }
+    }
+    
+    pub fn add_line(&mut self, id: i32, point1_id: i32, point2_id: i32) -> Result<(), String> {
+        unsafe {
+            let result = real_slvs_add_line(self.system, id, point1_id, point2_id);
+            if result == 0 {
+                Ok(())
+            } else {
+                Err(format!("Failed to add line {}", id))
+            }
+        }
+    }
+    
     pub fn add_circle(&mut self, id: i32, cx: f64, cy: f64, cz: f64, radius: f64) -> Result<(), String> {
         unsafe {
             let result = real_slvs_add_circle(self.system, id, cx, cy, cz, radius);
@@ -42,6 +68,17 @@ impl Solver {
                 Ok(())
             } else {
                 Err(format!("Failed to add circle {}", id))
+            }
+        }
+    }
+    
+    pub fn add_fixed_constraint(&mut self, id: i32, entity_id: i32) -> Result<(), String> {
+        unsafe {
+            let result = real_slvs_add_fixed_constraint(self.system, id, entity_id);
+            if result == 0 {
+                Ok(())
+            } else {
+                Err(format!("Failed to add fixed constraint {}", id))
             }
         }
     }
@@ -64,6 +101,21 @@ impl Solver {
                 Ok(())
             } else {
                 Err(format!("Solver failed with code {}", result))
+            }
+        }
+    }
+    
+    pub fn get_point_position(&self, id: i32) -> Result<(f64, f64, f64), String> {
+        unsafe {
+            let mut x = 0.0;
+            let mut y = 0.0;
+            let mut z = 0.0;
+            
+            let result = real_slvs_get_point_position(self.system, id, &mut x, &mut y, &mut z);
+            if result == 0 {
+                Ok((x, y, z))
+            } else {
+                Err(format!("Point {} not found", id))
             }
         }
     }

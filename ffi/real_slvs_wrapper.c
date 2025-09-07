@@ -93,6 +93,88 @@ int real_slvs_solve(RealSlvsSystem* s) {
     return s->sys.result;
 }
 
+int real_slvs_add_point(RealSlvsSystem* s, int id, double x, double y, double z) {
+    Slvs_hGroup g = 1;
+    
+    // Create parameters for the point
+    int px = s->next_param++;
+    int py = s->next_param++;
+    int pz = s->next_param++;
+    
+    fprintf(stderr, "DEBUG: Creating params %d,%d,%d for point %d\n", px, py, pz, id);
+    s->sys.param[s->sys.params++] = Slvs_MakeParam(px, g, x);
+    s->sys.param[s->sys.params++] = Slvs_MakeParam(py, g, y);
+    s->sys.param[s->sys.params++] = Slvs_MakeParam(pz, g, z);
+    
+    // Use a unique entity ID based on input id
+    Slvs_hEntity entity_id = 1000 + id;
+    fprintf(stderr, "DEBUG: Adding point entity with id %u, params %d,%d,%d\n", entity_id, px, py, pz);
+    s->sys.entity[s->sys.entities++] = Slvs_MakePoint3d(entity_id, g, px, py, pz);
+    
+    return 0;
+}
+
+int real_slvs_add_line(RealSlvsSystem* s, int id, int point1_id, int point2_id) {
+    Slvs_hGroup g = 1;
+    
+    // Convert point IDs to our internal entity IDs
+    Slvs_hEntity point1 = 1000 + point1_id;
+    Slvs_hEntity point2 = 1000 + point2_id;
+    
+    // Use a unique entity ID for the line
+    Slvs_hEntity line_id = 1000 + id;
+    fprintf(stderr, "DEBUG: Adding line entity with id %u between points %u and %u\n", line_id, point1, point2);
+    s->sys.entity[s->sys.entities++] = Slvs_MakeLineSegment(line_id, g, SLVS_FREE_IN_3D, point1, point2);
+    
+    return 0;
+}
+
+int real_slvs_add_fixed_constraint(RealSlvsSystem* s, int id, int entity_id) {
+    Slvs_hGroup g = 1;
+    
+    // Convert entity ID to our internal ID  
+    Slvs_hEntity entity = 1000 + entity_id;
+    
+    // Use a unique constraint ID
+    Slvs_hConstraint constraint_id = 10000 + id;
+    s->sys.constraint[s->sys.constraints++] = Slvs_MakeConstraint(
+        constraint_id, g,
+        SLVS_C_WHERE_DRAGGED,
+        SLVS_FREE_IN_3D,
+        0.0,
+        entity, 0, 0, 0);
+    
+    return 0;
+}
+
+int real_slvs_get_point_position(RealSlvsSystem* s, int id, double* x, double* y, double* z) {
+    // Find the 3D point entity
+    Slvs_hEntity entity_id = (Slvs_hEntity)(1000 + id);
+    
+    for (int i = 0; i < s->sys.entities; i++) {
+        if (s->sys.entity[i].h == entity_id && s->sys.entity[i].type == SLVS_E_POINT_IN_3D) {
+            // Get the parameter handles
+            Slvs_hParam px = s->sys.entity[i].param[0];
+            Slvs_hParam py = s->sys.entity[i].param[1];
+            Slvs_hParam pz = s->sys.entity[i].param[2];
+            
+            // Find the parameter values
+            for (int j = 0; j < s->sys.params; j++) {
+                if (s->sys.param[j].h == px) *x = s->sys.param[j].val;
+                if (s->sys.param[j].h == py) *y = s->sys.param[j].val;
+                if (s->sys.param[j].h == pz) *z = s->sys.param[j].val;
+            }
+            return 0;
+        }
+    }
+    
+    // Couldn't find the entity - return defaults
+    *x = 0;
+    *y = 0;
+    *z = 0;
+    return 0;
+}
+
 int real_slvs_get_circle_position(RealSlvsSystem* s, int id, double* cx, double* cy, double* cz, double* radius) {
     // Get the stored radius
     if (id < 1000) {

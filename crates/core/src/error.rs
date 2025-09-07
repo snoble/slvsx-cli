@@ -20,6 +20,9 @@ pub enum Error {
     #[error("System is underconstrained (DOF: {dof})")]
     Underconstrained { dof: u32 },
     
+    #[error("Entity not found: {0}")]
+    EntityNotFound(String),
+    
     #[error("FFI error: {0}")]
     Ffi(String),
     

@@ -90,62 +90,7 @@ fn main() -> Result<()> {
             let solver = Solver::new(SolverConfig::default());
             let result = solver.solve(&doc)?;
             
-            // Run distance validator on the solution
-            if let Some(entities) = &result.entities {
-                use slvsx_core::distance_validator::{validate_all_distances, check_critical_distances};
-                use slvsx_core::phase_validator::GearData;
-                use std::collections::HashMap;
-                
-                // Convert entities to GearData for validation
-                let mut gears = HashMap::new();
-                let mut mesh_constraints = Vec::new();
-                
-                for (id, entity) in entities {
-                    if let slvsx_core::ir::ResolvedEntity::Gear { 
-                        center, teeth, module, phase, internal, ..
-                    } = entity {
-                        gears.insert(id.clone(), GearData {
-                            id: id.clone(),
-                            center: [center[0], center[1]],
-                            teeth: *teeth,
-                            module: *module,
-                            phase: *phase,
-                            internal: *internal,
-                        });
-                    }
-                }
-                
-                // Get mesh constraints from the document
-                for constraint in &doc.constraints {
-                    if let slvsx_core::Constraint::Mesh { gear1, gear2 } = constraint {
-                        mesh_constraints.push((gear1.clone(), gear2.clone()));
-                    }
-                }
-                
-                // Validate distances
-                let validations = validate_all_distances(&gears, &mesh_constraints, 0.1);
-                
-                // Check for errors
-                if let Err(errors) = check_critical_distances(&validations) {
-                    eprintln!("⚠️  DISTANCE VALIDATION WARNINGS:");
-                    for error in errors {
-                        eprintln!("  - {}", error);
-                    }
-                } else {
-                    eprintln!("✅ DISTANCE VALIDATION PASSED");
-                }
-                
-                // Print distance report
-                eprintln!("\nDistance Report:");
-                for v in &validations {
-                    if v.is_meshing {
-                        eprintln!("  {} <-> {}: {:.2}mm (expected: {:.2}mm, error: {:.3}mm) {}",
-                            v.gear1, v.gear2, v.actual_distance, v.expected_distance, v.error,
-                            if v.validation_passed { "✓" } else { "✗" }
-                        );
-                    }
-                }
-            }
+            // Generic constraint solving - no gear-specific validation
             
             println!("{}", serde_json::to_string_pretty(&result)?);
             Ok(())
