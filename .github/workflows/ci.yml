@@ -1,0 +1,120 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  test:
+    name: Test Suite
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v24
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+
+      - name: Setup Cachix
+        uses: cachix/cachix-action@v12
+        with:
+          name: slvsx
+          authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
+          skipPush: ${{ secrets.CACHIX_AUTH_TOKEN == '' }}
+
+      - name: Run tests
+        run: |
+          nix-shell build.nix --run "
+            # Run tests with mock solver for CI
+            cargo test --features mock-solver --verbose
+          "
+
+      - name: Check formatting
+        run: |
+          nix-shell build.nix --run "
+            cargo fmt -- --check
+          "
+
+      - name: Run clippy
+        run: |
+          nix-shell build.nix --run "
+            cargo clippy --features mock-solver --all-targets --all-features -- -D warnings
+          "
+
+      - name: Generate schema
+        run: |
+          nix-shell build.nix --run "
+            cargo run --bin generate-schema --features mock-solver
+          "
+
+      - name: Validate example documents
+        run: |
+          nix-shell build.nix --run "
+            # Test CLI with example files
+            cargo build --features mock-solver
+            ./target/debug/slvsx validate examples/testdata/simple_working.json
+            ./target/debug/slvsx solve examples/testdata/simple_working.json
+          "
+
+  coverage:
+    name: Code Coverage
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v24
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+
+      - name: Generate coverage report
+        run: |
+          nix-shell build.nix --run "
+            # Install tarpaulin for coverage
+            cargo install cargo-tarpaulin
+            
+            # Generate coverage with mock solver
+            cargo tarpaulin --features mock-solver --out Html --output-dir coverage
+          "
+
+      - name: Upload coverage reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/
+
+  security:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v24
+
+      - name: Security audit
+        run: |
+          nix-shell build.nix --run "
+            cargo audit
+          "

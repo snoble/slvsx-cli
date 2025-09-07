@@ -5,7 +5,7 @@ Cargo.lock
 *.pdb
 
 # Build artifacts
-libslvs/SolveSpaceLib/build/
+libslvs/SolveSpaceLib/
 *.o
 *.a
 *.so
