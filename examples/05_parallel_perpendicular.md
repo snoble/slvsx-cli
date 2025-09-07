@@ -1,6 +1,6 @@
 # Example 05: Parallel and Perpendicular Lines
 
-**[← Building a Triangle](04_triangle.md)** | **[Next: Working with Angles →](06_angles.md)**
+**[← 3D Tetrahedron](https://github.com/snoble/slvsx-cli/blob/main/examples/04_3d_tetrahedron.md)** | **[Next: Working with Circles →](https://github.com/snoble/slvsx-cli/blob/main/examples/06_circles.md)**
 
 ## The Story
 
@@ -148,4 +148,4 @@ This says "these lines meet at 90 degrees" - perfect for corners!
 
 Geometric constraints (parallel, perpendicular, horizontal, vertical) define *relationships* not *positions*. Combine them with distance or fixed constraints to fully define your sketch.
 
-**[Next: Working with Angles →](06_angles.md)**
+**[Next: Working with Angles →](https://github.com/snoble/slvsx-cli/blob/main/examples/06_angles.md)**

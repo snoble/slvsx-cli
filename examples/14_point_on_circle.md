@@ -1,6 +1,6 @@
 # Example 14: Point on Circle
 
-**[← Horizontal & Vertical](13_horizontal_vertical.md)** | **[Next: Equal Radius →](15_equal_radius.md)**
+**[← Horizontal & Vertical](https://github.com/snoble/slvsx-cli/blob/main/examples/13_horizontal_vertical.md)** | **[Next: Equal Radius →](https://github.com/snoble/slvsx-cli/blob/main/examples/15_equal_radius.md)**
 
 ## The Story
 
@@ -133,10 +133,10 @@ Point-on-circle works well with:
 
 ## Visual Output
 
-![Point on Circle](14_point_on_circle.svg)
+![Point on Circle](https://raw.githubusercontent.com/snoble/slvsx-cli/main/examples/14_point_on_circle.svg)
 
 ## Key Takeaway
 
 Point-on-circle constraints enable circular motion paths while maintaining other geometric relationships. They're essential for any rotating or orbital mechanism design.
 
-**[Next: Equal Radius →](15_equal_radius.md)**
+**[Next: Equal Radius →](https://github.com/snoble/slvsx-cli/blob/main/examples/15_equal_radius.md)**

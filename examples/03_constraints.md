@@ -150,7 +150,7 @@ slvsx solve examples/03_correctly_constrained.json
 
 ## Visual Output
 
-![Properly Constrained System](03_constraints.svg)
+![Properly Constrained System](https://raw.githubusercontent.com/snoble/slvsx-cli/main/examples/03_constraints.svg)
 
 *This shows the properly constrained system. The over-constrained system cannot be visualized as it fails to solve.*
 

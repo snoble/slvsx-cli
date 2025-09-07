@@ -1,6 +1,6 @@
 # Example 11: Symmetric Constraints
 
-**[← Equal Length](10_equal_length.md)** | **[Next: 3D Basics →](12_3d_basics.md)**
+**[← Equal Length](https://github.com/snoble/slvsx-cli/blob/main/examples/10_equal_length.md)** | **[Next: 3D Basics →](https://github.com/snoble/slvsx-cli/blob/main/examples/12_3d_basics.md)**
 
 ## The Story
 
@@ -162,7 +162,7 @@ Perfect mirror symmetry across the vertical axis!
 
 ## Visual Output
 
-![Symmetric Constraints](11_symmetric.svg)
+![Symmetric Constraints](https://raw.githubusercontent.com/snoble/slvsx-cli/main/examples/11_symmetric.svg)
 
 ## Design Applications
 
@@ -182,4 +182,4 @@ While SLVSX doesn't have a built-in symmetric constraint, you can achieve symmet
 
 Symmetric constraints cut your work in half - design one side, and the constraint solver creates the other. This ensures perfect balance and saves time on repetitive mirroring operations.
 
-**[Next: 3D Basics →](12_3d_basics.md)**
+**[Next: 3D Basics →](https://github.com/snoble/slvsx-cli/blob/main/examples/12_3d_basics.md)**

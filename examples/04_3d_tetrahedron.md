@@ -139,7 +139,7 @@ The solver positions the points at:
 All 6 edges are exactly 50mm long, forming a perfect regular tetrahedron.
 
 ### Visual Output
-![Tetrahedron](04_3d_tetrahedron.svg)
+![Tetrahedron](https://raw.githubusercontent.com/snoble/slvsx-cli/main/examples/04_3d_tetrahedron.svg)
 
 ## Key Concepts
 

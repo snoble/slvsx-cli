@@ -1,6 +1,6 @@
 # Example 01: Your First Point
 
-**[← Introduction](00_introduction.md)** | **[Next: Two Points and a Distance →](02_distance_constraint.md)**
+**[← Introduction](https://github.com/snoble/slvsx-cli/blob/main/examples/00_introduction.md)** | **[Next: Two Points and a Distance →](https://github.com/snoble/slvsx-cli/blob/main/examples/02_distance_constraint.md)**
 
 ## The Story
 
@@ -64,7 +64,7 @@ The solver confirms our point stays exactly where we fixed it:
 
 ## Visual Output
 
-![First Point](01_first_point.svg)
+![First Point](https://raw.githubusercontent.com/snoble/slvsx-cli/main/examples/01_first_point.svg)
 
 A simple dot at the origin - but it's the foundation for everything we'll build!
 
@@ -72,4 +72,4 @@ A simple dot at the origin - but it's the foundation for everything we'll build!
 
 The `fixed` constraint is crucial. Without it, the solver has no reference point and can place entities anywhere that satisfies the other constraints. Always anchor at least one point in your sketch.
 
-**[Next: Two Points and a Distance →](02_distance_constraint.md)**
+**[Next: Two Points and a Distance →](https://github.com/snoble/slvsx-cli/blob/main/examples/02_distance_constraint.md)**

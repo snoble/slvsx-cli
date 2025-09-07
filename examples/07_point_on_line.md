@@ -1,6 +1,6 @@
 # Example 07: Point on Line Constraint
 
-**[← Working with Circles](06_circles.md)** | **[Next: Symmetric Constraints →](08_symmetric.md)**
+**[← Working with Circles](https://github.com/snoble/slvsx-cli/blob/main/examples/06_circles.md)** | **[Next: Symmetric Constraints →](https://github.com/snoble/slvsx-cli/blob/main/examples/08_symmetric.md)**
 
 ## The Story
 
@@ -103,7 +103,7 @@ The slider moved to x=40 on the rail - directly below the target point, maintain
 
 ## Visual Output
 
-![Point on Line](07_point_on_line.svg)
+![Point on Line](https://raw.githubusercontent.com/snoble/slvsx-cli/main/examples/07_point_on_line.svg)
 
 ## Real-World Applications
 
@@ -115,4 +115,4 @@ The slider moved to x=40 on the rail - directly below the target point, maintain
 
 The `point_on_line` constraint adds one degree of freedom - the point can slide along the line but can't leave it. Combine with other constraints to fully define the position.
 
-**[Next: Symmetric Constraints →](08_symmetric.md)**
+**[Next: Symmetric Constraints →](https://github.com/snoble/slvsx-cli/blob/main/examples/08_symmetric.md)**

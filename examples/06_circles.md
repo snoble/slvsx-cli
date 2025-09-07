@@ -1,6 +1,6 @@
 # Example 06: Working with Circles
 
-**[← Parallel and Perpendicular](05_parallel_perpendicular.md)** | **[Next: Point on Line →](07_point_on_line.md)**
+**[← Parallel and Perpendicular](https://github.com/snoble/slvsx-cli/blob/main/examples/05_parallel_perpendicular.md)** | **[Next: Point on Line →](https://github.com/snoble/slvsx-cli/blob/main/examples/07_point_on_line.md)**
 
 ## The Story
 
@@ -99,7 +99,7 @@ The circles are perfectly tangent - touching at exactly one point!
 
 ## Visual Output
 
-![Circles](06_circles.svg)
+![Circles](https://raw.githubusercontent.com/snoble/slvsx-cli/main/examples/06_circles.svg)
 
 ## Variations
 
@@ -125,4 +125,4 @@ Force circles to be the same size:
 
 Circles introduce curved geometry. The solver handles them just like points and lines - define the entities, add constraints, and let the math work out the positions.
 
-**[Next: Point on Line →](07_point_on_line.md)**
+**[Next: Point on Line →](https://github.com/snoble/slvsx-cli/blob/main/examples/07_point_on_line.md)**

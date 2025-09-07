@@ -1,6 +1,6 @@
 # Example 16: Complex Mechanisms
 
-**[← Equal Radius](15_equal_radius.md)** | **[Back to Introduction →](00_introduction.md)**
+**[← Equal Radius](https://github.com/snoble/slvsx-cli/blob/main/examples/15_equal_radius.md)** | **[Back to Introduction →](https://github.com/snoble/slvsx-cli/blob/main/examples/00_introduction.md)**
 
 ## The Story
 
@@ -153,7 +153,7 @@ SLVSX is used for:
 
 ## Visual Output
 
-![Complex Mechanisms](16_complex_mechanisms.svg)
+![Complex Mechanisms](https://raw.githubusercontent.com/snoble/slvsx-cli/main/examples/16_complex_mechanisms.svg)
 
 ## Key Takeaways
 
@@ -175,23 +175,23 @@ The constraint solver handles the math - you focus on the design!
 
 ---
 
-**[Back to Introduction →](00_introduction.md)**
+**[Back to Introduction →](https://github.com/snoble/slvsx-cli/blob/main/examples/00_introduction.md)**
 
 ## Complete Example Index
 
-1. [Introduction](00_introduction.md) - Overview and concepts
-2. [Fixed Points](01_first_point.md) - Reference points
-3. [Distance](02_distance_constraint.md) - Setting lengths
-4. [3D Tetrahedron](04_3d_tetrahedron.md) - Working in 3D
-5. [Parallel/Perpendicular](05_parallel_perpendicular.md) - Geometric relationships
-6. [Circles](06_circles.md) - Curved geometry
-7. [Point on Line](07_point_on_line.md) - Sliding constraints
-8. [Angles](08_angles.md) - Angular constraints
-9. [Coincident](09_coincident.md) - Points meeting
-10. [Equal Length](10_equal_length.md) - Matching sizes
-11. [Symmetric](11_symmetric.md) - Mirror constraints
-12. [3D Basics](12_3d_basics.md) - Spatial coordinates
-13. [Horizontal/Vertical](13_horizontal_vertical.md) - Axis alignment
-14. [Point on Circle](14_point_on_circle.md) - Circular paths
-15. [Equal Radius](15_equal_radius.md) - Matching circles
-16. [Complex Mechanisms](16_complex_mechanisms.md) - Putting it all together
+1. [Introduction](https://github.com/snoble/slvsx-cli/blob/main/examples/00_introduction.md) - Overview and concepts
+2. [Fixed Points](https://github.com/snoble/slvsx-cli/blob/main/examples/01_first_point.md) - Reference points
+3. [Distance](https://github.com/snoble/slvsx-cli/blob/main/examples/02_distance_constraint.md) - Setting lengths
+4. [3D Tetrahedron](https://github.com/snoble/slvsx-cli/blob/main/examples/04_3d_tetrahedron.md) - Working in 3D
+5. [Parallel/Perpendicular](https://github.com/snoble/slvsx-cli/blob/main/examples/05_parallel_perpendicular.md) - Geometric relationships
+6. [Circles](https://github.com/snoble/slvsx-cli/blob/main/examples/06_circles.md) - Curved geometry
+7. [Point on Line](https://github.com/snoble/slvsx-cli/blob/main/examples/07_point_on_line.md) - Sliding constraints
+8. [Angles](https://github.com/snoble/slvsx-cli/blob/main/examples/08_angles.md) - Angular constraints
+9. [Coincident](https://github.com/snoble/slvsx-cli/blob/main/examples/09_coincident.md) - Points meeting
+10. [Equal Length](https://github.com/snoble/slvsx-cli/blob/main/examples/10_equal_length.md) - Matching sizes
+11. [Symmetric](https://github.com/snoble/slvsx-cli/blob/main/examples/11_symmetric.md) - Mirror constraints
+12. [3D Basics](https://github.com/snoble/slvsx-cli/blob/main/examples/12_3d_basics.md) - Spatial coordinates
+13. [Horizontal/Vertical](https://github.com/snoble/slvsx-cli/blob/main/examples/13_horizontal_vertical.md) - Axis alignment
+14. [Point on Circle](https://github.com/snoble/slvsx-cli/blob/main/examples/14_point_on_circle.md) - Circular paths
+15. [Equal Radius](https://github.com/snoble/slvsx-cli/blob/main/examples/15_equal_radius.md) - Matching circles
+16. [Complex Mechanisms](https://github.com/snoble/slvsx-cli/blob/main/examples/16_complex_mechanisms.md) - Putting it all together
