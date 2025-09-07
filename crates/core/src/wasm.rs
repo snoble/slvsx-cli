@@ -1,11 +1,14 @@
 //! WASM bindings for SLVSX constraint solver
-//! 
+//!
 //! This module provides JavaScript/TypeScript bindings for using SLVSX in web browsers
 //! and Node.js environments.
 
+use crate::{
+    solver::{Solver, SolverConfig},
+    InputDocument, SolveResult,
+};
 #[cfg(feature = "wasm")]
 use wasm_bindgen::prelude::*;
-use crate::{InputDocument, SolveResult, solver::{Solver, SolverConfig}};
 
 #[cfg(feature = "wasm")]
 #[wasm_bindgen]
@@ -22,17 +25,17 @@ impl WasmSolver {
         // Set up console error panic hook for better debugging
         #[cfg(feature = "console_error_panic_hook")]
         console_error_panic_hook::set_once();
-        
+
         Self {
             solver: Solver::new(SolverConfig::default()),
         }
     }
-    
+
     /// Solve a constraint system from JSON string
-    /// 
+    ///
     /// # Arguments
     /// * `json_str` - JSON string containing the constraint specification
-    /// 
+    ///
     /// # Returns
     /// JSON string containing the solve result or error
     #[wasm_bindgen]
@@ -40,35 +43,38 @@ impl WasmSolver {
         // Parse input JSON
         let doc: InputDocument = serde_json::from_str(json_str)
             .map_err(|e| JsValue::from_str(&format!("Invalid JSON: {}", e)))?;
-        
+
         // Solve constraints
-        let result = self.solver.solve(&doc)
+        let result = self
+            .solver
+            .solve(&doc)
             .map_err(|e| JsValue::from_str(&format!("Solve error: {}", e)))?;
-        
+
         // Serialize result to JSON
         serde_json::to_string(&result)
             .map_err(|e| JsValue::from_str(&format!("Serialization error: {}", e)))
     }
-    
+
     /// Validate a constraint document without solving
     #[wasm_bindgen]
     pub fn validate(&self, json_str: &str) -> Result<bool, JsValue> {
         use crate::validator::Validator;
-        
+
         let doc: InputDocument = serde_json::from_str(json_str)
             .map_err(|e| JsValue::from_str(&format!("Invalid JSON: {}", e)))?;
-        
+
         let validator = Validator::new();
-        validator.validate(&doc)
+        validator
+            .validate(&doc)
             .map(|_| true)
             .map_err(|e| JsValue::from_str(&format!("Validation error: {}", e)))
     }
-    
+
     /// Get the JSON schema for constraint documents
     #[wasm_bindgen]
     pub fn get_schema() -> String {
         use schemars::schema_for;
-        
+
         let schema = schema_for!(InputDocument);
         serde_json::to_string_pretty(&schema).unwrap_or_else(|_| "{}".to_string())
     }
@@ -104,7 +110,7 @@ pub fn init() {
     // Set up console logging for debugging
     #[cfg(feature = "console_error_panic_hook")]
     console_error_panic_hook::set_once();
-    
+
     // Initialize tracing if available
     #[cfg(feature = "wasm-logger")]
     wasm_logger::init(wasm_logger::Config::default());

@@ -1,6 +1,9 @@
 use anyhow::Result;
 use clap::{Parser, Subcommand, ValueEnum};
-use slvsx_core::{InputDocument, solver::{Solver, SolverConfig}};
+use slvsx_core::{
+    solver::{Solver, SolverConfig},
+    InputDocument,
+};
 use std::fs;
 use std::io::{self, Read, Write};
 
@@ -43,13 +46,13 @@ enum Commands {
     Export {
         /// Input file path (use - for stdin)
         file: String,
-        
+
         #[arg(short, long, default_value = "svg")]
         format: ExportFormat,
-        
+
         #[arg(short, long, default_value = "xy")]
         view: ViewPlane,
-        
+
         #[arg(short, long)]
         output: Option<String>,
     },
@@ -69,43 +72,48 @@ fn read_input(path: &str) -> Result<String> {
 
 fn main() -> Result<()> {
     let cli = Cli::parse();
-    
+
     match cli.command {
         Commands::Validate { file } => {
             let input = read_input(&file)?;
             let doc: InputDocument = serde_json::from_str(&input)?;
-            
+
             // Validate the document
             let validator = slvsx_core::validator::Validator::new();
             validator.validate(&doc)?;
-            
+
             eprintln!("✓ Document is valid");
             Ok(())
         }
         Commands::Solve { file } => {
             let input = read_input(&file)?;
             let doc: InputDocument = serde_json::from_str(&input)?;
-            
+
             // Mock solve for now
             let solver = Solver::new(SolverConfig::default());
             let result = solver.solve(&doc)?;
-            
+
             // Generic constraint solving - no gear-specific validation
-            
+
             println!("{}", serde_json::to_string_pretty(&result)?);
             Ok(())
         }
-        Commands::Export { file, format, view, output } => {
+        Commands::Export {
+            file,
+            format,
+            view,
+            output,
+        } => {
             let input = read_input(&file)?;
             let doc: InputDocument = serde_json::from_str(&input)?;
-            
+
             // First solve the constraints
             let solver = Solver::new(SolverConfig::default());
             let result = solver.solve(&doc)?;
-            
+
             // Use the solved entities for export
             let entities = result.entities.unwrap_or_default();
-            
+
             let output_data = match format {
                 ExportFormat::Svg => {
                     use slvsx_exporters::svg::{SvgExporter, ViewPlane as SvgViewPlane};
@@ -133,17 +141,18 @@ fn main() -> Result<()> {
                     exporter.export(&entities)?
                 }
             };
-            
+
             if let Some(output_path) = output {
                 fs::write(output_path, output_data)?;
             } else {
                 io::stdout().write_all(&output_data)?;
             }
-            
+
             Ok(())
         }
         Commands::Capabilities => {
-            println!(r#"{{
+            println!(
+                r#"{{
   "version": "0.1.0",
   "entities": ["point", "line", "circle", "arc", "plane"],
   "constraints": [
@@ -153,7 +162,8 @@ fn main() -> Result<()> {
   ],
   "export_formats": ["svg", "dxf", "slvs", "stl"],
   "units": ["mm", "cm", "m", "in", "ft"]
-}}"#);
+}}"#
+            );
             Ok(())
         }
     }
@@ -162,7 +172,7 @@ fn main() -> Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    
+
     #[test]
     fn test_cli_parse() {
         // Test that CLI parsing works

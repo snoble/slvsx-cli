@@ -1,5 +1,8 @@
 # SLVSX - SolveSpace Constraint Solver CLI
 
+<!-- CI Status Badge - Updated by run-ci-local.sh -->
+![CI Status](https://img.shields.io/badge/CI-passing-success)
+
 A command-line interface and library for the SolveSpace geometric constraint solver, providing JSON-based constraint specification with multi-language support through WASM.
 
 ## Features

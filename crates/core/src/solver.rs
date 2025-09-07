@@ -28,133 +28,98 @@ impl Solver {
     pub fn new(config: SolverConfig) -> Self {
         Self { config }
     }
-    
+
     pub fn solve(&self, doc: &InputDocument) -> Result<SolveResult> {
-        use crate::ffi::Solver as FfiSolver;
         use crate::expr::ExpressionEvaluator;
-        
+        use crate::ffi::Solver as FfiSolver;
+
         let mut ffi_solver = FfiSolver::new();
         let eval = ExpressionEvaluator::new(doc.parameters.clone());
-        
+
         // Add entities to solver
         let mut entity_id_map = HashMap::new();
-        let mut gear_info_map = HashMap::new();
         let mut next_id = 1;
-        
+
         for entity in &doc.entities {
             match entity {
                 crate::ir::Entity::Point { id, at } => {
                     // Evaluate expressions for point coordinates
                     let x = match &at[0] {
                         crate::ir::ExprOrNumber::Number(n) => *n,
-                        crate::ir::ExprOrNumber::Expression(e) => eval.eval(e)?,
+                        crate::ir::ExprOrNumber::Expression(e) => eval.eval(&e)?,
                     };
                     let y = match &at[1] {
                         crate::ir::ExprOrNumber::Number(n) => *n,
-                        crate::ir::ExprOrNumber::Expression(e) => eval.eval(e)?,
+                        crate::ir::ExprOrNumber::Expression(e) => eval.eval(&e)?,
                     };
                     let z = if at.len() > 2 {
                         match &at[2] {
                             crate::ir::ExprOrNumber::Number(n) => *n,
-                            crate::ir::ExprOrNumber::Expression(e) => eval.eval(e)?,
+                            crate::ir::ExprOrNumber::Expression(e) => eval.eval(&e)?,
                         }
                     } else {
                         0.0
                     };
-                    
+
                     eprintln!("Adding point {} at ({},{},{})", id, x, y, z);
-                    
-                    ffi_solver.add_point(next_id, x, y, z)
+
+                    ffi_solver
+                        .add_point(next_id, x, y, z)
                         .map_err(|e| crate::error::Error::Ffi(e))?;
                     entity_id_map.insert(id.clone(), next_id);
                     next_id += 1;
                 }
                 crate::ir::Entity::Line { id, p1, p2 } => {
                     // Look up the point entity IDs
-                    let point1_id = entity_id_map.get(p1)
+                    let point1_id = entity_id_map
+                        .get(p1)
                         .ok_or_else(|| crate::error::Error::EntityNotFound(p1.clone()))?;
-                    let point2_id = entity_id_map.get(p2)
+                    let point2_id = entity_id_map
+                        .get(p2)
                         .ok_or_else(|| crate::error::Error::EntityNotFound(p2.clone()))?;
-                    
+
                     eprintln!("Adding line {} between points {} and {}", id, p1, p2);
-                    
-                    ffi_solver.add_line(next_id, *point1_id, *point2_id)
+
+                    ffi_solver
+                        .add_line(next_id, *point1_id, *point2_id)
                         .map_err(|e| crate::error::Error::Ffi(e))?;
                     entity_id_map.insert(id.clone(), next_id);
                     next_id += 1;
                 }
-                crate::ir::Entity::Circle { id, center, diameter } => {
+                crate::ir::Entity::Circle {
+                    id,
+                    center,
+                    diameter,
+                } => {
                     // Evaluate expressions
                     let cx = match &center[0] {
                         crate::ir::ExprOrNumber::Number(n) => *n,
-                        crate::ir::ExprOrNumber::Expression(e) => eval.eval(e)?,
+                        crate::ir::ExprOrNumber::Expression(e) => eval.eval(&e)?,
                     };
                     let cy = match &center[1] {
                         crate::ir::ExprOrNumber::Number(n) => *n,
-                        crate::ir::ExprOrNumber::Expression(e) => eval.eval(e)?,
+                        crate::ir::ExprOrNumber::Expression(e) => eval.eval(&e)?,
                     };
                     let cz = if center.len() > 2 {
                         match &center[2] {
                             crate::ir::ExprOrNumber::Number(n) => *n,
-                            crate::ir::ExprOrNumber::Expression(e) => eval.eval(e)?,
+                            crate::ir::ExprOrNumber::Expression(e) => eval.eval(&e)?,
                         }
                     } else {
                         0.0
                     };
                     let diam = match diameter {
                         crate::ir::ExprOrNumber::Number(n) => *n,
-                        crate::ir::ExprOrNumber::Expression(e) => eval.eval(e)?,
+                        crate::ir::ExprOrNumber::Expression(e) => eval.eval(&e)?,
                     };
                     let radius = diam / 2.0;
-                    eprintln!("Adding circle {} with center ({},{},{}) radius {}", id, cx, cy, cz, radius);
-                    
-                    ffi_solver.add_circle(next_id, cx, cy, cz, radius)
-                        .map_err(|e| crate::error::Error::Ffi(e))?;
-                    entity_id_map.insert(id.clone(), next_id);
-                    next_id += 1;
-                }
-                crate::ir::Entity::Gear { id, center, teeth, module, pressure_angle, phase, internal } => {
-                    // For now, treat gear as a circle with pitch radius
-                    let cx = match &center[0] {
-                        crate::ir::ExprOrNumber::Number(n) => *n,
-                        crate::ir::ExprOrNumber::Expression(e) => eval.eval(e)?,
-                    };
-                    let cy = match &center[1] {
-                        crate::ir::ExprOrNumber::Number(n) => *n,
-                        crate::ir::ExprOrNumber::Expression(e) => eval.eval(e)?,
-                    };
-                    let cz = if center.len() > 2 {
-                        match &center[2] {
-                            crate::ir::ExprOrNumber::Number(n) => *n,
-                            crate::ir::ExprOrNumber::Expression(e) => eval.eval(e)?,
-                        }
-                    } else {
-                        0.0
-                    };
-                    let teeth_count = match teeth {
-                        crate::ir::ExprOrNumber::Number(n) => *n as u32,
-                        crate::ir::ExprOrNumber::Expression(e) => eval.eval(e)? as u32,
-                    };
-                    let module_val = match module {
-                        crate::ir::ExprOrNumber::Number(n) => *n,
-                        crate::ir::ExprOrNumber::Expression(e) => eval.eval(e)?,
-                    };
-                    let pressure_angle_val = match pressure_angle {
-                        crate::ir::ExprOrNumber::Number(n) => *n,
-                        crate::ir::ExprOrNumber::Expression(e) => eval.eval(e)?,
-                    };
-                    let phase_val = match phase {
-                        crate::ir::ExprOrNumber::Number(n) => *n,
-                        crate::ir::ExprOrNumber::Expression(e) => eval.eval(e)?,
-                    };
-                    
-                    // Store gear info for later
-                    gear_info_map.insert(id.clone(), (teeth_count, module_val, pressure_angle_val, phase_val, *internal));
-                    
-                    let pitch_radius = (teeth_count as f64 * module_val) / 2.0;
-                    eprintln!("Adding gear {} as circle with pitch radius {}", id, pitch_radius);
-                    
-                    ffi_solver.add_circle(next_id, cx, cy, cz, pitch_radius)
+                    eprintln!(
+                        "Adding circle {} with center ({},{},{}) radius {}",
+                        id, cx, cy, cz, radius
+                    );
+
+                    ffi_solver
+                        .add_circle(next_id, cx, cy, cz, radius)
                         .map_err(|e| crate::error::Error::Ffi(e))?;
                     entity_id_map.insert(id.clone(), next_id);
                     next_id += 1;
@@ -162,17 +127,18 @@ impl Solver {
                 _ => {} // Handle other entity types as needed
             }
         }
-        
+
         // Add constraints from JSON - generic handling
         let mut constraint_id = 100;
-        
+
         // Process all constraints from JSON
         for constraint in &doc.constraints {
             match constraint {
                 crate::ir::Constraint::Fixed { entity } => {
                     let entity_id = entity_id_map.get(entity).copied().unwrap_or(0);
                     eprintln!("Adding fixed constraint for entity {}", entity);
-                    ffi_solver.add_fixed_constraint(constraint_id, entity_id)
+                    ffi_solver
+                        .add_fixed_constraint(constraint_id, entity_id)
                         .map_err(|e| crate::error::Error::Ffi(e))?;
                     constraint_id += 1;
                 }
@@ -182,34 +148,10 @@ impl Solver {
                         let id2 = entity_id_map.get(&between[1]).copied().unwrap_or(0);
                         let dist = match value {
                             crate::ir::ExprOrNumber::Number(n) => *n,
-                            crate::ir::ExprOrNumber::Expression(e) => eval.eval(e)?,
+                            crate::ir::ExprOrNumber::Expression(e) => eval.eval(&e)?,
                         };
-                        ffi_solver.add_distance_constraint(constraint_id, id1, id2, dist)
-                            .map_err(|e| crate::error::Error::Ffi(e))?;
-                        constraint_id += 1;
-                    }
-                }
-                crate::ir::Constraint::Mesh { gear1, gear2 } => {
-                    let id1 = entity_id_map.get(gear1).copied().unwrap_or(0);
-                    let id2 = entity_id_map.get(gear2).copied().unwrap_or(0);
-                    
-                    // Get gear info to calculate pitch radii
-                    if let (Some(gear1_info), Some(gear2_info)) = 
-                        (gear_info_map.get(gear1), gear_info_map.get(gear2)) {
-                        
-                        let pitch_r1 = (gear1_info.0 as f64 * gear1_info.1) / 2.0;
-                        let pitch_r2 = (gear2_info.0 as f64 * gear2_info.1) / 2.0;
-                        
-                        // For external-external or internal-external meshing
-                        let dist = if gear1_info.4 || gear2_info.4 {
-                            // One is internal - they mesh at difference of radii
-                            (pitch_r1 - pitch_r2).abs()
-                        } else {
-                            // Both external - they mesh at sum of radii
-                            pitch_r1 + pitch_r2
-                        };
-                        
-                        ffi_solver.add_distance_constraint(constraint_id, id1, id2, dist)
+                        ffi_solver
+                            .add_distance_constraint(constraint_id, id1, id2, dist)
                             .map_err(|e| crate::error::Error::Ffi(e))?;
                         constraint_id += 1;
                     }
@@ -217,14 +159,15 @@ impl Solver {
                 _ => {} // Handle other constraint types as needed
             }
         }
-        
+
         // Actually solve the constraints!
-        ffi_solver.solve().map_err(|e| crate::error::Error::Ffi(e))?;
-        
+        ffi_solver
+            .solve()
+            .map_err(|e| crate::error::Error::Ffi(e))?;
+
         // Get solved positions from libslvs
         let mut resolved_entities = HashMap::new();
-        let mut gear_positions = HashMap::new();
-        
+
         // Retrieve solved positions for all entities
         for entity in &doc.entities {
             match entity {
@@ -232,60 +175,58 @@ impl Solver {
                     let entity_id = entity_id_map.get(id).copied().unwrap_or(0);
                     if let Ok((x, y, z)) = ffi_solver.get_point_position(entity_id) {
                         eprintln!("Solved point {} at ({}, {}, {})", id, x, y, z);
-                        resolved_entities.insert(id.clone(), crate::ir::ResolvedEntity::Point {
-                            at: vec![x, y, z],
-                        });
+                        resolved_entities.insert(
+                            id.clone(),
+                            crate::ir::ResolvedEntity::Point { at: vec![x, y, z] },
+                        );
                     }
                 }
                 crate::ir::Entity::Line { id, p1, p2 } => {
                     // Lines are defined by their endpoints, get the actual coordinates
-                    let p1_id = entity_id_map.get(p1)
+                    let p1_id = entity_id_map
+                        .get(p1)
                         .ok_or_else(|| crate::error::Error::EntityNotFound(p1.clone()))?;
-                    let p2_id = entity_id_map.get(p2)
+                    let p2_id = entity_id_map
+                        .get(p2)
                         .ok_or_else(|| crate::error::Error::EntityNotFound(p2.clone()))?;
-                    
-                    if let (Ok((x1, y1, z1)), Ok((x2, y2, z2))) = 
-                        (ffi_solver.get_point_position(*p1_id), ffi_solver.get_point_position(*p2_id)) {
-                        eprintln!("Solved line {} from ({},{},{}) to ({},{},{})", id, x1, y1, z1, x2, y2, z2);
-                        resolved_entities.insert(id.clone(), crate::ir::ResolvedEntity::Line {
-                            p1: vec![x1, y1, z1],
-                            p2: vec![x2, y2, z2],
-                        });
+
+                    if let (Ok((x1, y1, z1)), Ok((x2, y2, z2))) = (
+                        ffi_solver.get_point_position(*p1_id),
+                        ffi_solver.get_point_position(*p2_id),
+                    ) {
+                        eprintln!(
+                            "Solved line {} from ({},{},{}) to ({},{},{})",
+                            id, x1, y1, z1, x2, y2, z2
+                        );
+                        resolved_entities.insert(
+                            id.clone(),
+                            crate::ir::ResolvedEntity::Line {
+                                p1: vec![x1, y1, z1],
+                                p2: vec![x2, y2, z2],
+                            },
+                        );
                     }
                 }
                 crate::ir::Entity::Circle { id, .. } => {
                     let entity_id = entity_id_map.get(id).copied().unwrap_or(0);
                     if let Ok((cx, cy, cz, radius)) = ffi_solver.get_circle_position(entity_id) {
-                        eprintln!("Solved circle {} at ({}, {}, {}) radius {}", id, cx, cy, cz, radius);
-                        resolved_entities.insert(id.clone(), crate::ir::ResolvedEntity::Circle {
-                            center: vec![cx, cy, cz],
-                            diameter: radius * 2.0,
-                        });
-                    }
-                }
-                crate::ir::Entity::Gear { id, .. } => {
-                    let entity_id = entity_id_map.get(id).copied().unwrap_or(0);
-                    if let Ok((cx, cy, cz, radius)) = ffi_solver.get_circle_position(entity_id) {
-                        eprintln!("Solved gear {} at ({}, {}, {})", id, cx, cy, cz);
-                        gear_positions.insert(id.clone(), (cx, cy, cz));
-                        
-                        // Get gear info for the resolved entity
-                        if let Some(&(teeth, module, pressure_angle, phase, internal)) = gear_info_map.get(id) {
-                            resolved_entities.insert(id.clone(), crate::ir::ResolvedEntity::Gear {
+                        eprintln!(
+                            "Solved circle {} at ({}, {}, {}) radius {}",
+                            id, cx, cy, cz, radius
+                        );
+                        resolved_entities.insert(
+                            id.clone(),
+                            crate::ir::ResolvedEntity::Circle {
                                 center: vec![cx, cy, cz],
-                                teeth,
-                                module,
-                                pressure_angle,
-                                phase,
-                                internal,
-                            });
-                        }
+                                diameter: radius * 2.0,
+                            },
+                        );
                     }
                 }
                 _ => {} // Handle other entity types as needed
             }
         }
-        
+
         // Return the solved entities - this is now completely generic!
         eprintln!("Generic constraint solving completed");
         return Ok(SolveResult {

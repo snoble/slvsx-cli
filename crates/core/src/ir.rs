@@ -53,28 +53,16 @@ pub enum Entity {
         origin: Vec<ExprOrNumber>,
         normal: Vec<ExprOrNumber>,
     },
-    Gear {
-        id: String,
-        center: Vec<ExprOrNumber>,
-        teeth: ExprOrNumber,
-        module: ExprOrNumber,
-        pressure_angle: ExprOrNumber,
-        #[serde(default)]
-        phase: ExprOrNumber,
-        #[serde(default)]
-        internal: bool,
-    },
 }
 
 impl Entity {
     pub fn id(&self) -> &str {
         match self {
-            Entity::Point { id, .. } |
-            Entity::Line { id, .. } |
-            Entity::Circle { id, .. } |
-            Entity::Arc { id, .. } |
-            Entity::Plane { id, .. } |
-            Entity::Gear { id, .. } => id,
+            Entity::Point { id, .. }
+            | Entity::Line { id, .. }
+            | Entity::Circle { id, .. }
+            | Entity::Arc { id, .. }
+            | Entity::Plane { id, .. } => id,
         }
     }
 }
@@ -99,7 +87,7 @@ impl ExprOrNumber {
             ExprOrNumber::Expression(_) => None,
         }
     }
-    
+
     pub fn as_expr(&self) -> Option<&str> {
         match self {
             ExprOrNumber::Number(_) => None,
@@ -160,10 +148,6 @@ pub enum Constraint {
     Fixed {
         entity: String,
     },
-    Mesh {
-        gear1: String,
-        gear2: String,
-    },
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, JsonSchema)]
@@ -191,52 +175,51 @@ pub enum ResolvedEntity {
     Point { at: Vec<f64> },
     Circle { center: Vec<f64>, diameter: f64 },
     Line { p1: Vec<f64>, p2: Vec<f64> },
-    Gear { 
-        center: Vec<f64>, 
-        teeth: u32,
-        module: f64,
-        pressure_angle: f64,
-        phase: f64,
-        internal: bool,
-    },
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    
+
     #[test]
     fn test_default_units() {
         assert_eq!(default_units(), "mm");
     }
-    
+
     #[test]
     fn test_entity_id() {
-        let point = Entity::Point { id: "p1".into(), at: vec![ExprOrNumber::Number(0.0)] };
+        let point = Entity::Point {
+            id: "p1".into(),
+            at: vec![ExprOrNumber::Number(0.0)],
+        };
         assert_eq!(point.id(), "p1");
-        
-        let line = Entity::Line { id: "l1".into(), p1: "p1".into(), p2: "p2".into() };
+
+        let line = Entity::Line {
+            id: "l1".into(),
+            p1: "p1".into(),
+            p2: "p2".into(),
+        };
         assert_eq!(line.id(), "l1");
-        
-        let circle = Entity::Circle { 
-            id: "c1".into(), 
+
+        let circle = Entity::Circle {
+            id: "c1".into(),
             center: vec![ExprOrNumber::Number(0.0)],
-            diameter: ExprOrNumber::Number(10.0)
+            diameter: ExprOrNumber::Number(10.0),
         };
         assert_eq!(circle.id(), "c1");
     }
-    
+
     #[test]
     fn test_expr_or_number() {
         let num = ExprOrNumber::Number(42.0);
         assert_eq!(num.as_f64(), Some(42.0));
         assert_eq!(num.as_expr(), None);
-        
+
         let expr = ExprOrNumber::Expression("W/2".into());
         assert_eq!(expr.as_f64(), None);
         assert_eq!(expr.as_expr(), Some("W/2"));
     }
-    
+
     #[test]
     fn test_input_document_deserialize() {
         let json = r#"{
@@ -250,7 +233,7 @@ mod tests {
                 {"type": "horizontal", "a": "l1"}
             ]
         }"#;
-        
+
         let doc: InputDocument = serde_json::from_str(json).unwrap();
         assert_eq!(doc.schema, "slvs-json/1");
         assert_eq!(doc.units, "mm");
@@ -258,7 +241,7 @@ mod tests {
         assert_eq!(doc.entities.len(), 1);
         assert_eq!(doc.constraints.len(), 1);
     }
-    
+
     #[test]
     fn test_input_document_default_units() {
         let json = r#"{
@@ -267,20 +250,23 @@ mod tests {
             "entities": [],
             "constraints": []
         }"#;
-        
+
         let doc: InputDocument = serde_json::from_str(json).unwrap();
         assert_eq!(doc.units, "mm");
     }
-    
+
     #[test]
     fn test_constraint_serialization() {
-        let constraint = Constraint::Perpendicular { a: "l1".into(), b: "l2".into() };
+        let constraint = Constraint::Perpendicular {
+            a: "l1".into(),
+            b: "l2".into(),
+        };
         let json = serde_json::to_string(&constraint).unwrap();
         assert!(json.contains("\"type\":\"perpendicular\""));
         assert!(json.contains("\"a\":\"l1\""));
         assert!(json.contains("\"b\":\"l2\""));
     }
-    
+
     #[test]
     fn test_solve_result_skip_empty() {
         let result = SolveResult {
@@ -289,7 +275,7 @@ mod tests {
             entities: None,
             warnings: vec![],
         };
-        
+
         let json = serde_json::to_string(&result).unwrap();
         assert!(!json.contains("warnings"));
         assert!(!json.contains("diagnostics"));
