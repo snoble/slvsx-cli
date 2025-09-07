@@ -60,13 +60,13 @@ jobs:
           ./test-examples.sh || true
           
       - name: Upload binary artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: slvsx-${{ matrix.os }}
           path: target/release/slvsx*
           
       - name: Upload example SVGs
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: example-svgs-${{ matrix.os }}
           path: examples/*.svg
