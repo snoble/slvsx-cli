@@ -128,7 +128,7 @@ The solver creates a perfect rectangle:
 
 ## Visual Output
 
-![Parallel and Perpendicular](05_parallel_perpendicular.svg)
+![Parallel and Perpendicular](https://raw.githubusercontent.com/snoble/slvsx-cli/main/examples/05_parallel_perpendicular.svg)
 
 ## Alternative: Using Perpendicular
 
