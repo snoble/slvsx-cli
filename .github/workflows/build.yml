@@ -66,6 +66,8 @@ jobs:
           $CC -c $CFLAGS -I../extlib/mimalloc/include ../extlib/mimalloc/src/page.c -o page.o
           $CC -c $CFLAGS -I../extlib/mimalloc/include ../extlib/mimalloc/src/segment.c -o segment.o
           $CC -c $CFLAGS -I../extlib/mimalloc/include ../extlib/mimalloc/src/arena.c -o arena.o
+          $CC -c $CFLAGS -I../extlib/mimalloc/include ../extlib/mimalloc/src/stats.c -o stats.o
+          $CC -c $CFLAGS -I../extlib/mimalloc/include ../extlib/mimalloc/src/options.c -o options.o
           
           echo "Building minimal static libslvs..."
           
@@ -85,7 +87,7 @@ jobs:
           # Create the static library including mimalloc
           ar rcs libslvs.a \
               util.o entity.o expr.o constrainteq.o system.o platformbase.o lib.o \
-              heap.o alloc.o init.o os.o page.o segment.o arena.o
+              heap.o alloc.o init.o os.o page.o segment.o arena.o stats.o options.o
           
           # Create the expected directory structure
           mkdir -p ../build/src/slvs
