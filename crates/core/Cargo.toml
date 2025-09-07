@@ -1,0 +1,37 @@
+[package]
+name = "slvsx-core"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "generate-schema"
+path = "src/bin/generate_schema.rs"
+
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+anyhow.workspace = true
+tracing.workspace = true
+ordered-float = "4.2"
+indexmap = { version = "2.2", features = ["serde"] }
+schemars = "0.8"
+
+[build-dependencies]
+cc = "1.0"
+
+[dev-dependencies]
+proptest.workspace = true
+insta.workspace = true
+tempfile.workspace = true
+
+[features]
+default = []
+mock-solver = []
+yaml = ["dep:serde_yaml"]
+
+[dependencies.serde_yaml]
+version = "0.9"
+optional = true

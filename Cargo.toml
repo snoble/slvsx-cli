@@ -1,0 +1,46 @@
+[workspace]
+members = [
+    "crates/core",
+    "crates/cli",
+    "crates/exporters",
+]
+resolver = "2"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+authors = ["slvsx contributors"]
+license = "GPL-3.0-or-later"
+repository = "https://github.com/example/slvsx"
+rust-version = "1.75"
+
+[workspace.dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+thiserror = "1.0"
+anyhow = "1.0"
+clap = { version = "4.4", features = ["derive", "env"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# Testing dependencies
+proptest = "1.4"
+insta = { version = "1.38", features = ["json", "yaml"] }
+tempfile = "3.10"
+assert_cmd = "2.0"
+predicates = "3.0"
+
+[profile.release]
+lto = true
+codegen-units = 1
+opt-level = 3
+strip = true
+
+[profile.dev]
+opt-level = 0
+
+[profile.test]
+opt-level = 0
+
+[profile.coverage]
+inherits = "test"

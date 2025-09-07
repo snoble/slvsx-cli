@@ -1,0 +1,40 @@
+# SLVSX License
+
+SLVSX - A command-line interface for SolveSpace constraint solver
+Copyright (C) 2024 Steven and Contributors
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+## Attribution
+
+This software incorporates code from:
+
+### SolveSpace
+Copyright 2008-2024 SolveSpace contributors
+Licensed under GPLv3
+Source: https://github.com/solvespace/solvespace
+
+The libslvs library included in this distribution is part of SolveSpace
+and is used under the terms of the GPLv3 license.
+
+### Original SolveSpace Authors
+- Jonathan Westhues (original author)
+- whitequark
+- Paul Kahler
+- Marc Britten
+- And many other contributors
+
+## Third-Party Dependencies
+
+See Cargo.toml for a complete list of Rust dependencies and their licenses.

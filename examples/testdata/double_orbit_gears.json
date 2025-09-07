@@ -1,0 +1,146 @@
+{
+  "schema": "slvs-json/1",
+  "units": "mm",
+  "parameters": {
+    "inner_diameter": 24.0,
+    "outer_diameter": 36.0,
+    "inner_orbit_radius": 36.0,
+    "outer_orbit_radius": 54.0
+  },
+  "entities": [
+    {
+      "type": "circle",
+      "id": "inner1",
+      "center": ["$inner_orbit_radius", 0, 0],
+      "diameter": "$inner_diameter"
+    },
+    {
+      "type": "circle",
+      "id": "inner2",
+      "center": ["$inner_orbit_radius * 0.5", "$inner_orbit_radius * 0.866", 0],
+      "diameter": "$inner_diameter"
+    },
+    {
+      "type": "circle",
+      "id": "inner3",
+      "center": ["$inner_orbit_radius * (-0.5)", "$inner_orbit_radius * 0.866", 0],
+      "diameter": "$inner_diameter"
+    },
+    {
+      "type": "circle",
+      "id": "inner4",
+      "center": ["$inner_orbit_radius * (-1)", 0, 0],
+      "diameter": "$inner_diameter"
+    },
+    {
+      "type": "circle",
+      "id": "inner5",
+      "center": ["$inner_orbit_radius * (-0.5)", "$inner_orbit_radius * (-0.866)", 0],
+      "diameter": "$inner_diameter"
+    },
+    {
+      "type": "circle",
+      "id": "inner6",
+      "center": ["$inner_orbit_radius * 0.5", "$inner_orbit_radius * -0.866", 0],
+      "diameter": "$inner_diameter"
+    },
+    {
+      "type": "circle",
+      "id": "outer1",
+      "center": ["$outer_orbit_radius * 0.866", "$outer_orbit_radius * 0.5", 0],
+      "diameter": "$outer_diameter"
+    },
+    {
+      "type": "circle",
+      "id": "outer2",
+      "center": [0, "$outer_orbit_radius", 0],
+      "diameter": "$outer_diameter"
+    },
+    {
+      "type": "circle",
+      "id": "outer3",
+      "center": ["$outer_orbit_radius * (-0.866)", "$outer_orbit_radius * 0.5", 0],
+      "diameter": "$outer_diameter"
+    },
+    {
+      "type": "circle",
+      "id": "outer4",
+      "center": ["$outer_orbit_radius * (-0.866)", "$outer_orbit_radius * (-0.5)", 0],
+      "diameter": "$outer_diameter"
+    },
+    {
+      "type": "circle",
+      "id": "outer5",
+      "center": [0, "$outer_orbit_radius * (-1)", 0],
+      "diameter": "$outer_diameter"
+    },
+    {
+      "type": "circle",
+      "id": "outer6",
+      "center": ["$outer_orbit_radius * 0.866", "$outer_orbit_radius * -0.5", 0],
+      "diameter": "$outer_diameter"
+    }
+  ],
+  "constraints": [
+    {
+      "type": "distance",
+      "between": ["inner1", "outer1"],
+      "value": "($inner_diameter + $outer_diameter) / 2"
+    },
+    {
+      "type": "distance",
+      "between": ["inner1", "outer6"],
+      "value": "($inner_diameter + $outer_diameter) / 2"
+    },
+    {
+      "type": "distance",
+      "between": ["inner2", "outer1"],
+      "value": "($inner_diameter + $outer_diameter) / 2"
+    },
+    {
+      "type": "distance",
+      "between": ["inner2", "outer2"],
+      "value": "($inner_diameter + $outer_diameter) / 2"
+    },
+    {
+      "type": "distance",
+      "between": ["inner3", "outer2"],
+      "value": "($inner_diameter + $outer_diameter) / 2"
+    },
+    {
+      "type": "distance",
+      "between": ["inner3", "outer3"],
+      "value": "($inner_diameter + $outer_diameter) / 2"
+    },
+    {
+      "type": "distance",
+      "between": ["inner4", "outer3"],
+      "value": "($inner_diameter + $outer_diameter) / 2"
+    },
+    {
+      "type": "distance",
+      "between": ["inner4", "outer4"],
+      "value": "($inner_diameter + $outer_diameter) / 2"
+    },
+    {
+      "type": "distance",
+      "between": ["inner5", "outer4"],
+      "value": "($inner_diameter + $outer_diameter) / 2"
+    },
+    {
+      "type": "distance",
+      "between": ["inner5", "outer5"],
+      "value": "($inner_diameter + $outer_diameter) / 2"
+    },
+    {
+      "type": "distance",
+      "between": ["inner6", "outer5"],
+      "value": "($inner_diameter + $outer_diameter) / 2"
+    },
+    {
+      "type": "distance",
+      "between": ["inner6", "outer6"],
+      "value": "($inner_diameter + $outer_diameter) / 2"
+    }
+  ]
+}

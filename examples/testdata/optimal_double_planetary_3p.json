@@ -1,0 +1,173 @@
+{
+  "schema": "slvs-json/1",
+  "units": "mm",
+  "parameters": {
+    "module": 2.0,
+    "pressure_angle": 20.0,
+    "sun_teeth": 12,
+    "inner_teeth": 6,
+    "outer_teeth": 6,
+    "ring_teeth": 24
+  },
+  "entities": [
+    {
+      "type": "gear",
+      "id": "sun",
+      "center": [
+        0,
+        0,
+        0
+      ],
+      "teeth": "$sun_teeth",
+      "module": "$module",
+      "pressure_angle": "$pressure_angle",
+      "phase": 0.0,
+      "internal": false
+    },
+    {
+      "type": "gear",
+      "id": "ring",
+      "center": [
+        0,
+        0,
+        0
+      ],
+      "teeth": "$ring_teeth",
+      "module": "$module",
+      "pressure_angle": "$pressure_angle",
+      "phase": 105.39658452413198,
+      "internal": true
+    },
+    {
+      "type": "gear",
+      "id": "inner1",
+      "center": [
+        18.0,
+        0.0,
+        0
+      ],
+      "teeth": "$inner_teeth",
+      "module": "$module",
+      "pressure_angle": "$pressure_angle",
+      "phase": 30.0,
+      "internal": false
+    },
+    {
+      "type": "gear",
+      "id": "outer1",
+      "center": [
+        6.0,
+        16.97,
+        0
+      ],
+      "teeth": "$outer_teeth",
+      "module": "$module",
+      "pressure_angle": "$pressure_angle",
+      "phase": 130.5287793655093,
+      "internal": false
+    },
+    {
+      "type": "gear",
+      "id": "inner2",
+      "center": [
+        -9.0,
+        15.59,
+        0
+      ],
+      "teeth": "$inner_teeth",
+      "module": "$module",
+      "pressure_angle": "$pressure_angle",
+      "phase": 270.0,
+      "internal": false
+    },
+    {
+      "type": "gear",
+      "id": "outer2",
+      "center": [
+        -17.7,
+        -3.29,
+        0
+      ],
+      "teeth": "$outer_teeth",
+      "module": "$module",
+      "pressure_angle": "$pressure_angle",
+      "phase": 10.528779365509308,
+      "internal": false
+    },
+    {
+      "type": "gear",
+      "id": "inner3",
+      "center": [
+        -9.0,
+        -15.59,
+        0
+      ],
+      "teeth": "$inner_teeth",
+      "module": "$module",
+      "pressure_angle": "$pressure_angle",
+      "phase": 150.0,
+      "internal": false
+    },
+    {
+      "type": "gear",
+      "id": "outer3",
+      "center": [
+        11.7,
+        -13.68,
+        0
+      ],
+      "teeth": "$outer_teeth",
+      "module": "$module",
+      "pressure_angle": "$pressure_angle",
+      "phase": 250.5287793655093,
+      "internal": false
+    }
+  ],
+  "constraints": [
+    {
+      "type": "mesh",
+      "gear1": "sun",
+      "gear2": "inner1"
+    },
+    {
+      "type": "mesh",
+      "gear1": "inner1",
+      "gear2": "outer1"
+    },
+    {
+      "type": "mesh",
+      "gear1": "ring",
+      "gear2": "outer1"
+    },
+    {
+      "type": "mesh",
+      "gear1": "sun",
+      "gear2": "inner2"
+    },
+    {
+      "type": "mesh",
+      "gear1": "inner2",
+      "gear2": "outer2"
+    },
+    {
+      "type": "mesh",
+      "gear1": "ring",
+      "gear2": "outer2"
+    },
+    {
+      "type": "mesh",
+      "gear1": "sun",
+      "gear2": "inner3"
+    },
+    {
+      "type": "mesh",
+      "gear1": "inner3",
+      "gear2": "outer3"
+    },
+    {
+      "type": "mesh",
+      "gear1": "ring",
+      "gear2": "outer3"
+    }
+  ]
+}

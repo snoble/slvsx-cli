@@ -1,0 +1,29 @@
+{
+  "schema": "slvs-json/1",
+  "units": "mm",
+  "parameters": {
+    "W": 100,
+    "H": 40,
+    "hole_d": 5
+  },
+  "entities": [
+    {"id": "p0", "type": "point", "at": [0, 0, 0]},
+    {"id": "p1", "type": "point", "at": ["W", 0, 0]},
+    {"id": "p2", "type": "point", "at": ["W", "H", 0]},
+    {"id": "p3", "type": "point", "at": [0, "H", 0]},
+    {"id": "l0", "type": "line", "p1": "p0", "p2": "p1"},
+    {"id": "l1", "type": "line", "p1": "p1", "p2": "p2"},
+    {"id": "l2", "type": "line", "p1": "p2", "p2": "p3"},
+    {"id": "l3", "type": "line", "p1": "p3", "p2": "p0"},
+    {"id": "c0", "type": "circle", "center": ["W/2", "H/2", 0], "diameter": "hole_d"}
+  ],
+  "constraints": [
+    {"type": "perpendicular", "a": "l0", "b": "l1"},
+    {"type": "perpendicular", "a": "l1", "b": "l2"},
+    {"type": "perpendicular", "a": "l2", "b": "l3"},
+    {"type": "perpendicular", "a": "l3", "b": "l0"},
+    {"type": "horizontal", "a": "l0"},
+    {"type": "equal_length", "a": "l0", "b": "l2"},
+    {"type": "equal_length", "a": "l1", "b": "l3"}
+  ]
+}

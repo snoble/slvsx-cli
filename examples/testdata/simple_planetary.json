@@ -1,0 +1,55 @@
+{
+  "schema": "slvs-json/1",
+  "units": "mm",
+  "parameters": {
+    "module": 2.0,
+    "pressure_angle": 20.0,
+    "sun_teeth": 20,
+    "planet_teeth": 10,
+    "ring_teeth": 40
+  },
+  "entities": [
+    {
+      "type": "gear",
+      "id": "sun",
+      "center": [0, 0, 0],
+      "teeth": "$sun_teeth",
+      "module": "$module",
+      "pressure_angle": "$pressure_angle",
+      "phase": 0.0,
+      "internal": false
+    },
+    {
+      "type": "gear",
+      "id": "planet1",
+      "center": [30, 0, 0],
+      "teeth": "$planet_teeth",
+      "module": "$module",
+      "pressure_angle": "$pressure_angle",
+      "phase": 0.0,
+      "internal": false
+    },
+    {
+      "type": "gear",
+      "id": "ring",
+      "center": [0, 0, 0],
+      "teeth": "$ring_teeth",
+      "module": "$module",
+      "pressure_angle": "$pressure_angle",
+      "phase": 0.0,
+      "internal": true
+    }
+  ],
+  "constraints": [
+    {
+      "type": "mesh",
+      "gear1": "sun",
+      "gear2": "planet1"
+    },
+    {
+      "type": "mesh",
+      "gear1": "ring",
+      "gear2": "planet1"
+    }
+  ]
+}

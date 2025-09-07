@@ -1,0 +1,29 @@
+{
+  "schema": "slvs-json/1",
+  "units": "mm",
+  "parameters": {
+    "diameter": 20.0,
+    "spacing": 30.0
+  },
+  "entities": [
+    {
+      "type": "circle",
+      "id": "circle1",
+      "center": [0, 0, 0],
+      "diameter": "$diameter"
+    },
+    {
+      "type": "circle",
+      "id": "circle2",
+      "center": [40, 5, 0],
+      "diameter": "$diameter"
+    }
+  ],
+  "constraints": [
+    {
+      "type": "distance",
+      "between": ["circle1", "circle2"],
+      "value": "$spacing"
+    }
+  ]
+}

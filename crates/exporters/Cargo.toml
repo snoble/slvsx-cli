@@ -1,0 +1,24 @@
+[package]
+name = "slvsx-exporters"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+slvsx-core = { path = "../core" }
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+anyhow.workspace = true
+
+[features]
+default = ["svg", "dxf", "slvs", "stl"]
+svg = []
+dxf = []
+slvs = []
+stl = []
+
+[dev-dependencies]
+insta.workspace = true
+tempfile.workspace = true

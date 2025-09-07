@@ -1,0 +1,38 @@
+# Rust
+target/
+Cargo.lock
+**/*.rs.bk
+*.pdb
+
+# Build artifacts
+libslvs/SolveSpaceLib/build/
+*.o
+*.a
+*.so
+*.dylib
+*.dll
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Coverage
+coverage/
+tarpaulin-report.html
+cobertura.xml
+lcov.info
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test outputs
+*.svg
+*.stl
+*.dxf
+!examples/**/*.svg
+!examples/**/*.stl
+!examples/**/*.dxf

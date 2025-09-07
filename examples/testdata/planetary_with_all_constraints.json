@@ -1,0 +1,311 @@
+{
+  "schema": "slvs-json/1",
+  "units": "mm",
+  "parameters": {
+    "module": 2.0,
+    "pressure_angle": 20.0,
+    "sun_teeth": 24,
+    "inner_teeth": 12,
+    "outer_teeth": 18,
+    "ring_teeth": 72,
+    "inner_orbit": 36.0,
+    "outer_orbit": 54.0,
+    "num_planets": 6
+  },
+  "entities": [
+    {
+      "type": "point",
+      "id": "origin",
+      "position": [0, 0, 0]
+    },
+    {
+      "type": "point",
+      "id": "sun_center",
+      "position": [0, 0, 0]
+    },
+    {
+      "type": "point",
+      "id": "ring_center",
+      "position": [0, 0, 0]
+    },
+    {
+      "type": "point",
+      "id": "inner1_center",
+      "position": ["$inner_orbit", 0, 0]
+    },
+    {
+      "type": "point",
+      "id": "inner2_center",
+      "position": ["$inner_orbit * cos(60)", "$inner_orbit * sin(60)", 0]
+    },
+    {
+      "type": "point",
+      "id": "inner3_center",
+      "position": ["$inner_orbit * cos(120)", "$inner_orbit * sin(120)", 0]
+    },
+    {
+      "type": "point",
+      "id": "inner4_center",
+      "position": ["$inner_orbit * cos(180)", "$inner_orbit * sin(180)", 0]
+    },
+    {
+      "type": "point",
+      "id": "inner5_center",
+      "position": ["$inner_orbit * cos(240)", "$inner_orbit * sin(240)", 0]
+    },
+    {
+      "type": "point",
+      "id": "inner6_center",
+      "position": ["$inner_orbit * cos(300)", "$inner_orbit * sin(300)", 0]
+    },
+    {
+      "type": "point",
+      "id": "outer1_center",
+      "position": ["$outer_orbit * cos(30)", "$outer_orbit * sin(30)", 0]
+    },
+    {
+      "type": "point",
+      "id": "outer2_center",
+      "position": ["$outer_orbit * cos(90)", "$outer_orbit * sin(90)", 0]
+    },
+    {
+      "type": "point",
+      "id": "outer3_center",
+      "position": ["$outer_orbit * cos(150)", "$outer_orbit * sin(150)", 0]
+    },
+    {
+      "type": "point",
+      "id": "outer4_center",
+      "position": ["$outer_orbit * cos(210)", "$outer_orbit * sin(210)", 0]
+    },
+    {
+      "type": "point",
+      "id": "outer5_center",
+      "position": ["$outer_orbit * cos(270)", "$outer_orbit * sin(270)", 0]
+    },
+    {
+      "type": "point",
+      "id": "outer6_center",
+      "position": ["$outer_orbit * cos(330)", "$outer_orbit * sin(330)", 0]
+    }
+  ],
+  "constraints": [
+    {
+      "type": "distance",
+      "between": ["sun_center", "inner1_center"],
+      "value": "$inner_orbit"
+    },
+    {
+      "type": "distance",
+      "between": ["sun_center", "inner2_center"],
+      "value": "$inner_orbit"
+    },
+    {
+      "type": "distance",
+      "between": ["sun_center", "inner3_center"],
+      "value": "$inner_orbit"
+    },
+    {
+      "type": "distance",
+      "between": ["sun_center", "inner4_center"],
+      "value": "$inner_orbit"
+    },
+    {
+      "type": "distance",
+      "between": ["sun_center", "inner5_center"],
+      "value": "$inner_orbit"
+    },
+    {
+      "type": "distance",
+      "between": ["sun_center", "inner6_center"],
+      "value": "$inner_orbit"
+    },
+    {
+      "type": "distance",
+      "between": ["ring_center", "outer1_center"],
+      "value": "$outer_orbit"
+    },
+    {
+      "type": "distance",
+      "between": ["ring_center", "outer2_center"],
+      "value": "$outer_orbit"
+    },
+    {
+      "type": "distance",
+      "between": ["ring_center", "outer3_center"],
+      "value": "$outer_orbit"
+    },
+    {
+      "type": "distance",
+      "between": ["ring_center", "outer4_center"],
+      "value": "$outer_orbit"
+    },
+    {
+      "type": "distance",
+      "between": ["ring_center", "outer5_center"],
+      "value": "$outer_orbit"
+    },
+    {
+      "type": "distance",
+      "between": ["ring_center", "outer6_center"],
+      "value": "$outer_orbit"
+    },
+    {
+      "type": "distance",
+      "between": ["inner1_center", "inner2_center"],
+      "value": "$inner_orbit"
+    },
+    {
+      "type": "distance",
+      "between": ["inner2_center", "inner3_center"],
+      "value": "$inner_orbit"
+    },
+    {
+      "type": "distance",
+      "between": ["inner3_center", "inner4_center"],
+      "value": "$inner_orbit"
+    },
+    {
+      "type": "distance",
+      "between": ["inner4_center", "inner5_center"],
+      "value": "$inner_orbit"
+    },
+    {
+      "type": "distance",
+      "between": ["inner5_center", "inner6_center"],
+      "value": "$inner_orbit"
+    },
+    {
+      "type": "distance",
+      "between": ["inner6_center", "inner1_center"],
+      "value": "$inner_orbit"
+    }
+  ],
+  "gears": [
+    {
+      "id": "sun",
+      "center_point": "sun_center",
+      "teeth": "$sun_teeth",
+      "module": "$module",
+      "pressure_angle": "$pressure_angle"
+    },
+    {
+      "id": "ring",
+      "center_point": "ring_center",
+      "teeth": "$ring_teeth",
+      "module": "$module",
+      "pressure_angle": "$pressure_angle",
+      "internal": true
+    },
+    {
+      "id": "inner1",
+      "center_point": "inner1_center",
+      "teeth": "$inner_teeth",
+      "module": "$module",
+      "pressure_angle": "$pressure_angle"
+    },
+    {
+      "id": "inner2",
+      "center_point": "inner2_center",
+      "teeth": "$inner_teeth",
+      "module": "$module",
+      "pressure_angle": "$pressure_angle"
+    },
+    {
+      "id": "inner3",
+      "center_point": "inner3_center",
+      "teeth": "$inner_teeth",
+      "module": "$module",
+      "pressure_angle": "$pressure_angle"
+    },
+    {
+      "id": "inner4",
+      "center_point": "inner4_center",
+      "teeth": "$inner_teeth",
+      "module": "$module",
+      "pressure_angle": "$pressure_angle"
+    },
+    {
+      "id": "inner5",
+      "center_point": "inner5_center",
+      "teeth": "$inner_teeth",
+      "module": "$module",
+      "pressure_angle": "$pressure_angle"
+    },
+    {
+      "id": "inner6",
+      "center_point": "inner6_center",
+      "teeth": "$inner_teeth",
+      "module": "$module",
+      "pressure_angle": "$pressure_angle"
+    },
+    {
+      "id": "outer1",
+      "center_point": "outer1_center",
+      "teeth": "$outer_teeth",
+      "module": "$module",
+      "pressure_angle": "$pressure_angle"
+    },
+    {
+      "id": "outer2",
+      "center_point": "outer2_center",
+      "teeth": "$outer_teeth",
+      "module": "$module",
+      "pressure_angle": "$pressure_angle"
+    },
+    {
+      "id": "outer3",
+      "center_point": "outer3_center",
+      "teeth": "$outer_teeth",
+      "module": "$module",
+      "pressure_angle": "$pressure_angle"
+    },
+    {
+      "id": "outer4",
+      "center_point": "outer4_center",
+      "teeth": "$outer_teeth",
+      "module": "$module",
+      "pressure_angle": "$pressure_angle"
+    },
+    {
+      "id": "outer5",
+      "center_point": "outer5_center",
+      "teeth": "$outer_teeth",
+      "module": "$module",
+      "pressure_angle": "$pressure_angle"
+    },
+    {
+      "id": "outer6",
+      "center_point": "outer6_center",
+      "teeth": "$outer_teeth",
+      "module": "$module",
+      "pressure_angle": "$pressure_angle"
+    }
+  ],
+  "mesh_constraints": [
+    {"gear1": "sun", "gear2": "inner1"},
+    {"gear1": "sun", "gear2": "inner2"},
+    {"gear1": "sun", "gear2": "inner3"},
+    {"gear1": "sun", "gear2": "inner4"},
+    {"gear1": "sun", "gear2": "inner5"},
+    {"gear1": "sun", "gear2": "inner6"},
+    {"gear1": "ring", "gear2": "outer1"},
+    {"gear1": "ring", "gear2": "outer2"},
+    {"gear1": "ring", "gear2": "outer3"},
+    {"gear1": "ring", "gear2": "outer4"},
+    {"gear1": "ring", "gear2": "outer5"},
+    {"gear1": "ring", "gear2": "outer6"},
+    {"gear1": "inner1", "gear2": "outer1"},
+    {"gear1": "inner1", "gear2": "outer6"},
+    {"gear1": "inner2", "gear2": "outer1"},
+    {"gear1": "inner2", "gear2": "outer2"},
+    {"gear1": "inner3", "gear2": "outer2"},
+    {"gear1": "inner3", "gear2": "outer3"},
+    {"gear1": "inner4", "gear2": "outer3"},
+    {"gear1": "inner4", "gear2": "outer4"},
+    {"gear1": "inner5", "gear2": "outer4"},
+    {"gear1": "inner5", "gear2": "outer5"},
+    {"gear1": "inner6", "gear2": "outer5"},
+    {"gear1": "inner6", "gear2": "outer6"}
+  ]
+}

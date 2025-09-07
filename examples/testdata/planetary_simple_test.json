@@ -1,0 +1,66 @@
+{
+  "schema": "slvs-json/1",
+  "units": "mm",
+  "parameters": {
+    "sun_radius": 24.0,
+    "inner_planet_radius": 12.0,
+    "outer_planet_radius": 18.0,
+    "ring_radius": 73.2,
+    "sun_to_inner": 36.0,
+    "inner_to_outer": 30.0
+  },
+  "entities": [
+    {
+      "type": "circle",
+      "id": "sun",
+      "center": [0, 0, 0],
+      "diameter": "$sun_radius * 2"
+    },
+    {
+      "type": "circle",
+      "id": "inner1",
+      "center": [36, 0, 0],
+      "diameter": "$inner_planet_radius * 2"
+    },
+    {
+      "type": "circle", 
+      "id": "inner2",
+      "center": [18, 31.18, 0],
+      "diameter": "$inner_planet_radius * 2"
+    },
+    {
+      "type": "circle",
+      "id": "outer1",
+      "center": [31.18, 18, 0],
+      "diameter": "$outer_planet_radius * 2"
+    },
+    {
+      "type": "circle",
+      "id": "ring",
+      "center": [0, 0, 0],
+      "diameter": "$ring_radius * 2"
+    }
+  ],
+  "constraints": [
+    {
+      "type": "distance",
+      "between": ["sun", "inner1"],
+      "value": "$sun_to_inner"
+    },
+    {
+      "type": "distance",
+      "between": ["sun", "inner2"],
+      "value": "$sun_to_inner"
+    },
+    {
+      "type": "distance",
+      "between": ["inner1", "outer1"],
+      "value": "$inner_to_outer"
+    },
+    {
+      "type": "distance",
+      "between": ["inner2", "outer1"],
+      "value": "$inner_to_outer"
+    }
+  ]
+}

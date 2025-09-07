@@ -1,0 +1,43 @@
+{
+  "schema": "slvs-json/1",
+  "units": "mm",
+  "parameters": {
+    "side_ab": 30.0,
+    "side_bc": 40.0,
+    "side_ca": 50.0
+  },
+  "entities": [
+    {
+      "type": "point",
+      "id": "A",
+      "position": [0, 0, 0]
+    },
+    {
+      "type": "point", 
+      "id": "B",
+      "position": [30, 0, 0]
+    },
+    {
+      "type": "point",
+      "id": "C", 
+      "position": [15, 25, 0]
+    }
+  ],
+  "constraints": [
+    {
+      "type": "distance",
+      "between": ["A", "B"],
+      "value": "$side_ab"
+    },
+    {
+      "type": "distance",
+      "between": ["B", "C"],
+      "value": "$side_bc"
+    },
+    {
+      "type": "distance",
+      "between": ["C", "A"],
+      "value": "$side_ca"
+    }
+  ]
+}

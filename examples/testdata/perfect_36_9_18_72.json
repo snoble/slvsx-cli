@@ -1,0 +1,332 @@
+{
+  "schema": "slvs-json/1",
+  "units": "mm",
+  "parameters": {
+    "module": 2.0,
+    "pressure_angle": 20.0,
+    "sun_teeth": 36,
+    "inner_teeth": 9,
+    "outer_teeth": 18,
+    "ring_teeth": 72
+  },
+  "entities": [
+    {
+      "type": "gear",
+      "id": "sun",
+      "center": [
+        0,
+        0,
+        0
+      ],
+      "teeth": "$sun_teeth",
+      "module": "$module",
+      "pressure_angle": "$pressure_angle",
+      "phase": 0.0,
+      "internal": false
+    },
+    {
+      "type": "gear",
+      "id": "ring",
+      "center": [
+        0,
+        0,
+        0
+      ],
+      "teeth": "$ring_teeth",
+      "module": "$module",
+      "pressure_angle": "$pressure_angle",
+      "phase": 0.0,
+      "internal": true
+    },
+    {
+      "type": "gear",
+      "id": "inner1",
+      "center": [
+        45.0,
+        0.0,
+        0
+      ],
+      "teeth": "$inner_teeth",
+      "module": "$module",
+      "pressure_angle": "$pressure_angle",
+      "phase": 0.0,
+      "internal": false
+    },
+    {
+      "type": "gear",
+      "id": "outer1",
+      "center": [
+        46.68,
+        26.95,
+        0
+      ],
+      "teeth": "$outer_teeth",
+      "module": "$module",
+      "pressure_angle": "$pressure_angle",
+      "phase": 0.0,
+      "internal": false
+    },
+    {
+      "type": "gear",
+      "id": "inner2",
+      "center": [
+        22.5,
+        38.97,
+        0
+      ],
+      "teeth": "$inner_teeth",
+      "module": "$module",
+      "pressure_angle": "$pressure_angle",
+      "phase": 0.0,
+      "internal": false
+    },
+    {
+      "type": "gear",
+      "id": "outer2",
+      "center": [
+        0.0,
+        53.89,
+        0
+      ],
+      "teeth": "$outer_teeth",
+      "module": "$module",
+      "pressure_angle": "$pressure_angle",
+      "phase": 0.0,
+      "internal": false
+    },
+    {
+      "type": "gear",
+      "id": "inner3",
+      "center": [
+        -22.5,
+        38.97,
+        0
+      ],
+      "teeth": "$inner_teeth",
+      "module": "$module",
+      "pressure_angle": "$pressure_angle",
+      "phase": 0.0,
+      "internal": false
+    },
+    {
+      "type": "gear",
+      "id": "outer3",
+      "center": [
+        -46.68,
+        26.95,
+        0
+      ],
+      "teeth": "$outer_teeth",
+      "module": "$module",
+      "pressure_angle": "$pressure_angle",
+      "phase": 0.0,
+      "internal": false
+    },
+    {
+      "type": "gear",
+      "id": "inner4",
+      "center": [
+        -45.0,
+        0.0,
+        0
+      ],
+      "teeth": "$inner_teeth",
+      "module": "$module",
+      "pressure_angle": "$pressure_angle",
+      "phase": 0.0,
+      "internal": false
+    },
+    {
+      "type": "gear",
+      "id": "outer4",
+      "center": [
+        -46.68,
+        -26.95,
+        0
+      ],
+      "teeth": "$outer_teeth",
+      "module": "$module",
+      "pressure_angle": "$pressure_angle",
+      "phase": 0.0,
+      "internal": false
+    },
+    {
+      "type": "gear",
+      "id": "inner5",
+      "center": [
+        -22.5,
+        -38.97,
+        0
+      ],
+      "teeth": "$inner_teeth",
+      "module": "$module",
+      "pressure_angle": "$pressure_angle",
+      "phase": 0.0,
+      "internal": false
+    },
+    {
+      "type": "gear",
+      "id": "outer5",
+      "center": [
+        0.0,
+        -53.89,
+        0
+      ],
+      "teeth": "$outer_teeth",
+      "module": "$module",
+      "pressure_angle": "$pressure_angle",
+      "phase": 0.0,
+      "internal": false
+    },
+    {
+      "type": "gear",
+      "id": "inner6",
+      "center": [
+        22.5,
+        -38.97,
+        0
+      ],
+      "teeth": "$inner_teeth",
+      "module": "$module",
+      "pressure_angle": "$pressure_angle",
+      "phase": 0.0,
+      "internal": false
+    },
+    {
+      "type": "gear",
+      "id": "outer6",
+      "center": [
+        46.68,
+        -26.95,
+        0
+      ],
+      "teeth": "$outer_teeth",
+      "module": "$module",
+      "pressure_angle": "$pressure_angle",
+      "phase": 0.0,
+      "internal": false
+    }
+  ],
+  "constraints": [
+    {
+      "type": "mesh",
+      "gear1": "sun",
+      "gear2": "inner1"
+    },
+    {
+      "type": "mesh",
+      "gear1": "inner1",
+      "gear2": "outer1"
+    },
+    {
+      "type": "mesh",
+      "gear1": "inner2",
+      "gear2": "outer1"
+    },
+    {
+      "type": "mesh",
+      "gear1": "ring",
+      "gear2": "outer1"
+    },
+    {
+      "type": "mesh",
+      "gear1": "sun",
+      "gear2": "inner2"
+    },
+    {
+      "type": "mesh",
+      "gear1": "inner2",
+      "gear2": "outer2"
+    },
+    {
+      "type": "mesh",
+      "gear1": "inner3",
+      "gear2": "outer2"
+    },
+    {
+      "type": "mesh",
+      "gear1": "ring",
+      "gear2": "outer2"
+    },
+    {
+      "type": "mesh",
+      "gear1": "sun",
+      "gear2": "inner3"
+    },
+    {
+      "type": "mesh",
+      "gear1": "inner3",
+      "gear2": "outer3"
+    },
+    {
+      "type": "mesh",
+      "gear1": "inner4",
+      "gear2": "outer3"
+    },
+    {
+      "type": "mesh",
+      "gear1": "ring",
+      "gear2": "outer3"
+    },
+    {
+      "type": "mesh",
+      "gear1": "sun",
+      "gear2": "inner4"
+    },
+    {
+      "type": "mesh",
+      "gear1": "inner4",
+      "gear2": "outer4"
+    },
+    {
+      "type": "mesh",
+      "gear1": "inner5",
+      "gear2": "outer4"
+    },
+    {
+      "type": "mesh",
+      "gear1": "ring",
+      "gear2": "outer4"
+    },
+    {
+      "type": "mesh",
+      "gear1": "sun",
+      "gear2": "inner5"
+    },
+    {
+      "type": "mesh",
+      "gear1": "inner5",
+      "gear2": "outer5"
+    },
+    {
+      "type": "mesh",
+      "gear1": "inner6",
+      "gear2": "outer5"
+    },
+    {
+      "type": "mesh",
+      "gear1": "ring",
+      "gear2": "outer5"
+    },
+    {
+      "type": "mesh",
+      "gear1": "sun",
+      "gear2": "inner6"
+    },
+    {
+      "type": "mesh",
+      "gear1": "inner6",
+      "gear2": "outer6"
+    },
+    {
+      "type": "mesh",
+      "gear1": "inner1",
+      "gear2": "outer6"
+    },
+    {
+      "type": "mesh",
+      "gear1": "ring",
+      "gear2": "outer6"
+    }
+  ]
+}

@@ -1,0 +1,74 @@
+{
+  "schema": "slvs-json/1",
+  "units": "mm",
+  "parameters": {
+    "sun_diameter": 48.0,
+    "planet_diameter": 24.0,
+    "ring_diameter": 120.0,
+    "num_planets": 3
+  },
+  "entities": [
+    {
+      "type": "circle",
+      "id": "sun",
+      "center": [0, 0, 0],
+      "diameter": "$sun_diameter"
+    },
+    {
+      "type": "circle", 
+      "id": "planet1",
+      "center": [36, 0, 0],
+      "diameter": "$planet_diameter"
+    },
+    {
+      "type": "circle",
+      "id": "planet2",
+      "center": [-18, 31.18, 0],
+      "diameter": "$planet_diameter"
+    },
+    {
+      "type": "circle",
+      "id": "planet3",
+      "center": [-18, -31.18, 0],
+      "diameter": "$planet_diameter"
+    },
+    {
+      "type": "circle",
+      "id": "ring",
+      "center": [0, 0, 0],
+      "diameter": "$ring_diameter"
+    }
+  ],
+  "constraints": [
+    {
+      "type": "distance",
+      "between": ["sun", "planet1"],
+      "value": "($sun_diameter + $planet_diameter) / 2"
+    },
+    {
+      "type": "distance",
+      "between": ["sun", "planet2"],
+      "value": "($sun_diameter + $planet_diameter) / 2"
+    },
+    {
+      "type": "distance",
+      "between": ["sun", "planet3"],
+      "value": "($sun_diameter + $planet_diameter) / 2"
+    },
+    {
+      "type": "distance",
+      "between": ["ring", "planet1"],
+      "value": "($ring_diameter - $planet_diameter) / 2"
+    },
+    {
+      "type": "distance",
+      "between": ["ring", "planet2"],
+      "value": "($ring_diameter - $planet_diameter) / 2"
+    },
+    {
+      "type": "distance",
+      "between": ["ring", "planet3"],
+      "value": "($ring_diameter - $planet_diameter) / 2"
+    }
+  ]
+}
