@@ -1,0 +1,62 @@
+{
+  "schema": "slvs-json/1",
+  "units": "mm",
+  "parameters": {
+    "arm_length": 80.0,
+    "hinge_angle": 45.0
+  },
+  "entities": [
+    {
+      "type": "point",
+      "id": "pivot",
+      "at": [0, 0, 0]
+    },
+    {
+      "type": "point",
+      "id": "arm1_end",
+      "at": [80, 0, 0]
+    },
+    {
+      "type": "point",
+      "id": "arm2_end",
+      "at": [60, 60, 0]
+    },
+    {
+      "type": "line",
+      "id": "arm1",
+      "p1": "pivot",
+      "p2": "arm1_end"
+    },
+    {
+      "type": "line",
+      "id": "arm2",
+      "p1": "pivot",
+      "p2": "arm2_end"
+    }
+  ],
+  "constraints": [
+    {
+      "type": "fixed",
+      "entity": "pivot"
+    },
+    {
+      "type": "horizontal",
+      "entity": "arm1"
+    },
+    {
+      "type": "distance",
+      "between": ["pivot", "arm1_end"],
+      "value": "$arm_length"
+    },
+    {
+      "type": "distance",
+      "between": ["pivot", "arm2_end"],
+      "value": "$arm_length"
+    },
+    {
+      "type": "angle",
+      "between": ["arm1", "arm2"],
+      "value": "$hinge_angle"
+    }
+  ]
+}

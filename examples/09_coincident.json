@@ -1,0 +1,75 @@
+{
+  "schema": "slvs-json/1",
+  "units": "mm",
+  "entities": [
+    {
+      "type": "point",
+      "id": "base_left",
+      "at": [-50, 0, 0]
+    },
+    {
+      "type": "point",
+      "id": "base_right",
+      "at": [50, 0, 0]
+    },
+    {
+      "type": "point",
+      "id": "top_left",
+      "at": [-30, 60, 0]
+    },
+    {
+      "type": "point",
+      "id": "top_right",
+      "at": [30, 60, 0]
+    },
+    {
+      "type": "point",
+      "id": "apex",
+      "at": [0, 80, 0]
+    },
+    {
+      "type": "line",
+      "id": "left_vertical",
+      "p1": "base_left",
+      "p2": "top_left"
+    },
+    {
+      "type": "line",
+      "id": "right_vertical",
+      "p1": "base_right",
+      "p2": "top_right"
+    },
+    {
+      "type": "line",
+      "id": "left_diagonal",
+      "p1": "top_left",
+      "p2": "apex"
+    },
+    {
+      "type": "line",
+      "id": "right_diagonal",
+      "p1": "top_right",
+      "p2": "apex"
+    }
+  ],
+  "constraints": [
+    {
+      "type": "fixed",
+      "entity": "base_left"
+    },
+    {
+      "type": "fixed",
+      "entity": "base_right"
+    },
+    {
+      "type": "coincident",
+      "entities": ["top_left", "top_right"],
+      "_comment": "Force the two top points to meet, creating a triangle"
+    },
+    {
+      "type": "coincident",
+      "entities": ["apex", "top_left"],
+      "_comment": "All three points meet at the same location"
+    }
+  ]
+}
