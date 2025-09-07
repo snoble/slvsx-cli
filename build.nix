@@ -1,15 +1,24 @@
 { pkgs ? import (fetchTarball "https://github.com/NixOS/nixpkgs/archive/nixos-unstable.tar.gz") {} }:
 
+let
+  # Use Mozilla's Rust overlay for better Rust support
+  rustPlatform = pkgs.makeRustPlatform {
+    cargo = pkgs.cargo;
+    rustc = pkgs.rustc;
+  };
+in
 pkgs.mkShell {
   buildInputs = with pkgs; [
-    # Rust toolchain
-    rustc
+    # Rust toolchain - using the default from nixpkgs which includes proc-macro support
     cargo
-    rust-analyzer
+    rustc
     rustfmt
     clippy
-    cargo-tarpaulin  # For code coverage
-    cargo-audit      # Security auditing
+    rust-analyzer
+    
+    # For code coverage and security
+    cargo-tarpaulin
+    cargo-audit
     
     # WASM tools
     wasm-pack
@@ -40,6 +49,9 @@ pkgs.mkShell {
     mdbook
   ];
 
+  # Set up environment variables
+  RUST_BACKTRACE = "1";
+  
   shellHook = ''
     echo "SLVSX Development Environment"
     echo "=============================="
