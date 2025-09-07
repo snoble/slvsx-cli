@@ -21,9 +21,6 @@ jobs:
     strategy:
       matrix:
         include:
-          - target: x86_64-unknown-linux-gnu
-            os: ubuntu-latest
-            name: slvsx-linux-x86_64
           - target: aarch64-unknown-linux-gnu
             os: ubuntu-latest
             name: slvsx-linux-aarch64
@@ -111,7 +108,7 @@ jobs:
       - name: Build WASM module
         run: |
           cd crates/core
-          # Build WASM module
+          # Build WASM module with wasm feature (uses JS solver implementation)
           wasm-pack build --target web --features wasm --out-dir ../../wasm-dist
 
       - name: Create NPM package
@@ -167,7 +164,6 @@ jobs:
             ### Downloads
             
             #### Native Binaries
-            - **Linux x86_64**: `slvsx-linux-x86_64.tar.gz`
             - **Linux ARM64**: `slvsx-linux-aarch64.tar.gz` 
             - **macOS x86_64**: `slvsx-macos-x86_64.tar.gz`
             - **macOS ARM64**: `slvsx-macos-aarch64.tar.gz`
