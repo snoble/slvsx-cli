@@ -5,12 +5,16 @@ Cargo.lock
 *.pdb
 
 # Build artifacts
-libslvs/SolveSpaceLib/
+libslvs/SolveSpaceLib/build/
 *.o
 *.a
 *.so
 *.dylib
 *.dll
+
+# Local Rust/Cargo directories
+.cargo/
+.rustup/
 
 # IDE
 .vscode/

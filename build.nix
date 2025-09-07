@@ -2,13 +2,15 @@
 
 pkgs.mkShell {
   buildInputs = with pkgs; [
-    # Rust toolchain
-    rustc
-    cargo
-    rustfmt
-    clippy
+    # Rust toolchain with WASM support
+    rustup
     cargo-tarpaulin  # For code coverage
     cargo-audit      # Security auditing
+    
+    # WASM tools
+    wasm-pack
+    wasm-bindgen-cli
+    nodejs_20
     
     # Build tools
     cmake
@@ -33,6 +35,18 @@ pkgs.mkShell {
   shellHook = ''
     echo "SLVSX Development Environment"
     echo "=============================="
+    
+    # Setup Rust toolchain with WASM target
+    export RUSTUP_HOME="$PWD/.rustup"
+    export CARGO_HOME="$PWD/.cargo"
+    export PATH="$CARGO_HOME/bin:$PATH"
+    
+    if [ ! -f "$CARGO_HOME/bin/rustc" ]; then
+      echo "Installing Rust toolchain..."
+      rustup default stable
+      rustup target add wasm32-unknown-unknown
+    fi
+    
     echo "Building libslvs..."
     
     # Build libslvs if not already built
@@ -51,9 +65,10 @@ pkgs.mkShell {
     echo "Environment ready!"
     echo ""
     echo "Quick commands:"
-    echo "  cargo build --release    # Build the CLI"
-    echo "  cargo test              # Run tests"
-    echo "  cargo tarpaulin         # Generate coverage report"
-    echo "  ./target/release/slvsx  # Run the CLI"
+    echo "  cargo build --release           # Build the CLI"
+    echo "  cargo test                      # Run tests"
+    echo "  cargo tarpaulin                 # Generate coverage report"
+    echo "  wasm-pack build                 # Build WASM module"
+    echo "  ./target/release/slvsx          # Run the CLI"
   '';
 }

@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SLVSX WASM Example</title>
+    <style>
+        body {
+            font-family: system-ui, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .panel {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        h2 {
+            color: #666;
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        textarea {
+            width: 100%;
+            height: 400px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 10px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .status {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        .examples {
+            margin-top: 20px;
+        }
+        select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>SLVSX Constraint Solver - WASM Demo</h1>
+    
+    <div class="container">
+        <div class="panel">
+            <h2>Input (JSON)</h2>
+            <div class="examples">
+                <select id="exampleSelect">
+                    <option value="triangle">Triangle</option>
+                    <option value="square">Square</option>
+                    <option value="circle">Circle with Fixed Radius</option>
+                    <option value="parametric">Parametric Design</option>
+                </select>
+                <button onclick="loadExample()">Load Example</button>
+            </div>
+            <textarea id="input" placeholder="Enter constraint JSON here..."></textarea>
+            <div style="margin-top: 10px;">
+                <button onclick="solve()">Solve</button>
+                <button onclick="validate()">Validate</button>
+                <button onclick="getSchema()">Get Schema</button>
+            </div>
+        </div>
+        
+        <div class="panel">
+            <h2>Output</h2>
+            <textarea id="output" readonly placeholder="Results will appear here..."></textarea>
+            <div id="status" class="status" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import init, { WasmSolver, solve_constraints, validate_document, get_constraint_schema } from './slvsx_core.js';
+        
+        // Examples matching our JSON schema
+        const examples = {
+            triangle: {
+                "schema": "slvs-json/1",
+                "units": "mm",
+                "entities": [
+                    {"id": "p1", "type": "Point", "x": 0, "y": 0},
+                    {"id": "p2", "type": "Point", "x": 100, "y": 0},
+                    {"id": "p3", "type": "Point", "x": 50, "y": 86.6},
+                    {"id": "l1", "type": "Line", "points": ["p1", "p2"]},
+                    {"id": "l2", "type": "Line", "points": ["p2", "p3"]},
+                    {"id": "l3", "type": "Line", "points": ["p3", "p1"]}
+                ],
+                "constraints": [
+                    {"type": "Fixed", "entity": "p1"},
+                    {"type": "Distance", "entities": ["p1", "p2"], "distance": 100},
+                    {"type": "Distance", "entities": ["p2", "p3"], "distance": 100},
+                    {"type": "Distance", "entities": ["p3", "p1"], "distance": 100}
+                ]
+            },
+            square: {
+                "schema": "slvs-json/1",
+                "units": "mm",
+                "entities": [
+                    {"id": "p1", "type": "Point", "x": 0, "y": 0},
+                    {"id": "p2", "type": "Point", "x": 100, "y": 0},
+                    {"id": "p3", "type": "Point", "x": 100, "y": 100},
+                    {"id": "p4", "type": "Point", "x": 0, "y": 100},
+                    {"id": "l1", "type": "Line", "points": ["p1", "p2"]},
+                    {"id": "l2", "type": "Line", "points": ["p2", "p3"]},
+                    {"id": "l3", "type": "Line", "points": ["p3", "p4"]},
+                    {"id": "l4", "type": "Line", "points": ["p4", "p1"]}
+                ],
+                "constraints": [
+                    {"type": "Fixed", "entity": "p1"},
+                    {"type": "HorizontalDistance", "entities": ["p1", "p2"], "distance": 100},
+                    {"type": "VerticalDistance", "entities": ["p1", "p4"], "distance": 100},
+                    {"type": "Perpendicular", "entities": ["l1", "l2"]},
+                    {"type": "Perpendicular", "entities": ["l2", "l3"]},
+                    {"type": "Perpendicular", "entities": ["l3", "l4"]}
+                ]
+            },
+            circle: {
+                "schema": "slvs-json/1",
+                "units": "mm",
+                "entities": [
+                    {"id": "center", "type": "Point", "x": 50, "y": 50},
+                    {"id": "circle1", "type": "Circle", "center": "center", "radius": 30}
+                ],
+                "constraints": [
+                    {"type": "Fixed", "entity": "center"},
+                    {"type": "Radius", "entity": "circle1", "radius": 30}
+                ]
+            },
+            parametric: {
+                "schema": "slvs-json/1",
+                "units": "mm",
+                "parameters": {
+                    "width": 150,
+                    "height": 80,
+                    "corner_radius": 10
+                },
+                "entities": [
+                    {"id": "p1", "type": "Point", "x": 0, "y": 0},
+                    {"id": "p2", "type": "Point", "x": "$width", "y": 0},
+                    {"id": "p3", "type": "Point", "x": "$width", "y": "$height"},
+                    {"id": "p4", "type": "Point", "x": 0, "y": "$height"}
+                ],
+                "constraints": [
+                    {"type": "Fixed", "entity": "p1"},
+                    {"type": "HorizontalDistance", "entities": ["p1", "p2"], "distance": "$width"},
+                    {"type": "VerticalDistance", "entities": ["p1", "p4"], "distance": "$height"}
+                ]
+            }
+        };
+        
+        let solver = null;
+        
+        // Initialize WASM module
+        async function initWasm() {
+            try {
+                await init();
+                solver = new WasmSolver();
+                showStatus('WASM module loaded successfully', 'success');
+                
+                // Load first example
+                document.getElementById('input').value = JSON.stringify(examples.triangle, null, 2);
+            } catch (error) {
+                showStatus('Failed to load WASM module: ' + error.message, 'error');
+            }
+        }
+        
+        // Make functions globally available
+        window.solve = async function() {
+            if (!solver) {
+                showStatus('WASM module not loaded', 'error');
+                return;
+            }
+            
+            try {
+                const input = document.getElementById('input').value;
+                const result = solver.solve(input);
+                document.getElementById('output').value = JSON.stringify(JSON.parse(result), null, 2);
+                showStatus('Solved successfully', 'success');
+            } catch (error) {
+                document.getElementById('output').value = 'Error: ' + error.message;
+                showStatus('Solve failed', 'error');
+            }
+        };
+        
+        window.validate = async function() {
+            if (!solver) {
+                showStatus('WASM module not loaded', 'error');
+                return;
+            }
+            
+            try {
+                const input = document.getElementById('input').value;
+                const isValid = solver.validate(input);
+                document.getElementById('output').value = isValid ? 
+                    'Document is valid!' : 
+                    'Document is invalid';
+                showStatus(isValid ? 'Valid document' : 'Invalid document', isValid ? 'success' : 'error');
+            } catch (error) {
+                document.getElementById('output').value = 'Validation error: ' + error.message;
+                showStatus('Validation failed', 'error');
+            }
+        };
+        
+        window.getSchema = function() {
+            try {
+                const schema = get_constraint_schema();
+                document.getElementById('output').value = JSON.stringify(JSON.parse(schema), null, 2);
+                showStatus('Schema retrieved', 'info');
+            } catch (error) {
+                document.getElementById('output').value = 'Error: ' + error.message;
+                showStatus('Failed to get schema', 'error');
+            }
+        };
+        
+        window.loadExample = function() {
+            const selected = document.getElementById('exampleSelect').value;
+            document.getElementById('input').value = JSON.stringify(examples[selected], null, 2);
+            showStatus('Example loaded: ' + selected, 'info');
+        };
+        
+        function showStatus(message, type) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = 'status ' + type;
+            status.style.display = 'block';
+            
+            setTimeout(() => {
+                status.style.display = 'none';
+            }, 3000);
+        }
+        
+        // Initialize on page load
+        initWasm();
+    </script>
+</body>
+</html>

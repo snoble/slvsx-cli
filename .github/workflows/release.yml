@@ -1,14 +1,13 @@
 name: Release
 
 on:
-  # Disabled until real libslvs integration is complete
-  # push:
-  #   tags:
-  #     - 'v*'
+  push:
+    tags:
+      - 'v*'
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Tag to release (DISABLED - libslvs integration needed)'
+        description: 'Release tag (e.g., v0.1.0)'
         required: true
         default: 'v0.1.0'
 
@@ -92,9 +91,56 @@ jobs:
             ${{ matrix.name }}.tar.gz
             ${{ matrix.name }}.zip
 
+  build-wasm:
+    name: Build WASM
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Install wasm-pack
+        run: |
+          curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+
+      - name: Build WASM module
+        run: |
+          cd crates/core
+          # Build with mock-solver for WASM (no FFI in browser)
+          wasm-pack build --target web --features mock-solver --out-dir ../../wasm-dist
+
+      - name: Create NPM package
+        run: |
+          cd wasm-dist
+          npm init -y
+          npm pkg set name="@slvsx/core"
+          npm pkg set version="${{ github.event.inputs.tag || github.ref_name }}"
+          npm pkg set description="SLVSX constraint solver WASM module"
+          npm pkg set main="slvsx_core.js"
+          npm pkg set types="slvsx_core.d.ts"
+          
+      - name: Package WASM
+        run: |
+          tar czf slvsx-wasm.tar.gz wasm-dist/
+          zip -r slvsx-wasm.zip wasm-dist/
+
+      - name: Upload WASM artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: slvsx-wasm
+          path: |
+            slvsx-wasm.tar.gz
+            slvsx-wasm.zip
+
   release:
     name: Create Release
-    needs: build
+    needs: [build, build-wasm]
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
     
@@ -118,11 +164,16 @@ jobs:
             Static binaries for SolveSpace constraint solver CLI.
             
             ### Downloads
+            
+            #### Native Binaries
             - **Linux x86_64**: `slvsx-linux-x86_64.tar.gz`
             - **Linux ARM64**: `slvsx-linux-aarch64.tar.gz` 
             - **macOS x86_64**: `slvsx-macos-x86_64.tar.gz`
             - **macOS ARM64**: `slvsx-macos-aarch64.tar.gz`
             - **Windows x86_64**: `slvsx-windows-x86_64.exe.zip`
+            
+            #### WASM Module
+            - **Web/Node.js**: `slvsx-wasm.tar.gz` or `slvsx-wasm.zip`
             
             ### Usage
             ```bash

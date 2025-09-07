@@ -15,8 +15,11 @@ pub mod validator;
 #[cfg(not(feature = "mock-solver"))]
 pub mod ffi;
 
+#[cfg(feature = "wasm")]
+pub mod wasm;
+
 pub use error::{Error, Result};
-pub use ir::{Constraint, Entity, InputDocument, Parameter};
+pub use ir::{Constraint, Entity, InputDocument, Parameter, SolveResult};
 
 #[cfg(test)]
 mod tests {
