@@ -1,6 +1,6 @@
 # Example 15: Equal Radius Circles
 
-**[← Point on Circle](https://github.com/snoble/slvsx-cli/blob/main/examples/14_point_on_circle.md)** | **[Next: Complex Mechanisms →](https://github.com/snoble/slvsx-cli/blob/main/examples/16_complex_mechanisms.md)**
+**[← Point on Circle](14_point_on_circle.md)** | **[Next: Complex Mechanisms →](16_complex_mechanisms.md)**
 
 ## The Story
 
@@ -119,10 +119,10 @@ Equal radius works well with:
 
 ## Visual Output
 
-![Equal Radius](https://raw.githubusercontent.com/snoble/slvsx-cli/main/examples/15_equal_radius.svg)
+![Equal Radius](15_equal_radius.svg)
 
 ## Key Takeaway
 
 Equal radius constraints maintain size relationships between circles without fixing absolute dimensions. This is perfect for scalable designs where proportions matter more than exact measurements.
 
-**[Next: Complex Mechanisms →](https://github.com/snoble/slvsx-cli/blob/main/examples/16_complex_mechanisms.md)**
+**[Next: Complex Mechanisms →](16_complex_mechanisms.md)**

@@ -1,6 +1,6 @@
 # Example 08: Working with Angles
 
-**[← Point on Line](https://github.com/snoble/slvsx-cli/blob/main/examples/07_point_on_line.md)** | **[Next: Coincident Points →](https://github.com/snoble/slvsx-cli/blob/main/examples/09_coincident.md)**
+**[← Point on Line](07_point_on_line.md)** | **[Next: Coincident Points →](09_coincident.md)**
 
 ## The Story
 
@@ -107,7 +107,7 @@ Notice arm2_end is at (80×cos(45°), 80×sin(45°)) ≈ (56.57, 56.57) - perfec
 
 ## Visual Output
 
-![Angle Constraint](https://raw.githubusercontent.com/snoble/slvsx-cli/main/examples/08_angles.svg)
+![Angle Constraint](08_angles.svg)
 
 ## Common Angles in Design
 
@@ -120,4 +120,4 @@ Notice arm2_end is at (80×cos(45°), 80×sin(45°)) ≈ (56.57, 56.57) - perfec
 
 Angle constraints define rotational relationships. Combined with distances, they let you create precise angular mechanisms like hinges, scissors, and folding structures.
 
-**[Next: Coincident Points →](https://github.com/snoble/slvsx-cli/blob/main/examples/09_coincident.md)**
+**[Next: Coincident Points →](09_coincident.md)**

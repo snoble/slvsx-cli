@@ -1,6 +1,6 @@
 # Example 02: Two Points and a Distance
 
-**[← Your First Point](https://github.com/snoble/slvsx-cli/blob/main/examples/01_first_point.md)** | **[Next: Understanding Constraints →](https://github.com/snoble/slvsx-cli/blob/main/examples/03_constraints.md)**
+**[← Your First Point](01_first_point.md)** | **[Next: Understanding Constraints →](03_constraints.md)**
 
 ## The Story
 
@@ -78,7 +78,7 @@ Notice the solver kept the same *direction* from our initial guess but adjusted 
 
 ## Visual Output
 
-![Distance Constraint](https://raw.githubusercontent.com/snoble/slvsx-cli/main/examples/02_distance_constraint.svg)
+![Distance Constraint](02_distance_constraint.svg)
 
 ## Key Takeaway
 
@@ -89,4 +89,4 @@ The distance constraint creates a sphere of possible positions. The solver picks
 
 Want to control direction too? You'll need additional constraints like fixing coordinates or adding angles.
 
-**[Next: Understanding Constraints →](https://github.com/snoble/slvsx-cli/blob/main/examples/03_constraints.md)**
+**[Next: Understanding Constraints →](03_constraints.md)**

@@ -1,6 +1,6 @@
 # Example 10: Equal Length Lines
 
-**[← Coincident Points](https://github.com/snoble/slvsx-cli/blob/main/examples/09_coincident.md)** | **[Next: Symmetric Constraints →](https://github.com/snoble/slvsx-cli/blob/main/examples/11_symmetric.md)**
+**[← Coincident Points](09_coincident.md)** | **[Next: Symmetric Constraints →](11_symmetric.md)**
 
 ## The Story
 
@@ -126,7 +126,7 @@ Opposite sides are now exactly equal: AB = CD = 100mm, BC = DA ≈ 53.85mm
 
 ## Visual Output
 
-![Equal Length](https://raw.githubusercontent.com/snoble/slvsx-cli/main/examples/10_equal_length.svg)
+![Equal Length](10_equal_length.svg)
 
 ## Design Applications
 
@@ -139,4 +139,4 @@ Opposite sides are now exactly equal: AB = CD = 100mm, BC = DA ≈ 53.85mm
 
 Equal length constraints create relationships between lines without fixing absolute dimensions. This is powerful for creating scalable, proportional designs where relative sizes matter more than absolute measurements.
 
-**[Next: Symmetric Constraints →](https://github.com/snoble/slvsx-cli/blob/main/examples/11_symmetric.md)**
+**[Next: Symmetric Constraints →](11_symmetric.md)**

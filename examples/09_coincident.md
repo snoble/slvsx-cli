@@ -1,6 +1,6 @@
 # Example 09: Coincident Points
 
-**[← Working with Angles](https://github.com/snoble/slvsx-cli/blob/main/examples/08_angles.md)** | **[Next: Equal Length →](https://github.com/snoble/slvsx-cli/blob/main/examples/10_equal_length.md)**
+**[← Working with Angles](08_angles.md)** | **[Next: Equal Length →](10_equal_length.md)**
 
 ## The Story
 
@@ -121,7 +121,7 @@ All three top points converged to the same location, forming a simple triangle!
 
 ## Visual Output
 
-![Coincident Points](https://raw.githubusercontent.com/snoble/slvsx-cli/main/examples/09_coincident.svg)
+![Coincident Points](09_coincident.svg)
 
 ## Real-World Applications
 
@@ -134,4 +134,4 @@ All three top points converged to the same location, forming a simple triangle!
 
 Coincident constraints are about topology - defining which elements connect. They're essential for assemblies where parts must touch or join precisely.
 
-**[Next: Equal Length →](https://github.com/snoble/slvsx-cli/blob/main/examples/10_equal_length.md)**
+**[Next: Equal Length →](10_equal_length.md)**

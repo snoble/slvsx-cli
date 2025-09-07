@@ -1,6 +1,6 @@
 # Example 13: Horizontal & Vertical Constraints
 
-**[← 3D Basics](https://github.com/snoble/slvsx-cli/blob/main/examples/12_3d_basics.md)** | **[Next: Point on Circle →](https://github.com/snoble/slvsx-cli/blob/main/examples/14_point_on_circle.md)**
+**[← 3D Basics](12_3d_basics.md)** | **[Next: Point on Circle →](14_point_on_circle.md)**
 
 ## The Story
 
@@ -135,10 +135,10 @@ But horizontal/vertical constraints are:
 
 ## Visual Output
 
-![Horizontal and Vertical](https://raw.githubusercontent.com/snoble/slvsx-cli/main/examples/13_horizontal_vertical.svg)
+![Horizontal and Vertical](13_horizontal_vertical.svg)
 
 ## Key Takeaway
 
 Horizontal and vertical constraints are convenience shortcuts that make your constraint definitions clearer and more maintainable. Use them whenever you need axis-aligned geometry.
 
-**[Next: Point on Circle →](https://github.com/snoble/slvsx-cli/blob/main/examples/14_point_on_circle.md)**
+**[Next: Point on Circle →](14_point_on_circle.md)**

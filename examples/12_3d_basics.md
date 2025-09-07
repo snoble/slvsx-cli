@@ -1,6 +1,6 @@
 # Example 12: 3D Basics
 
-**[← Symmetric Constraints](https://github.com/snoble/slvsx-cli/blob/main/examples/11_symmetric.md)** | **[Next: Horizontal & Vertical →](https://github.com/snoble/slvsx-cli/blob/main/examples/13_horizontal_vertical.md)**
+**[← Symmetric Constraints](11_symmetric.md)** | **[Next: Horizontal & Vertical →](13_horizontal_vertical.md)**
 
 ## The Story
 
@@ -136,10 +136,10 @@ Key concepts for 3D constraint solving:
 
 ## Visual Output
 
-![3D Basics](https://raw.githubusercontent.com/snoble/slvsx-cli/main/examples/12_3d_basics.svg)
+![3D Basics](12_3d_basics.svg)
 
 ## Key Takeaway
 
 3D constraints work exactly like 2D ones - just add Z coordinates! The solver handles the third dimension naturally, making it easy to create spatial mechanisms and structures.
 
-**[Next: Horizontal & Vertical →](https://github.com/snoble/slvsx-cli/blob/main/examples/13_horizontal_vertical.md)**
+**[Next: Horizontal & Vertical →](13_horizontal_vertical.md)**

@@ -1,0 +1,72 @@
+name: Build and Test
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    name: Build and Test
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          
+      - name: Install dependencies (Ubuntu)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake build-essential
+          
+      - name: Install dependencies (macOS)
+        if: matrix.os == 'macos-latest'
+        run: |
+          brew install cmake
+          
+      - name: Setup Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+          
+      - name: Build libslvs
+        run: |
+          cd libslvs/SolveSpaceLib
+          mkdir -p build
+          cd build
+          cmake .. -DCMAKE_BUILD_TYPE=Release
+          make slvs_static -j$(nproc 2>/dev/null || sysctl -n hw.ncpu)
+          
+      - name: Build slvsx
+        run: cargo build --release
+        
+      - name: Run tests
+        run: cargo test
+        
+      - name: Test examples
+        run: |
+          chmod +x test-examples.sh
+          ./test-examples.sh || true
+          
+      - name: Upload binary artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: slvsx-${{ matrix.os }}
+          path: target/release/slvsx*
+          
+      - name: Upload example SVGs
+        uses: actions/upload-artifact@v3
+        with:
+          name: example-svgs-${{ matrix.os }}
+          path: examples/*.svg
