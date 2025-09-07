@@ -1,3 +1,4 @@
+use std::env;
 use std::path::PathBuf;
 
 fn main() {
@@ -16,17 +17,43 @@ fn main() {
             .compile("real_slvs_wrapper");
 
         println!("cargo:rustc-link-lib=static=real_slvs_wrapper");
+        
+        // Check for SLVS_LIB_DIR environment variable (used in CI)
+        let slvs_lib_dir = if let Ok(dir) = env::var("SLVS_LIB_DIR") {
+            PathBuf::from(dir)
+        } else {
+            // Default path for local builds
+            project_root.join("libslvs/SolveSpaceLib/build/src/slvs")
+        };
+        
+        println!("cargo:rustc-link-search=native={}", slvs_lib_dir.display());
+        
+        // Also check common build directories
         println!(
             "cargo:rustc-link-search=native={}",
-            project_root
-                .join("libslvs/SolveSpaceLib/build/bin")
-                .display()
+            project_root.join("libslvs/SolveSpaceLib/build/bin").display()
         );
+        
         // Link the static library and its dependencies
         println!("cargo:rustc-link-lib=static=slvs");
-        println!("cargo:rustc-link-lib=static=mimalloc");
+        
+        // Check for static build of mimalloc
+        let mimalloc_dir = project_root.join("libslvs/SolveSpaceLib/build/extlib/mimalloc");
+        if mimalloc_dir.exists() {
+            println!("cargo:rustc-link-search=native={}", mimalloc_dir.display());
+            println!("cargo:rustc-link-lib=static=mimalloc");
+        }
 
         // System libraries needed by libslvs
-        println!("cargo:rustc-link-lib=c++");
+        #[cfg(target_os = "linux")]
+        {
+            println!("cargo:rustc-link-lib=stdc++");
+            println!("cargo:rustc-link-lib=m");
+        }
+        
+        #[cfg(target_os = "macos")]
+        {
+            println!("cargo:rustc-link-lib=c++");
+        }
     }
 }
