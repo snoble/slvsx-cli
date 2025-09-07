@@ -1,170 +1,285 @@
 # SLVSX - SolveSpace Constraint Solver CLI
 
-> **✅ STATUS**: Real libslvs constraint solver integration complete! The CLI provides a generic interface to the SolveSpace constraint solver with support for points, lines, circles, and distance/fixed constraints.
-
-A command-line interface for the SolveSpace geometric constraint solver that turns mechanical design from manual sketching and complex math into simple constraint specification. Perfect for AI agents and automated mechanical system generation.
+A command-line interface and library for the SolveSpace geometric constraint solver, providing JSON-based constraint specification with multi-language support through WASM.
 
 ## Features
 
-- **JSON-based constraint definition**: Define geometric entities and constraints in a readable JSON format
-- **Multiple export formats**: SVG, STL, DXF output for manufacturing and visualization
-- **Gear system support**: Built-in support for complex gear trains including planetary and double planetary systems
-- **Phase calculation**: Automatic calculation of gear phases for proper meshing
-- **Validation**: Comprehensive validation of geometric constraints and gear meshing
+- **JSON-based constraint specification** - Define geometric constraints using a simple, type-safe JSON schema
+- **Multi-language support** - Use from Rust, JavaScript/TypeScript (via WASM), or any language that can generate JSON
+- **Type-safe workflow** - Rust types → JSON Schema → TypeScript/Python types, ensuring compatibility across languages
+- **Cross-platform** - Native binaries for Linux, macOS, Windows, plus WASM for browsers/Node.js
+- **Comprehensive constraint support** - Points, lines, circles, distance/angle/perpendicular constraints, and more
+- **Export formats** - SVG, DXF, STL output for solved geometries
+- **Parameter support** - Define parametric designs with variables
 
 ## Installation
 
-### Using Nix (Recommended)
+### Native Binary
+
+Download the latest release for your platform from the [releases page](https://github.com/snoble/slvsx-cli/releases):
 
 ```bash
-nix-shell
-cargo build --release
+# Linux/macOS
+curl -L https://github.com/snoble/slvsx-cli/releases/latest/download/slvsx-linux-x86_64.tar.gz | tar xz
+./slvsx --help
+
+# Windows
+# Download slvsx-windows-x86_64.exe.zip and extract
 ```
 
-### Manual Build
-
-Requirements:
-- Rust 1.70+
-- CMake 3.10+
-- C++ compiler with C++11 support
+### From Source
 
 ```bash
-# Build libslvs
-cd libslvs/SolveSpaceLib
-mkdir build && cd build
-cmake ..
-make
-
-# Build SLVSX
-cd ../../..
+git clone https://github.com/snoble/slvsx-cli.git
+cd slvsx-cli
+nix-shell build.nix  # Sets up complete dev environment
 cargo build --release
+./target/release/slvsx --help
+```
+
+### WASM Module (JavaScript/TypeScript)
+
+```bash
+npm install @slvsx/core
+```
+
+```javascript
+import init, { WasmSolver } from '@slvsx/core';
+
+await init();
+const solver = new WasmSolver();
+const result = solver.solve(constraintJson);
 ```
 
 ## Usage
 
-### Basic Commands
+### Command Line
 
 ```bash
-# Validate a constraint file
-slvsx validate input.json
-
-# Solve constraints
+# Solve constraints and output results
 slvsx solve input.json
 
-# Export to SVG
-slvsx export input.json --format svg --output output.svg
+# Validate constraint document
+slvsx validate input.json
 
-# Export to STL
-slvsx export input.json --format stl --output output.stl
+# Export to SVG
+slvsx export --format svg --output design.svg input.json
+
+# Generate JSON schema for type generation
+slvsx schema > schema.json
 ```
 
-### Example: Four-Bar Linkage
+### JSON Constraint Format
 
-Without SLVSX, designing a four-bar linkage requires:
-- **Complex trigonometry** to solve the position equations
-- **Iterative calculations** for different input angles
-- **Manual verification** that the linkage doesn't bind or reach singularities
-- **Guess-and-check** for link length optimization
-
-With SLVSX, you simply specify the constraints:
+The solver accepts constraints in JSON format following this structure:
 
 ```json
 {
-  "schema": "slvs-json/1", 
+  "schema": "slvs-json/1",
   "units": "mm",
   "parameters": {
-    "link1_length": 50.0,
-    "link2_length": 80.0, 
-    "link3_length": 70.0,
-    "link4_length": 40.0,
-    "input_angle": 45.0
+    "width": 100,
+    "height": 50
   },
   "entities": [
-    {"type": "point", "id": "ground_a", "at": [0, 0, 0]},
-    {"type": "point", "id": "ground_b", "at": ["$link1_length", 0, 0]},
-    {"type": "point", "id": "joint_p", "at": [10, 10, 0]},
-    {"type": "point", "id": "joint_q", "at": [30, 20, 0]},
-    {"type": "line", "id": "input_link", "p1": "ground_a", "p2": "joint_p"},
-    {"type": "line", "id": "coupler", "p1": "joint_p", "p2": "joint_q"},
-    {"type": "line", "id": "output_link", "p1": "joint_q", "p2": "ground_b"}
+    {
+      "id": "p1",
+      "type": "Point",
+      "x": 0,
+      "y": 0
+    },
+    {
+      "id": "p2", 
+      "type": "Point",
+      "x": "$width",
+      "y": 0
+    },
+    {
+      "id": "line1",
+      "type": "Line",
+      "points": ["p1", "p2"]
+    }
   ],
   "constraints": [
-    {"type": "fixed", "entity": "ground_a"},
-    {"type": "fixed", "entity": "ground_b"}, 
-    {"type": "distance", "between": ["ground_a", "joint_p"], "value": "$link2_length"},
-    {"type": "distance", "between": ["joint_p", "joint_q"], "value": "$link3_length"},
-    {"type": "distance", "between": ["joint_q", "ground_b"], "value": "$link4_length"},
-    {"type": "angle", "between": ["ground_link", "input_link"], "value": "$input_angle"}
+    {
+      "type": "Fixed",
+      "entity": "p1"
+    },
+    {
+      "type": "HorizontalDistance",
+      "entities": ["p1", "p2"],
+      "distance": "$width"
+    }
   ]
 }
 ```
 
-The solver automatically:
-✅ Calculates exact joint positions  
-✅ Handles the complex trigonometry  
-✅ Validates the configuration is feasible  
-✅ Enables parameter sweeps for optimization  
+### Type-Safe Development
+
+#### Generate Types from Schema
 
 ```bash
-# Solve the linkage - no math required!
-slvsx solve examples/readme_example.json
+# Generate JSON schema
+slvsx schema > schema.json
 
-# Export to SVG to visualize the solved linkage  
-slvsx export examples/readme_example.json --format svg --output examples/outputs/linkage.svg
+# TypeScript
+npx json-schema-to-typescript schema.json -o types.ts
+
+# Python
+datamodel-codegen --input schema.json --output types.py
 ```
 
-**Output: Solved Four-Bar Linkage**
+#### TypeScript Example
 
-![Four-Bar Linkage](examples/outputs/four_bar_linkage.svg)
+```typescript
+import { InputDocument, Entity, Constraint } from './types';
 
-*SLVSX automatically calculated the exact joint positions that satisfy all distance constraints (link lengths 80mm, 70mm, 40mm).*
-
-## Examples
-
-See the `examples/` directory for complete examples including:
-- **Four-bar linkages** - Motion analysis without complex trigonometry
-- **Simple gear pairs** - Automatic center distance calculation
-- **Planetary systems** - Complex gear trains solved automatically  
-- **Constraint problems** - Let the solver find valid configurations
-
-Each example shows how SLVSX replaces manual math and guesswork with simple constraint specification.
-
-## Development
-
-### Running Tests
-
-```bash
-cargo test --all-features
-```
-
-### Test Coverage
-
-```bash
-cargo tarpaulin --out Html --output-dir coverage
+function createTriangle(sideLength: number): InputDocument {
+  return {
+    schema: 'slvs-json/1',
+    units: 'mm',
+    entities: [
+      { id: 'p1', type: 'Point', x: 0, y: 0 },
+      { id: 'p2', type: 'Point', x: sideLength, y: 0 },
+      { id: 'p3', type: 'Point', x: sideLength/2, y: sideLength * 0.866 }
+    ],
+    constraints: [
+      { type: 'Fixed', entity: 'p1' },
+      { type: 'Distance', entities: ['p1', 'p2'], distance: sideLength },
+      { type: 'Distance', entities: ['p2', 'p3'], distance: sideLength },
+      { type: 'Distance', entities: ['p3', 'p1'], distance: sideLength }
+    ]
+  };
+}
 ```
 
 ## Architecture
 
-The project is organized as a Rust workspace with the following crates:
+### Core Components
 
-- `slvsx-core`: Core solver integration and constraint handling
-- `slvsx-exporters`: SVG, STL, DXF export functionality
-- `slvsx`: CLI application
+1. **`slvsx-core`** - Rust library with constraint solver logic
+   - FFI bindings to libslvs (SolveSpace's C++ solver)
+   - JSON schema generation from Rust types
+   - WASM compilation support
+   - Mock solver for testing
 
-## License
+2. **`slvsx-cli`** - Command-line interface
+   - Constraint solving and validation
+   - Export to various formats (SVG, DXF, STL)
+   - Schema generation for type safety
 
-This project incorporates code from SolveSpace, which is licensed under GPLv3.
-See LICENSE file for full details.
+3. **`slvsx-exporters`** - Format conversion
+   - SVG generation with proper scaling
+   - DXF export for CAD software
+   - STL for 3D printing
 
-## Attribution
+### Type Generation Flow
 
-This project is based on:
-- [SolveSpace](https://solvespace.com) by Jonathan Westhues and contributors
-- libslvs - The SolveSpace constraint solver library
+```
+Rust Types (source of truth)
+    ↓
+JSON Schema (schemars)
+    ↓
+TypeScript/Python/etc Types (json-schema-to-typescript, datamodel-codegen)
+```
+
+This ensures all language bindings stay in sync with the Rust implementation.
+
+## Supported Constraints
+
+### Entities
+- **Point** - 2D/3D points with x, y, z coordinates
+- **Line** - Line segments between two points
+- **Circle** - Circles with center and radius
+- **Arc** - Circular arcs with start/end angles
+- **Cubic** - Cubic Bezier curves
+
+### Constraints
+- **Fixed** - Fix entity position
+- **Distance** - Set distance between points/lines
+- **Angle** - Set angle between lines
+- **Perpendicular** - Make lines perpendicular
+- **Parallel** - Make lines parallel
+- **Horizontal/Vertical** - Align to axes
+- **PointOnLine** - Constrain point to line
+- **PointOnCircle** - Constrain point to circle
+- **Radius** - Set circle/arc radius
+- **Equal** - Make distances/radii equal
+- **Symmetric** - Mirror symmetry constraint
+
+## Examples
+
+See the [`examples/`](examples/) directory for complete examples including:
+
+- Basic shapes (triangles, squares, polygons)
+- Parametric designs with variables
+- Mechanical linkages and mechanisms
+- 3D constraints and assemblies
+- Over-constrained system detection
+- TypeScript constraint generation
+
+## Development
+
+### Prerequisites
+
+```bash
+# Install Nix package manager
+curl -L https://nixos.org/nix/install | sh
+
+# Enter development environment
+nix-shell build.nix
+```
+
+This provides:
+- Rust toolchain with WASM target
+- CMake for building libslvs
+- wasm-pack for WASM builds
+- Testing and coverage tools
+
+### Building
+
+```bash
+# Native CLI
+cargo build --release
+
+# WASM module
+cd crates/core
+wasm-pack build --target web --features wasm
+
+# Run tests
+cargo test
+
+# Generate coverage
+cargo tarpaulin
+```
+
+### Testing
+
+```bash
+# Unit tests
+cargo test
+
+# Integration tests with real solver
+cargo test --features real-solver
+
+# WASM tests
+wasm-pack test --node
+```
 
 ## Contributing
 
-Contributions are welcome! Please ensure:
-- All tests pass
-- Code coverage remains at 100%
-- Documentation is updated for new features
+Contributions are welcome! Please:
+
+1. Fork the repository
+2. Create a feature branch
+3. Add tests for new functionality
+4. Ensure all tests pass
+5. Submit a pull request
+
+## License
+
+MIT License - See [LICENSE](LICENSE) file for details
+
+## Acknowledgments
+
+Built on top of [SolveSpace](https://solvespace.com/)'s powerful constraint solver library.
