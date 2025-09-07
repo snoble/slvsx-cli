@@ -2,8 +2,12 @@
 
 pkgs.mkShell {
   buildInputs = with pkgs; [
-    # Rust toolchain with WASM support
-    rustup
+    # Rust toolchain
+    rustc
+    cargo
+    rust-analyzer
+    rustfmt
+    clippy
     cargo-tarpaulin  # For code coverage
     cargo-audit      # Security auditing
     
@@ -40,17 +44,6 @@ pkgs.mkShell {
     echo "SLVSX Development Environment"
     echo "=============================="
     
-    # Setup Rust toolchain with WASM target
-    export RUSTUP_HOME="$PWD/.rustup"
-    export CARGO_HOME="$PWD/.cargo"
-    export PATH="$CARGO_HOME/bin:$PATH"
-    
-    if [ ! -f "$CARGO_HOME/bin/rustc" ]; then
-      echo "Installing Rust toolchain..."
-      rustup default stable
-      rustup target add wasm32-unknown-unknown
-    fi
-    
     echo "Building libslvs..."
     
     # Build libslvs if not already built
@@ -59,7 +52,7 @@ pkgs.mkShell {
       cd libslvs/SolveSpaceLib/build
       
       # Configure with proper paths for Nix environment
-      cmake .. -DCMAKE_BUILD_TYPE=Release
+      cmake .. -DCMAKE_BUILD_TYPE=Release || echo "CMake configuration failed, continuing anyway"
       
       make -j$(nproc) || echo "libslvs build failed, continuing anyway"
       cd ../../..
