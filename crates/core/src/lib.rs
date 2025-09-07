@@ -12,7 +12,6 @@ pub mod solver;
 pub mod translator;
 pub mod validator;
 
-#[cfg(not(feature = "mock-solver"))]
 pub mod ffi;
 
 #[cfg(feature = "wasm")]

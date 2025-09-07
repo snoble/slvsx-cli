@@ -69,9 +69,8 @@ jobs:
           nix-shell build.nix --run "
             export CARGO_TARGET_DIR=target
             
-            # Build with mock solver for release (temporary)
-            # TODO: Integrate proper libslvs build
-            cargo build --release --target ${{ matrix.target }} --features mock-solver
+            # Build with real libslvs
+            cargo build --release --target ${{ matrix.target }}
           "
 
       - name: Create archive
@@ -112,8 +111,8 @@ jobs:
       - name: Build WASM module
         run: |
           cd crates/core
-          # Build with mock-solver for WASM (no FFI in browser)
-          wasm-pack build --target web --features mock-solver --out-dir ../../wasm-dist
+          # Build WASM module
+          wasm-pack build --target web --features wasm --out-dir ../../wasm-dist
 
       - name: Create NPM package
         run: |

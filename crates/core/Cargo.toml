@@ -36,9 +36,8 @@ tempfile.workspace = true
 
 [features]
 default = []
-mock-solver = []
 yaml = ["dep:serde_yaml"]
-wasm = ["wasm-bindgen", "wasm-bindgen-futures", "js-sys", "web-sys", "mock-solver"]
+wasm = ["wasm-bindgen", "wasm-bindgen-futures", "js-sys", "web-sys"]
 
 [dependencies.serde_yaml]
 version = "0.9"

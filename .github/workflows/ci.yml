@@ -40,8 +40,7 @@ jobs:
       - name: Run tests
         run: |
           nix-shell build.nix --run "
-            # Run tests with mock solver for CI
-            cargo test --features mock-solver --verbose
+            cargo test --verbose
           "
 
       - name: Check formatting
@@ -53,20 +52,20 @@ jobs:
       - name: Run clippy
         run: |
           nix-shell build.nix --run "
-            cargo clippy --features mock-solver --all-targets --all-features -- -D warnings
+            cargo clippy --all-targets --all-features -- -D warnings
           "
 
       - name: Generate schema
         run: |
           nix-shell build.nix --run "
-            cargo run --bin generate-schema --features mock-solver
+            cargo run --bin generate-schema
           "
 
       - name: Validate example documents
         run: |
           nix-shell build.nix --run "
             # Test CLI with example files
-            cargo build --features mock-solver
+            cargo build
             ./target/debug/slvsx validate examples/testdata/simple_working.json
             ./target/debug/slvsx solve examples/testdata/simple_working.json
           "
@@ -92,8 +91,8 @@ jobs:
             # Install tarpaulin for coverage
             cargo install cargo-tarpaulin
             
-            # Generate coverage with mock solver
-            cargo tarpaulin --features mock-solver --out Html --output-dir coverage
+            # Generate coverage
+            cargo tarpaulin --out Html --output-dir coverage
           "
 
       - name: Upload coverage reports

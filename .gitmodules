@@ -1,0 +1,3 @@
+[submodule "libslvs/SolveSpaceLib"]
+	path = libslvs/SolveSpaceLib
+	url = https://github.com/solvespace/solvespace.git
