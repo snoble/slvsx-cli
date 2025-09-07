@@ -1,6 +1,6 @@
 # Example 15: Equal Radius Circles
 
-**[← Point on Circle](14_point_on_circle.md)** | **[Next: Mesh Constraint →](16_mesh.md)**
+**[← Point on Circle](14_point_on_circle.md)** | **[Next: Complex Mechanisms →](16_complex_mechanisms.md)**
 
 ## The Story
 
@@ -121,4 +121,4 @@ Equal radius works well with:
 
 Equal radius constraints maintain size relationships between circles without fixing absolute dimensions. This is perfect for scalable designs where proportions matter more than exact measurements.
 
-**[Next: Mesh Constraint →](16_mesh.md)**
+**[Next: Complex Mechanisms →](16_complex_mechanisms.md)**

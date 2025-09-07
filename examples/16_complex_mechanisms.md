@@ -1,6 +1,6 @@
-# Example 17: Complex Mechanisms
+# Example 16: Complex Mechanisms
 
-**[← Mesh Constraint](16_mesh.md)** | **[Back to Introduction →](00_introduction.md)**
+**[← Equal Radius](15_equal_radius.md)** | **[Back to Introduction →](00_introduction.md)**
 
 ## The Story
 
@@ -14,13 +14,6 @@ The classic mechanism for converting rotary to linear motion:
 - Distance constraints for rigid links
 - One fixed link (frame)
 - Input and output cranks
-
-### Planetary Gear Train
-Multiple gears orbiting a central sun:
-- Sun gear (fixed or driven)
-- Planet gears (mesh with sun)
-- Ring gear (internal, meshes with planets)
-- Carrier connecting planet centers
 
 ### Slider-Crank
 Engine piston mechanism:
@@ -40,11 +33,6 @@ Different constraints work together:
 **Sliding Motion**:
 - Point-on-line for linear slides
 - Point-on-circle for circular paths
-
-**Gear Trains**:
-- Mesh constraints for tooth engagement
-- Distance for center spacing
-- Fixed constraints for frames
 
 **Symmetrical Designs**:
 - Symmetric constraint for mirroring
@@ -78,11 +66,6 @@ Understanding DOF is crucial:
 - Mechanism has freedom to move
 - May be intentional for mechanisms
 - Add constraints if full definition needed
-
-**Phase validation failures** (gears):
-- Teeth are colliding
-- Solver found solution but it's not manufacturable
-- Adjust positions or tooth counts
 
 ## Example: Simple Four-Bar Linkage
 
@@ -195,18 +178,16 @@ The constraint solver handles the math - you focus on the design!
 1. [Introduction](00_introduction.md) - Overview and concepts
 2. [Fixed Points](01_first_point.md) - Reference points
 3. [Distance](02_distance_constraint.md) - Setting lengths
-4. [Lines](03_lines_and_length.md) - Connecting points
-5. [Triangles](04_triangle.md) - Rigid structures
-6. [Parallel/Perpendicular](05_parallel_perpendicular.md) - Geometric relationships
-7. [Circles](06_circles.md) - Curved geometry
-8. [Point on Line](07_point_on_line.md) - Sliding constraints
-9. [Angles](08_angles.md) - Angular constraints
-10. [Coincident](09_coincident.md) - Points meeting
-11. [Equal Length](10_equal_length.md) - Matching sizes
-12. [Symmetric](11_symmetric.md) - Mirror constraints
-13. [3D Basics](12_3d_basics.md) - Spatial coordinates
-14. [Horizontal/Vertical](13_horizontal_vertical.md) - Axis alignment
-15. [Point on Circle](14_point_on_circle.md) - Circular paths
-16. [Equal Radius](15_equal_radius.md) - Matching circles
-17. [Mesh (Gears)](16_mesh.md) - Gear engagement
-18. [Complex Mechanisms](17_complex_mechanisms.md) - Putting it all together
+4. [3D Tetrahedron](04_3d_tetrahedron.md) - Working in 3D
+5. [Parallel/Perpendicular](05_parallel_perpendicular.md) - Geometric relationships
+6. [Circles](06_circles.md) - Curved geometry
+7. [Point on Line](07_point_on_line.md) - Sliding constraints
+8. [Angles](08_angles.md) - Angular constraints
+9. [Coincident](09_coincident.md) - Points meeting
+10. [Equal Length](10_equal_length.md) - Matching sizes
+11. [Symmetric](11_symmetric.md) - Mirror constraints
+12. [3D Basics](12_3d_basics.md) - Spatial coordinates
+13. [Horizontal/Vertical](13_horizontal_vertical.md) - Axis alignment
+14. [Point on Circle](14_point_on_circle.md) - Circular paths
+15. [Equal Radius](15_equal_radius.md) - Matching circles
+16. [Complex Mechanisms](16_complex_mechanisms.md) - Putting it all together

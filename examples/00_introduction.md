@@ -44,8 +44,8 @@ Start with the first example:
 
 ## Quick Reference
 
-- **Entities**: point, line, circle, arc, gear, plane
-- **Constraints**: fixed, distance, angle, parallel, perpendicular, coincident, equal_length, equal_radius, symmetric, horizontal, vertical, point_on_line, point_on_circle, tangent, mesh
+- **Entities**: point, line, circle, arc
+- **Constraints**: fixed, distance, angle, parallel, perpendicular, coincident, equal_length, equal_radius, horizontal, vertical, point_on_line, point_on_circle, tangent
 - **Parameters**: Use `$name` to reference a parameter value
 
 ## Complete Example Index
@@ -53,8 +53,8 @@ Start with the first example:
 ### Fundamentals
 1. [Your First Point](01_first_point.md) - Fixed constraints and reference points
 2. [Distance Constraints](02_distance_constraint.md) - Setting distances with parameters
-3. [Lines and Length](03_lines_and_length.md) - Line entities and their behavior
-4. [Building a Triangle](04_triangle.md) - Combining multiple constraints
+3. [Understanding Constraints](03_constraints.md) - Over-constrained vs properly constrained
+4. [3D Tetrahedron](04_3d_tetrahedron.md) - Working in three dimensions
 
 ### Geometric Relationships
 5. [Parallel and Perpendicular](05_parallel_perpendicular.md) - Angular relationships
@@ -70,7 +70,6 @@ Start with the first example:
 13. [Horizontal & Vertical](13_horizontal_vertical.md) - Axis alignment shortcuts
 14. [Point on Circle](14_point_on_circle.md) - Circular motion paths
 15. [Equal Radius](15_equal_radius.md) - Matching circle sizes
-16. [Mesh Constraint (Gears)](16_mesh.md) - Gear tooth engagement
-17. [Complex Mechanisms](17_complex_mechanisms.md) - Putting it all together
+16. [Complex Mechanisms](16_complex_mechanisms.md) - Putting it all together
 
 Let's begin!
