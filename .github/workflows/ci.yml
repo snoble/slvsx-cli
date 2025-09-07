@@ -15,7 +15,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        # macOS disabled temporarily due to Nix installation issues
+        os: [ubuntu-latest]  # , macos-latest]
     
     steps:
       - name: Checkout code
