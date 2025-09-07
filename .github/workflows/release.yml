@@ -122,8 +122,10 @@ jobs:
           npm pkg set name="@slvsx/core"
           npm pkg set version="${{ github.event.inputs.tag || github.ref_name }}"
           npm pkg set description="SLVSX constraint solver WASM module"
+          npm pkg set license="GPL-3.0-or-later"
           npm pkg set main="slvsx_core.js"
           npm pkg set types="slvsx_core.d.ts"
+          npm pkg set repository="https://github.com/snoble/slvsx-cli"
           
       - name: Package WASM
         run: |

@@ -278,7 +278,9 @@ Contributions are welcome! Please:
 
 ## License
 
-MIT License - See [LICENSE](LICENSE) file for details
+GPLv3 - See [LICENSE](LICENSE) file for details
+
+This project incorporates code from SolveSpace, which is licensed under GPLv3. As a result, this entire project must be distributed under GPLv3 terms.
 
 ## Acknowledgments
 
