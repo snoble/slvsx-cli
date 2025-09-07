@@ -1,6 +1,6 @@
 # SLVSX - SolveSpace Constraint Solver CLI
 
-> **⚠️ DEVELOPMENT STATUS**: This project is under active development. The CLI framework and JSON interface are complete, but libslvs integration is still in progress. Currently using a mock solver for testing.
+> **✅ STATUS**: Real libslvs constraint solver integration complete! The CLI provides a generic interface to the SolveSpace constraint solver with support for points, lines, circles, and distance/fixed constraints.
 
 A command-line interface for the SolveSpace geometric constraint solver that turns mechanical design from manual sketching and complex math into simple constraint specification. Perfect for AI agents and automated mechanical system generation.
 
@@ -107,13 +107,17 @@ The solver automatically:
 
 ```bash
 # Solve the linkage - no math required!
-slvsx solve examples/testdata/four_bar_linkage.json
+slvsx solve examples/readme_example.json
 
-# Trace the mechanism by varying input angle
-for angle in 0 30 60 90 120 150 180; do
-  slvsx solve four_bar_linkage.json --param input_angle=$angle
-done
+# Export to SVG to visualize the solved linkage  
+slvsx export examples/readme_example.json --format svg --output examples/outputs/linkage.svg
 ```
+
+**Output: Solved Four-Bar Linkage**
+
+![Four-Bar Linkage](examples/outputs/four_bar_linkage.svg)
+
+*SLVSX automatically calculated the exact joint positions that satisfy all distance constraints (link lengths 80mm, 70mm, 40mm).*
 
 ## Examples
 
