@@ -131,6 +131,10 @@ Point-on-circle works well with:
 - **Distance constraints**: Set spacing between points
 - **Tangent constraints**: For rolling contact
 
+## Visual Output
+
+![Point on Circle](14_point_on_circle.svg)
+
 ## Key Takeaway
 
 Point-on-circle constraints enable circular motion paths while maintaining other geometric relationships. They're essential for any rotating or orbital mechanism design.

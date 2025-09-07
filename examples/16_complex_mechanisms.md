@@ -151,6 +151,10 @@ SLVSX is used for:
 - **Manufacturing**: Jigs and fixtures
 - **Education**: Teaching mechanical principles
 
+## Visual Output
+
+![Complex Mechanisms](16_complex_mechanisms.svg)
+
 ## Key Takeaways
 
 1. **Start simple**: Build complexity gradually

@@ -134,6 +134,10 @@ Key concepts for 3D constraint solving:
 3. **Workplanes**: Define 2D sketches in 3D space
 4. **Distance**: Works in 3D just like 2D
 
+## Visual Output
+
+![3D Basics](12_3d_basics.svg)
+
 ## Key Takeaway
 
 3D constraints work exactly like 2D ones - just add Z coordinates! The solver handles the third dimension naturally, making it easy to create spatial mechanisms and structures.

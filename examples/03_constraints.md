@@ -148,6 +148,12 @@ slvsx solve examples/03_correctly_constrained.json
 2. **Redundant constraints**: Don't apply multiple distance constraints to the same point pair
 3. **Conflicting requirements**: Don't ask for impossible combinations (like a triangle with sides 10, 10, and 100)
 
+## Visual Output
+
+![Properly Constrained System](03_constraints.svg)
+
+*This shows the properly constrained system. The over-constrained system cannot be visualized as it fails to solve.*
+
 ## Key Lessons
 
 ✅ **Good Practice**: Use the minimum constraints needed to define your geometry  

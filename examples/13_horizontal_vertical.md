@@ -133,6 +133,10 @@ But horizontal/vertical constraints are:
 - Computationally simpler
 - Less error-prone
 
+## Visual Output
+
+![Horizontal and Vertical](13_horizontal_vertical.svg)
+
 ## Key Takeaway
 
 Horizontal and vertical constraints are convenience shortcuts that make your constraint definitions clearer and more maintainable. Use them whenever you need axis-aligned geometry.

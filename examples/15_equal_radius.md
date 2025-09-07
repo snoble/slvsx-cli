@@ -117,6 +117,10 @@ Equal radius works well with:
 - **Tangent constraints**: Create gear-like arrangements
 - **Point on circle**: For planetary motion
 
+## Visual Output
+
+![Equal Radius](15_equal_radius.svg)
+
 ## Key Takeaway
 
 Equal radius constraints maintain size relationships between circles without fixing absolute dimensions. This is perfect for scalable designs where proportions matter more than exact measurements.
