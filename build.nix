@@ -11,6 +11,7 @@ pkgs.mkShell {
     wasm-pack
     wasm-bindgen-cli
     nodejs_20
+    emscripten  # For compiling libslvs to WASM
     
     # Build tools
     cmake

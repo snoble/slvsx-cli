@@ -96,6 +96,11 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Install Emscripten
+        uses: mymindstorm/setup-emsdk@v14
+        with:
+          version: 'latest'
+
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
         with:
@@ -105,10 +110,20 @@ jobs:
         run: |
           curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
 
+      - name: Build libslvs with Emscripten
+        run: |
+          cd libslvs/SolveSpaceLib
+          mkdir -p build-wasm
+          cd build-wasm
+          emcmake cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_GUI=OFF -DENABLE_TESTS=OFF
+          emmake make slvs-wasm -j$(nproc)
+          # Copy generated JS file for later packaging
+          cp src/slvs/slvs.js ../../../wasm-dist/libslvs.js || mkdir -p ../../../wasm-dist && cp src/slvs/slvs.js ../../../wasm-dist/libslvs.js
+
       - name: Build WASM module
         run: |
           cd crates/core
-          # Build WASM module with wasm feature (uses JS solver implementation)
+          # Build WASM module wrapper
           wasm-pack build --target web --features wasm --out-dir ../../wasm-dist
 
       - name: Create NPM package
