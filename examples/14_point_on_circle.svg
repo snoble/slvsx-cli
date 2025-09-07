@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-10.0 -10.0 120.0 120.0" width="800" height="800">
+  <circle id="p2" cx="50.000000" cy="90.000000" r="2" fill="black"/>
+  <circle id="path" cx="50.000000" cy="50.000000" r="40.000000" fill="none" stroke="black"/>
+  <line id="radius2" x1="50.000000" y1="50.000000" x2="50.000000" y2="90.000000" stroke="black"/>
+  <circle id="center" cx="50.000000" cy="50.000000" r="2" fill="black"/>
+  <line id="radius3" x1="50.000000" y1="50.000000" x2="10.000000" y2="50.000000" stroke="black"/>
+  <line id="radius1" x1="50.000000" y1="50.000000" x2="90.000000" y2="50.000000" stroke="black"/>
+  <circle id="p3" cx="10.000000" cy="50.000000" r="2" fill="black"/>
+  <circle id="p1" cx="90.000000" cy="50.000000" r="2" fill="black"/>
+</svg>

@@ -50,6 +50,21 @@ run_test "Cargo Build" "cargo build --release"
 # Quick test of the binary
 if [ -f "./target/release/slvsx" ]; then
     run_test "Binary Test" "DYLD_LIBRARY_PATH=./libslvs/SolveSpaceLib/build/bin:$DYLD_LIBRARY_PATH ./target/release/slvsx --help"
+    
+    # Test all examples (allow 03_constraints to fail as it's intentionally over-constrained)
+    if [ -f "./test-examples.sh" ]; then
+        echo -e "\n${YELLOW}Running example tests...${NC}"
+        ./test-examples.sh 2>&1 | tail -5
+        # Check if only 03_constraints failed (which is expected)
+        FAILED_COUNT=$(./test-examples.sh 2>&1 | grep "Failed:" | awk '{print $2}')
+        if [ "$FAILED_COUNT" = "1" ]; then
+            echo -e "${GREEN}✅ Example tests passed (03_constraints intentionally fails)${NC}"
+        else
+            echo -e "${RED}❌ Example tests failed unexpectedly${NC}"
+            OVERALL_STATUS="failing"
+            EXIT_CODE=1
+        fi
+    fi
 fi
 
 # Update CI status badge

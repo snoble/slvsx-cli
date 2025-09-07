@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-5.0 15.0 110.0 100.0" width="800" height="800">
+  <circle id="c2" cx="70.000000" cy="50.000000" r="15.000000" fill="none" stroke="black"/>
+  <circle id="c3" cx="50.000000" cy="80.000000" r="15.000000" fill="none" stroke="black"/>
+  <circle id="c1_center" cx="30.000000" cy="50.000000" r="2" fill="black"/>
+  <circle id="c1" cx="30.000000" cy="50.000000" r="15.000000" fill="none" stroke="black"/>
+  <circle id="c3_center" cx="50.000000" cy="80.000000" r="2" fill="black"/>
+  <circle id="c2_center" cx="70.000000" cy="50.000000" r="2" fill="black"/>
+</svg>

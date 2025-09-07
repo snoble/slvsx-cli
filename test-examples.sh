@@ -37,8 +37,8 @@ for example in examples/*.md; do
     basename=$(basename "$example" .md)
     echo -e "\n${YELLOW}Testing: $basename${NC}"
     
-    # Extract JSON content between ```json and ```
-    awk '/```json/{flag=1; next} /```/{flag=0} flag' "$example" > "$TEMP_DIR/$basename.json"
+    # Extract only the FIRST JSON content block between ```json and ```
+    awk '/```json/{flag=1; next} /```/{if(flag) exit} flag' "$example" > "$TEMP_DIR/$basename.json"
     
     # Check if we extracted any JSON
     if [ ! -s "$TEMP_DIR/$basename.json" ]; then

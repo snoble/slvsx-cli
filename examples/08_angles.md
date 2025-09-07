@@ -61,7 +61,7 @@ We'll create:
     },
     {
       "type": "horizontal",
-      "entity": "arm1"
+      "a": "arm1"
     },
     {
       "type": "distance",

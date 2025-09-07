@@ -78,19 +78,23 @@ We'll create:
     },
     {
       "type": "parallel",
-      "entities": ["AB", "CD"]
+      "a": "AB",
+      "b": "CD"
     },
     {
       "type": "parallel",
-      "entities": ["BC", "DA"]
+      "a": "BC",
+      "b": "DA"
     },
     {
       "type": "equal_length",
-      "entities": ["AB", "CD"]
+      "a": "AB",
+      "b": "CD"
     },
     {
       "type": "equal_length",
-      "entities": ["BC", "DA"]
+      "a": "BC",
+      "b": "DA"
     }
   ]
 }

@@ -82,13 +82,13 @@ We'll create:
     },
     {
       "type": "coincident",
-      "entities": ["top_left", "top_right"],
-      "_comment": "Force the two top points to meet, creating a triangle"
+      "at": "top_left",
+      "of": ["top_right"]
     },
     {
       "type": "coincident",
-      "entities": ["apex", "top_left"],
-      "_comment": "All three points meet at the same location"
+      "at": "top_left",
+      "of": ["apex"]
     }
   ]
 }

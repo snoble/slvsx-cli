@@ -26,11 +26,11 @@ Every SLVSX document has this structure:
 
 ```json
 {
-  "schema": "slvs-json/1",     // Version identifier
-  "units": "mm",                // Units (mm, inch, etc.)
-  "parameters": {},             // Named values you can reference
-  "entities": [],               // Points, lines, circles, etc.
-  "constraints": []             // Relationships between entities
+  "schema": "slvs-json/1",
+  "units": "mm",
+  "parameters": {},
+  "entities": [],
+  "constraints": []
 }
 ```
 

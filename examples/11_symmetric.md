@@ -102,14 +102,24 @@ We'll create:
       "line": "axis"
     },
     {
-      "type": "symmetric",
-      "points": ["left_barb", "right_barb"],
-      "line": "axis"
+      "type": "distance",
+      "between": ["axis_top", "left_barb"],
+      "value": 28.28
     },
     {
-      "type": "symmetric",
-      "points": ["left_base", "right_base"],
-      "line": "axis"
+      "type": "distance",
+      "between": ["axis_top", "right_barb"],
+      "value": 28.28
+    },
+    {
+      "type": "distance",
+      "between": ["axis_bottom", "left_base"],
+      "value": 5
+    },
+    {
+      "type": "distance",
+      "between": ["axis_bottom", "right_base"],
+      "value": 5
     },
     {
       "type": "distance",
@@ -127,9 +137,9 @@ We'll create:
 
 ## Understanding the Code
 
-- **`symmetric` constraint**: Mirrors points across a line
-- **One-sided dimensions**: Only constrain one side, symmetry handles the other
-- **Axis of symmetry**: Can be any line, not just vertical/horizontal
+- **Simulating symmetry**: Using equal distance constraints to create symmetric appearance
+- **Equal distances**: Points equidistant from axis appear symmetric
+- **Manual balancing**: Without a true symmetric constraint, we manually ensure equal distances
 
 ## The Solution
 
@@ -161,12 +171,12 @@ Perfect mirror symmetry across the vertical axis!
 - **Art & Graphics**: Logos, patterns, mandalas
 - **Biology-inspired**: Wing shapes, leaf patterns
 
-## Symmetry Types
+## Achieving Symmetry
 
-SLVSX supports several symmetry modes:
-- `symmetric`: Mirror across any line
-- `symmetric_horizontal`: Mirror across horizontal axis
-- `symmetric_vertical`: Mirror across vertical axis
+While SLVSX doesn't have a built-in symmetric constraint, you can achieve symmetry by:
+- Using equal distance constraints from a central axis
+- Carefully positioning points with distance constraints
+- Using coincident constraints with midpoints
 
 ## Key Takeaway
 

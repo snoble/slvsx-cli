@@ -74,19 +74,21 @@ We'll create a rectangle using:
     },
     {
       "type": "horizontal",
-      "entity": "AB"
+      "a": "AB"
     },
     {
       "type": "vertical",
-      "entity": "DA"
+      "a": "DA"
     },
     {
       "type": "parallel",
-      "entities": ["AB", "CD"]
+      "a": "AB",
+      "b": "CD"
     },
     {
       "type": "parallel",
-      "entities": ["BC", "DA"]
+      "a": "BC",
+      "b": "DA"
     },
     {
       "type": "distance",
@@ -135,7 +137,8 @@ We could replace the parallel constraints with perpendicular:
 ```json
 {
   "type": "perpendicular",
-  "entities": ["AB", "BC"]
+  "a": "AB",
+  "b": "BC"
 }
 ```
 

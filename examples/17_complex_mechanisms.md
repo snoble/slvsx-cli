@@ -84,15 +84,73 @@ Understanding DOF is crucial:
 - Solver found solution but it's not manufacturable
 - Adjust positions or tooth counts
 
-## Advanced Features
+## Example: Simple Four-Bar Linkage
 
-**Parameters**: Make designs adjustable
+Here's a complete four-bar linkage mechanism:
+
 ```json
-"parameters": {
-  "link_length": 100,
-  "crank_angle": 45
+{
+  "schema": "slvs-json/1",
+  "units": "mm",
+  "parameters": {
+    "link1": 40,
+    "link2": 60,
+    "link3": 50,
+    "link4": 70
+  },
+  "entities": [
+    {
+      "type": "point",
+      "id": "A",
+      "at": [0, 0, 0]
+    },
+    {
+      "type": "point",
+      "id": "B",
+      "at": [40, 0, 0]
+    },
+    {
+      "type": "point",
+      "id": "C",
+      "at": [60, 40, 0]
+    },
+    {
+      "type": "point",
+      "id": "D",
+      "at": [20, 50, 0]
+    }
+  ],
+  "constraints": [
+    {
+      "type": "fixed",
+      "entity": "A"
+    },
+    {
+      "type": "fixed",
+      "entity": "B"
+    },
+    {
+      "type": "distance",
+      "between": ["A", "D"],
+      "value": "$link1"
+    },
+    {
+      "type": "distance",
+      "between": ["D", "C"],
+      "value": "$link2"
+    },
+    {
+      "type": "distance",
+      "between": ["C", "B"],
+      "value": "$link3"
+    }
+  ]
 }
 ```
+
+## Advanced Features
+
+**Parameters**: Make designs adjustable by defining variables that can be referenced throughout
 
 **Expressions**: Use in constraints
 ```json

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-20.0 -20.0 140.0 140.0" width="800" height="800">
+  <line id="z_line" x1="0.000000" y1="0.000000" x2="0.000000" y2="0.000000" stroke="black"/>
+  <line id="y_line" x1="0.000000" y1="0.000000" x2="0.000000" y2="100.000000" stroke="black"/>
+  <circle id="y_axis" cx="0.000000" cy="100.000000" r="2" fill="black"/>
+  <circle id="origin" cx="0.000000" cy="0.000000" r="2" fill="black"/>
+  <line id="diagonal" x1="0.000000" y1="0.000000" x2="49.998533" y2="49.998533" stroke="black"/>
+  <circle id="x_axis" cx="100.000000" cy="0.000000" r="2" fill="black"/>
+  <line id="x_line" x1="0.000000" y1="0.000000" x2="100.000000" y2="0.000000" stroke="black"/>
+  <circle id="z_axis" cx="0.000000" cy="0.000000" r="2" fill="black"/>
+  <circle id="space_point" cx="49.998533" cy="49.998533" r="2" fill="black"/>
+</svg>
