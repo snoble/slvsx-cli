@@ -1,0 +1,474 @@
+{
+  "schema": "slvs-json/1",
+  "units": "mm",
+  "parameters": {
+    "panel_length": 500,
+    "bridge_height": 500,
+    "member_length_diagonal": 707.1067811865476,
+    "support_width": 50
+  },
+  "entities": [
+    {
+      "type": "point",
+      "id": "T0",
+      "at": [
+        0,
+        500,
+        0
+      ]
+    },
+    {
+      "type": "point",
+      "id": "T1",
+      "at": [
+        500,
+        500,
+        0
+      ]
+    },
+    {
+      "type": "point",
+      "id": "T2",
+      "at": [
+        1000,
+        500,
+        0
+      ]
+    },
+    {
+      "type": "point",
+      "id": "T3",
+      "at": [
+        1500,
+        500,
+        0
+      ]
+    },
+    {
+      "type": "point",
+      "id": "T4",
+      "at": [
+        2000,
+        500,
+        0
+      ]
+    },
+    {
+      "type": "point",
+      "id": "T5",
+      "at": [
+        2500,
+        500,
+        0
+      ]
+    },
+    {
+      "type": "point",
+      "id": "T6",
+      "at": [
+        3000,
+        500,
+        0
+      ]
+    },
+    {
+      "type": "line",
+      "id": "TOP0",
+      "p1": "T0",
+      "p2": "T1"
+    },
+    {
+      "type": "line",
+      "id": "TOP1",
+      "p1": "T1",
+      "p2": "T2"
+    },
+    {
+      "type": "line",
+      "id": "TOP2",
+      "p1": "T2",
+      "p2": "T3"
+    },
+    {
+      "type": "line",
+      "id": "TOP3",
+      "p1": "T3",
+      "p2": "T4"
+    },
+    {
+      "type": "line",
+      "id": "TOP4",
+      "p1": "T4",
+      "p2": "T5"
+    },
+    {
+      "type": "line",
+      "id": "TOP5",
+      "p1": "T5",
+      "p2": "T6"
+    },
+    {
+      "type": "point",
+      "id": "B0",
+      "at": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "point",
+      "id": "B1",
+      "at": [
+        500,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "point",
+      "id": "B2",
+      "at": [
+        1000,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "point",
+      "id": "B3",
+      "at": [
+        1500,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "point",
+      "id": "B4",
+      "at": [
+        2000,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "point",
+      "id": "B5",
+      "at": [
+        2500,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "point",
+      "id": "B6",
+      "at": [
+        3000,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "line",
+      "id": "BOT0",
+      "p1": "B0",
+      "p2": "B1"
+    },
+    {
+      "type": "line",
+      "id": "BOT1",
+      "p1": "B1",
+      "p2": "B2"
+    },
+    {
+      "type": "line",
+      "id": "BOT2",
+      "p1": "B2",
+      "p2": "B3"
+    },
+    {
+      "type": "line",
+      "id": "BOT3",
+      "p1": "B3",
+      "p2": "B4"
+    },
+    {
+      "type": "line",
+      "id": "BOT4",
+      "p1": "B4",
+      "p2": "B5"
+    },
+    {
+      "type": "line",
+      "id": "BOT5",
+      "p1": "B5",
+      "p2": "B6"
+    },
+    {
+      "type": "line",
+      "id": "WEB0_UR",
+      "p1": "B0",
+      "p2": "T1"
+    },
+    {
+      "type": "line",
+      "id": "WEB1_UL",
+      "p1": "B2",
+      "p2": "T1"
+    },
+    {
+      "type": "line",
+      "id": "WEB2_UR",
+      "p1": "B2",
+      "p2": "T3"
+    },
+    {
+      "type": "line",
+      "id": "WEB3_UL",
+      "p1": "B4",
+      "p2": "T3"
+    },
+    {
+      "type": "line",
+      "id": "WEB4_UR",
+      "p1": "B4",
+      "p2": "T5"
+    },
+    {
+      "type": "line",
+      "id": "WEB5_UL",
+      "p1": "B6",
+      "p2": "T5"
+    },
+    {
+      "type": "line",
+      "id": "VERT0",
+      "p1": "B1",
+      "p2": "T1"
+    },
+    {
+      "type": "line",
+      "id": "VERT1",
+      "p1": "B3",
+      "p2": "T3"
+    },
+    {
+      "type": "line",
+      "id": "VERT2",
+      "p1": "B4",
+      "p2": "T4"
+    }
+  ],
+  "constraints": [
+    {
+      "type": "fixed",
+      "entity": "B0"
+    },
+    {
+      "type": "fixed",
+      "entity": "B6"
+    },
+    {
+      "type": "distance",
+      "between": [
+        "B0",
+        "B1"
+      ],
+      "value": ""
+    },
+    {
+      "type": "distance",
+      "between": [
+        "T0",
+        "T1"
+      ],
+      "value": ""
+    },
+    {
+      "type": "distance",
+      "between": [
+        "B1",
+        "B2"
+      ],
+      "value": ""
+    },
+    {
+      "type": "distance",
+      "between": [
+        "T1",
+        "T2"
+      ],
+      "value": ""
+    },
+    {
+      "type": "distance",
+      "between": [
+        "B2",
+        "B3"
+      ],
+      "value": ""
+    },
+    {
+      "type": "distance",
+      "between": [
+        "T2",
+        "T3"
+      ],
+      "value": ""
+    },
+    {
+      "type": "distance",
+      "between": [
+        "B3",
+        "B4"
+      ],
+      "value": ""
+    },
+    {
+      "type": "distance",
+      "between": [
+        "T3",
+        "T4"
+      ],
+      "value": ""
+    },
+    {
+      "type": "distance",
+      "between": [
+        "B4",
+        "B5"
+      ],
+      "value": ""
+    },
+    {
+      "type": "distance",
+      "between": [
+        "T4",
+        "T5"
+      ],
+      "value": ""
+    },
+    {
+      "type": "distance",
+      "between": [
+        "B5",
+        "B6"
+      ],
+      "value": ""
+    },
+    {
+      "type": "distance",
+      "between": [
+        "T5",
+        "T6"
+      ],
+      "value": ""
+    },
+    {
+      "type": "distance",
+      "between": [
+        "B0",
+        "T0"
+      ],
+      "value": ""
+    },
+    {
+      "type": "distance",
+      "between": [
+        "B1",
+        "T1"
+      ],
+      "value": ""
+    },
+    {
+      "type": "distance",
+      "between": [
+        "B2",
+        "T2"
+      ],
+      "value": ""
+    },
+    {
+      "type": "distance",
+      "between": [
+        "B3",
+        "T3"
+      ],
+      "value": ""
+    },
+    {
+      "type": "distance",
+      "between": [
+        "B4",
+        "T4"
+      ],
+      "value": ""
+    },
+    {
+      "type": "distance",
+      "between": [
+        "B5",
+        "T5"
+      ],
+      "value": ""
+    },
+    {
+      "type": "distance",
+      "between": [
+        "B6",
+        "T6"
+      ],
+      "value": ""
+    },
+    {
+      "type": "distance",
+      "between": [
+        "B0",
+        "T1"
+      ],
+      "value": ""
+    },
+    {
+      "type": "distance",
+      "between": [
+        "B2",
+        "T1"
+      ],
+      "value": ""
+    },
+    {
+      "type": "distance",
+      "between": [
+        "B2",
+        "T3"
+      ],
+      "value": ""
+    },
+    {
+      "type": "distance",
+      "between": [
+        "B4",
+        "T3"
+      ],
+      "value": ""
+    },
+    {
+      "type": "distance",
+      "between": [
+        "B4",
+        "T5"
+      ],
+      "value": ""
+    },
+    {
+      "type": "distance",
+      "between": [
+        "B6",
+        "T5"
+      ],
+      "value": ""
+    }
+  ]
+}

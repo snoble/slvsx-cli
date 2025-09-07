@@ -1,0 +1,101 @@
+{
+  "schema": "slvs-json/1",
+  "units": "mm",
+  "parameters": {
+    "edge_length": 50.0
+  },
+  "entities": [
+    {
+      "type": "point",
+      "id": "A",
+      "at": [0, 0, 0]
+    },
+    {
+      "type": "point",
+      "id": "B",
+      "at": [50, 0, 0]
+    },
+    {
+      "type": "point",
+      "id": "C",
+      "at": [25, 43, 0]
+    },
+    {
+      "type": "point",
+      "id": "D",
+      "at": [25, 14, 35]
+    },
+    {
+      "type": "line",
+      "id": "AB",
+      "p1": "A",
+      "p2": "B"
+    },
+    {
+      "type": "line",
+      "id": "BC",
+      "p1": "B",
+      "p2": "C"
+    },
+    {
+      "type": "line",
+      "id": "CA",
+      "p1": "C",
+      "p2": "A"
+    },
+    {
+      "type": "line",
+      "id": "AD",
+      "p1": "A",
+      "p2": "D"
+    },
+    {
+      "type": "line",
+      "id": "BD",
+      "p1": "B",
+      "p2": "D"
+    },
+    {
+      "type": "line",
+      "id": "CD",
+      "p1": "C",
+      "p2": "D"
+    }
+  ],
+  "constraints": [
+    {
+      "type": "fixed",
+      "entity": "A"
+    },
+    {
+      "type": "distance",
+      "between": ["A", "B"],
+      "value": "$edge_length"
+    },
+    {
+      "type": "distance",
+      "between": ["B", "C"],
+      "value": "$edge_length"
+    },
+    {
+      "type": "distance",
+      "between": ["C", "A"],
+      "value": "$edge_length"
+    },
+    {
+      "type": "distance",
+      "between": ["A", "D"],
+      "value": "$edge_length"
+    },
+    {
+      "type": "distance",
+      "between": ["B", "D"],
+      "value": "$edge_length"
+    },
+    {
+      "type": "distance",
+      "between": ["C", "D"],
+      "value": "$edge_length"
+    }
+  ]
+}

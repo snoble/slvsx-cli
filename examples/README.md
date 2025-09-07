@@ -1,6 +1,50 @@
 # SLVSX Examples
 
-This directory contains examples demonstrating SLVSX's capabilities for solving various mechanical constraint problems.
+This directory contains comprehensive examples demonstrating all capabilities of the SLVSX constraint solver. Each example includes:
+- JSON constraint specification
+- Detailed documentation (`.md` file where applicable) 
+- Generated SVG visualization
+- Verified solver output
+
+## 🔧 Basic Constraint Examples
+
+### [01. Basic Distance Constraint](01_basic_distance.md)
+**File:** `01_basic_distance.json`
+
+Demonstrates fundamental distance constraints between two points. Shows how the solver positions points to satisfy exact distance requirements.
+
+![Basic Distance](outputs/01_basic_distance.svg)
+
+### [02. Equilateral Triangle](02_triangle.md) 
+**File:** `02_triangle.json`
+
+Creates a triangle with all sides equal length using multiple distance constraints. Demonstrates simultaneous constraint solving.
+
+![Triangle](outputs/02_triangle.svg)
+
+### [03. Understanding Constraints](03_constraints.md)
+**Files:** `03_overconstrained.json`, `03_correctly_constrained.json`
+
+Shows the difference between properly constrained and over-constrained systems. Critical for understanding constraint design.
+
+## 🏗️ 3D Examples
+
+### [04. 3D Regular Tetrahedron](04_3d_tetrahedron.md)
+**File:** `04_3d_tetrahedron.json`
+
+Demonstrates 3D constraint solving by creating a regular tetrahedron with all edges equal length.
+
+**XY View:** ![Tetrahedron XY](outputs/04_3d_tetrahedron_xy.svg)
+**XZ View:** ![Tetrahedron XZ](outputs/04_3d_tetrahedron_xz.svg)
+
+## ⭕ Circle Examples
+
+### 05. Circles with Distance Constraints
+**File:** `05_circles.json`
+
+Shows how to work with circles and constrain their center distances.
+
+![Circles](outputs/05_circles.svg)
 
 ## 🔗 Linkage Analysis
 

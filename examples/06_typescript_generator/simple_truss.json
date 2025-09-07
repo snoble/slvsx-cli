@@ -1,0 +1,135 @@
+{
+  "schema": "slvs-json/1",
+  "units": "mm",
+  "parameters": {
+    "bay_width": 500.0,
+    "truss_height": 400.0
+  },
+  "entities": [
+    {
+      "type": "point",
+      "id": "bottom_left",
+      "at": [0, 0, 0]
+    },
+    {
+      "type": "point",
+      "id": "bottom_mid",
+      "at": [500, 0, 0]
+    },
+    {
+      "type": "point",
+      "id": "bottom_right",
+      "at": [1000, 0, 0]
+    },
+    {
+      "type": "point",
+      "id": "top_left",
+      "at": [0, 400, 0]
+    },
+    {
+      "type": "point",
+      "id": "top_mid",
+      "at": [500, 400, 0]
+    },
+    {
+      "type": "point",
+      "id": "top_right",
+      "at": [1000, 400, 0]
+    },
+    {
+      "type": "line",
+      "id": "bottom_chord_1",
+      "p1": "bottom_left",
+      "p2": "bottom_mid"
+    },
+    {
+      "type": "line",
+      "id": "bottom_chord_2",
+      "p1": "bottom_mid",
+      "p2": "bottom_right"
+    },
+    {
+      "type": "line",
+      "id": "top_chord_1",
+      "p1": "top_left",
+      "p2": "top_mid"
+    },
+    {
+      "type": "line",
+      "id": "top_chord_2",
+      "p1": "top_mid",
+      "p2": "top_right"
+    },
+    {
+      "type": "line",
+      "id": "vertical_left",
+      "p1": "bottom_left",
+      "p2": "top_left"
+    },
+    {
+      "type": "line",
+      "id": "vertical_mid",
+      "p1": "bottom_mid",
+      "p2": "top_mid"
+    },
+    {
+      "type": "line",
+      "id": "vertical_right",
+      "p1": "bottom_right",
+      "p2": "top_right"
+    },
+    {
+      "type": "line",
+      "id": "diagonal_1",
+      "p1": "bottom_left",
+      "p2": "top_mid"
+    },
+    {
+      "type": "line",
+      "id": "diagonal_2",
+      "p1": "bottom_mid",
+      "p2": "top_right"
+    }
+  ],
+  "constraints": [
+    {
+      "type": "fixed",
+      "entity": "bottom_left"
+    },
+    {
+      "type": "distance",
+      "between": ["bottom_left", "bottom_mid"],
+      "value": "$bay_width"
+    },
+    {
+      "type": "distance",
+      "between": ["bottom_mid", "bottom_right"],
+      "value": "$bay_width"
+    },
+    {
+      "type": "distance",
+      "between": ["top_left", "top_mid"],
+      "value": "$bay_width"
+    },
+    {
+      "type": "distance",
+      "between": ["top_mid", "top_right"],
+      "value": "$bay_width"
+    },
+    {
+      "type": "distance",
+      "between": ["bottom_left", "top_left"],
+      "value": "$truss_height"
+    },
+    {
+      "type": "distance",
+      "between": ["bottom_mid", "top_mid"],
+      "value": "$truss_height"
+    },
+    {
+      "type": "distance",
+      "between": ["bottom_right", "top_right"],
+      "value": "$truss_height"
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "schema": "slvs-json/1",
+  "units": "mm",
+  "parameters": {
+    "circle_diameter": 40.0,
+    "center_distance": 60.0
+  },
+  "entities": [
+    {
+      "type": "point",
+      "id": "center1",
+      "at": [0, 0, 0]
+    },
+    {
+      "type": "point",
+      "id": "center2",
+      "at": [100, 100, 0]
+    },
+    {
+      "type": "circle",
+      "id": "circle1",
+      "center": [0, 0, 0],
+      "diameter": "$circle_diameter"
+    },
+    {
+      "type": "circle",
+      "id": "circle2",
+      "center": ["$center_distance", 0, 0],
+      "diameter": "$circle_diameter"
+    }
+  ],
+  "constraints": [
+    {
+      "type": "fixed",
+      "entity": "center1"
+    },
+    {
+      "type": "distance",
+      "between": ["center1", "center2"],
+      "value": "$center_distance"
+    }
+  ]
+}

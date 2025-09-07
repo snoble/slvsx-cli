@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-20.0 -20.0 1040.0 440.0" width="800" height="800">
+  <line id="vertical_right" x1="1000.000000" y1="0.000000" x2="1000.000000" y2="400.000000" stroke="black"/>
+  <circle id="bottom_mid" cx="500.000000" cy="0.000000" r="2" fill="black"/>
+  <line id="bottom_chord_2" x1="500.000000" y1="0.000000" x2="1000.000000" y2="0.000000" stroke="black"/>
+  <circle id="bottom_left" cx="0.000000" cy="0.000000" r="2" fill="black"/>
+  <circle id="bottom_right" cx="1000.000000" cy="0.000000" r="2" fill="black"/>
+  <line id="top_chord_2" x1="500.000000" y1="400.000000" x2="1000.000000" y2="400.000000" stroke="black"/>
+  <line id="diagonal_1" x1="0.000000" y1="0.000000" x2="500.000000" y2="400.000000" stroke="black"/>
+  <circle id="top_right" cx="1000.000000" cy="400.000000" r="2" fill="black"/>
+  <circle id="top_left" cx="0.000000" cy="400.000000" r="2" fill="black"/>
+  <line id="top_chord_1" x1="0.000000" y1="400.000000" x2="500.000000" y2="400.000000" stroke="black"/>
+  <line id="bottom_chord_1" x1="0.000000" y1="0.000000" x2="500.000000" y2="0.000000" stroke="black"/>
+  <line id="vertical_mid" x1="500.000000" y1="0.000000" x2="500.000000" y2="400.000000" stroke="black"/>
+  <line id="vertical_left" x1="0.000000" y1="0.000000" x2="0.000000" y2="400.000000" stroke="black"/>
+  <circle id="top_mid" cx="500.000000" cy="400.000000" r="2" fill="black"/>
+  <line id="diagonal_2" x1="500.000000" y1="0.000000" x2="1000.000000" y2="400.000000" stroke="black"/>
+</svg>
