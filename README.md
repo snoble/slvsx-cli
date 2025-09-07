@@ -6,6 +6,7 @@ A command-line interface and library for the SolveSpace geometric constraint sol
 
 - **JSON-based constraint specification** - Define geometric constraints using a simple, type-safe JSON schema
 - **Multi-language support** - Use from Rust, JavaScript/TypeScript (via WASM), or any language that can generate JSON
+- **MCP Server** - Use with Claude Desktop and other AI assistants via Model Context Protocol
 - **Type-safe workflow** - Rust types → JSON Schema → TypeScript/Python types, ensuring compatibility across languages
 - **Cross-platform** - Native binaries for Linux, macOS, Windows, plus WASM for browsers/Node.js
 - **Comprehensive constraint support** - Points, lines, circles, distance/angle/perpendicular constraints, and more
@@ -50,6 +51,26 @@ await init();
 const solver = new WasmSolver();
 const result = solver.solve(constraintJson);
 ```
+
+### MCP Server (for Claude Desktop)
+
+```bash
+npm install -g @slvsx/mcp-server
+```
+
+Then add to Claude Desktop config:
+```json
+{
+  "mcpServers": {
+    "slvsx": {
+      "command": "npx",
+      "args": ["@slvsx/mcp-server"]
+    }
+  }
+}
+```
+
+See [MCP_README.md](MCP_README.md) for detailed setup.
 
 ## Usage
 

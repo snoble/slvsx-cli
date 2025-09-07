@@ -1,0 +1,59 @@
+{
+  "schema": "slvs-json/1",
+  "units": "mm",
+  "entities": [
+    {
+      "id": "base_left",
+      "type": "Point",
+      "x": 0,
+      "y": 0
+    },
+    {
+      "id": "base_right", 
+      "type": "Point",
+      "x": 100,
+      "y": 0
+    },
+    {
+      "id": "apex",
+      "type": "Point",
+      "x": 50,
+      "y": 50
+    },
+    {
+      "id": "left_side",
+      "type": "Line",
+      "points": ["base_left", "apex"]
+    },
+    {
+      "id": "right_side",
+      "type": "Line",
+      "points": ["base_right", "apex"]
+    },
+    {
+      "id": "base",
+      "type": "Line",
+      "points": ["base_left", "base_right"]
+    }
+  ],
+  "constraints": [
+    {
+      "type": "Fixed",
+      "entity": "base_left"
+    },
+    {
+      "type": "Fixed",
+      "entity": "base_right"
+    },
+    {
+      "type": "Distance",
+      "entities": ["base_left", "apex"],
+      "distance": 80
+    },
+    {
+      "type": "Distance",
+      "entities": ["base_right", "apex"],
+      "distance": 80
+    }
+  ]
+}
