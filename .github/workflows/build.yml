@@ -58,16 +58,14 @@ jobs:
           
           echo "Building minimal mimalloc..."
           
-          # Build minimal mimalloc (just the core)
-          $CC -c $CFLAGS -I../extlib/mimalloc/include ../extlib/mimalloc/src/heap.c -o heap.o
-          $CC -c $CFLAGS -I../extlib/mimalloc/include ../extlib/mimalloc/src/alloc.c -o alloc.o
-          $CC -c $CFLAGS -I../extlib/mimalloc/include ../extlib/mimalloc/src/init.c -o init.o
-          $CC -c $CFLAGS -I../extlib/mimalloc/include ../extlib/mimalloc/src/os.c -o os.o
-          $CC -c $CFLAGS -I../extlib/mimalloc/include ../extlib/mimalloc/src/page.c -o page.o
-          $CC -c $CFLAGS -I../extlib/mimalloc/include ../extlib/mimalloc/src/segment.c -o segment.o
-          $CC -c $CFLAGS -I../extlib/mimalloc/include ../extlib/mimalloc/src/arena.c -o arena.o
-          $CC -c $CFLAGS -I../extlib/mimalloc/include ../extlib/mimalloc/src/stats.c -o stats.o
-          $CC -c $CFLAGS -I../extlib/mimalloc/include ../extlib/mimalloc/src/options.c -o options.o
+          # Build all mimalloc C files
+          for f in ../extlib/mimalloc/src/*.c; do
+            if [[ -f "$f" ]]; then
+              base=$(basename "$f" .c)
+              echo "  Compiling $base.c"
+              $CC -c $CFLAGS -I../extlib/mimalloc/include "$f" -o "$base.o"
+            fi
+          done
           
           echo "Building minimal static libslvs..."
           
@@ -84,10 +82,10 @@ jobs:
           
           echo "Creating static library..."
           
-          # Create the static library including mimalloc
+          # Create the static library including all mimalloc objects
           ar rcs libslvs.a \
               util.o entity.o expr.o constrainteq.o system.o platformbase.o lib.o \
-              heap.o alloc.o init.o os.o page.o segment.o arena.o stats.o options.o
+              *.o
           
           # Create the expected directory structure
           mkdir -p ../build/src/slvs
