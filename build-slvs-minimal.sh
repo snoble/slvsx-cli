@@ -12,8 +12,21 @@ cd build-minimal
 
 # Compiler flags
 CXX="${CXX:-c++}"
+CC="${CC:-cc}"
 CXXFLAGS="-O3 -fPIC -std=c++11 -DLIBRARY -DSTATIC_LIB"
+CFLAGS="-O3 -fPIC"
 INCLUDES="-I../include -I../src -I../extlib/eigen -I../extlib/mimalloc/include"
+
+echo "Building minimal mimalloc..."
+
+# Build minimal mimalloc (just the core)
+$CC -c $CFLAGS -I../extlib/mimalloc/include ../extlib/mimalloc/src/heap.c -o heap.o
+$CC -c $CFLAGS -I../extlib/mimalloc/include ../extlib/mimalloc/src/alloc.c -o alloc.o
+$CC -c $CFLAGS -I../extlib/mimalloc/include ../extlib/mimalloc/src/init.c -o init.o
+$CC -c $CFLAGS -I../extlib/mimalloc/include ../extlib/mimalloc/src/os.c -o os.o
+$CC -c $CFLAGS -I../extlib/mimalloc/include ../extlib/mimalloc/src/page.c -o page.o
+$CC -c $CFLAGS -I../extlib/mimalloc/include ../extlib/mimalloc/src/segment.c -o segment.o
+$CC -c $CFLAGS -I../extlib/mimalloc/include ../extlib/mimalloc/src/arena.c -o arena.o
 
 echo "Compiling solver core files..."
 
@@ -30,15 +43,10 @@ $CXX -c $CXXFLAGS $INCLUDES ../src/slvs/lib.cpp -o lib.o
 
 echo "Creating static library..."
 
-# Create the static library
+# Create the static library including mimalloc
 ar rcs libslvs.a \
-    util.o \
-    entity.o \
-    expr.o \
-    constrainteq.o \
-    system.o \
-    platformbase.o \
-    lib.o
+    util.o entity.o expr.o constrainteq.o system.o platformbase.o lib.o \
+    heap.o alloc.o init.o os.o page.o segment.o arena.o
 
 # Create the expected directory structure
 mkdir -p ../build/src/slvs
