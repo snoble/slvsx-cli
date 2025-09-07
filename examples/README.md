@@ -36,7 +36,7 @@ These examples are designed to be read in order, building from simple concepts t
 14. **[Horizontal & Vertical](13_horizontal_vertical.md)** - Axis alignment shortcuts
 15. **[Point on Circle](14_point_on_circle.md)** - Circular motion paths
 16. **[Equal Radius](15_equal_radius.md)** - Matching circle sizes
-17. **[Complex Mechanisms](16_complex_mechanisms.md)** - Putting it all together
+16. **[Complex Mechanisms](16_complex_mechanisms.md)** - Putting it all together
 
 
 ## 📐 Parameter Studies
@@ -45,17 +45,12 @@ Most examples include parameters that can be varied:
 
 ```bash
 # Explore design space by varying parameters
-slvsx solve examples/testdata/four_bar_linkage.json \
-  --param link2_length=60 \
-  --param link3_length=90 \
-  --param input_angle=30
+slvsx solve examples/16_complex_mechanisms.json \
+  --param link1=45 \
+  --param link2=65
 
-# Batch analysis with different configurations
-for angle in 0 30 60 90 120 150 180; do
-  slvsx solve examples/testdata/four_bar_linkage.json \
-    --param input_angle=$angle \
-    --export svg -o "linkage_${angle}deg.svg"
-done
+# Export visualization
+slvsx export --format svg examples/16_complex_mechanisms.json -o mechanism.svg
 ```
 
 ## 🎯 AI Agent Examples

@@ -138,11 +138,8 @@ The solver positions the points at:
 
 All 6 edges are exactly 50mm long, forming a perfect regular tetrahedron.
 
-### XY View (Top-down)
-![Tetrahedron XY View](outputs/04_3d_tetrahedron_xy.svg)
-
-### XZ View (Side)
-![Tetrahedron XZ View](outputs/04_3d_tetrahedron_xz.svg)
+### Visual Output
+![Tetrahedron](04_3d_tetrahedron.svg)
 
 ## Key Concepts
 
