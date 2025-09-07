@@ -1,8 +1,15 @@
 # SLVSX Examples
 
-This directory contains comprehensive examples demonstrating all capabilities of the SLVSX constraint solver. Each example includes:
-- JSON constraint specification
-- Detailed documentation (`.md` file where applicable) 
+A comprehensive tutorial series for learning geometric constraint solving with SLVSX.
+
+## Getting Started
+
+These examples are designed to be read in order, building from simple concepts to complex mechanisms. Each example includes:
+
+- **Story & Motivation**: Why this constraint matters
+- **Complete JSON**: Copy-paste ready examples
+- **Actual Output**: Real results from the SLVSX solver
+- **Visualizations**: SVG outputs showing the solution 
 - Generated SVG visualization
 - Verified solver output
 

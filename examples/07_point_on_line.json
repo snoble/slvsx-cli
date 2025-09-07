@@ -1,0 +1,56 @@
+{
+  "schema": "slvs-json/1",
+  "units": "mm",
+  "entities": [
+    {
+      "type": "point",
+      "id": "rail_start",
+      "at": [0, 0, 0]
+    },
+    {
+      "type": "point",
+      "id": "rail_end",
+      "at": [100, 0, 0]
+    },
+    {
+      "type": "line",
+      "id": "rail",
+      "p1": "rail_start",
+      "p2": "rail_end"
+    },
+    {
+      "type": "point",
+      "id": "slider",
+      "at": [30, 5, 0]
+    },
+    {
+      "type": "point",
+      "id": "target",
+      "at": [40, 50, 0]
+    }
+  ],
+  "constraints": [
+    {
+      "type": "fixed",
+      "entity": "rail_start"
+    },
+    {
+      "type": "fixed",
+      "entity": "rail_end"
+    },
+    {
+      "type": "fixed",
+      "entity": "target"
+    },
+    {
+      "type": "point_on_line",
+      "point": "slider",
+      "line": "rail"
+    },
+    {
+      "type": "distance",
+      "between": ["slider", "target"],
+      "value": 30
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "schema": "slvs-json/1",
+  "units": "mm",
+  "parameters": {
+    "circle1_diameter": 40.0,
+    "circle2_diameter": 60.0
+  },
+  "entities": [
+    {
+      "type": "point",
+      "id": "center1",
+      "at": [0, 0, 0]
+    },
+    {
+      "type": "point",
+      "id": "center2",
+      "at": [60, 0, 0]
+    },
+    {
+      "type": "circle",
+      "id": "circle1",
+      "center": [0, 0, 0],
+      "diameter": "$circle1_diameter"
+    },
+    {
+      "type": "circle",
+      "id": "circle2",
+      "center": [60, 0, 0],
+      "diameter": "$circle2_diameter"
+    }
+  ],
+  "constraints": [
+    {
+      "type": "fixed",
+      "entity": "center1"
+    },
+    {
+      "type": "distance",
+      "between": ["center1", "center2"],
+      "value": 50.0,
+      "_comment": "Sum of radii: 20 + 30 = 50 for tangent circles"
+    }
+  ]
+}
