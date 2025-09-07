@@ -1,0 +1,18 @@
+{
+  "status": "ok",
+  "diagnostics": {
+    "iters": 1,
+    "residual": 0.0,
+    "dof": 0,
+    "time_ms": 1
+  },
+  "entities": {
+    "origin": {
+      "at": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    }
+  }
+}
