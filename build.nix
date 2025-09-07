@@ -10,9 +10,6 @@ pkgs.mkShell {
     cargo-tarpaulin  # For code coverage
     cargo-audit      # Security auditing
     
-    # Cross-compilation support
-    pkgsCross.aarch64-multiplatform.stdenv.cc
-    
     # Build tools
     cmake
     gnumake

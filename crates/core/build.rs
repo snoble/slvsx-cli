@@ -11,12 +11,13 @@ fn main() {
         cc::Build::new()
             .file(project_root.join("ffi/real_slvs_wrapper.c"))
             .include(project_root.join("ffi"))
-            .include(project_root.join("SolveSpaceLib/libslvs/include"))
+            .include(project_root.join("libslvs/SolveSpaceLib/libslvs/include"))
+            .include(project_root.join("libslvs/SolveSpaceLib/libslvs"))
             .compile("real_slvs_wrapper");
         
         println!("cargo:rustc-link-lib=static=real_slvs_wrapper");
         println!("cargo:rustc-link-search=native={}", 
-                 project_root.join("SolveSpaceLib/build/libslvs").display());
+                 project_root.join("libslvs/SolveSpaceLib/libslvs/build").display());
         println!("cargo:rustc-link-lib=dylib=libslvs");
     }
 }

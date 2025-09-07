@@ -1,13 +1,14 @@
 name: Release
 
 on:
-  push:
-    tags:
-      - 'v*'
+  # Disabled until real libslvs integration is complete
+  # push:
+  #   tags:
+  #     - 'v*'
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Tag to release'
+        description: 'Tag to release (DISABLED - libslvs integration needed)'
         required: true
         default: 'v0.1.0'
 
@@ -59,26 +60,18 @@ jobs:
           authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
           skipPush: ${{ secrets.CACHIX_AUTH_TOKEN == '' }}
 
-      - name: Build libslvs (Linux/macOS)
-        if: matrix.os != 'windows-latest'
+      - name: Install libslvs headers
         run: |
-          nix-shell build.nix --run "
-            cd libslvs/SolveSpaceLib/libslvs
-            mkdir -p build
-            cd build
-            cmake .. -DCMAKE_BUILD_TYPE=Release
-            make -j$(nproc || sysctl -n hw.ncpu)
-          "
+          # For now, use mock solver until we get proper libslvs integration
+          echo "Using mock solver for CI builds"
 
       - name: Build static binary
         run: |
           nix-shell build.nix --run "
             export CARGO_TARGET_DIR=target
-            export PKG_CONFIG_PATH=$(pwd)/libslvs/SolveSpaceLib/libslvs/build:$PKG_CONFIG_PATH
-            export LIBRARY_PATH=$(pwd)/libslvs/SolveSpaceLib/libslvs/build:$LIBRARY_PATH
-            export LD_LIBRARY_PATH=$(pwd)/libslvs/SolveSpaceLib/libslvs/build:$LD_LIBRARY_PATH
             
-            # Build with static linking
+            # Build with mock solver for release (temporary)
+            # TODO: Integrate proper libslvs build
             cargo build --release --target ${{ matrix.target }} --features mock-solver
           "
 

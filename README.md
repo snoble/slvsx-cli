@@ -1,6 +1,8 @@
 # SLVSX - SolveSpace Constraint Solver CLI
 
-A command-line interface for the SolveSpace geometric constraint solver, designed for programmatic generation and solving of complex mechanical systems like planetary gears.
+> **⚠️ DEVELOPMENT STATUS**: This project is under active development. The CLI framework and JSON interface are complete, but libslvs integration is still in progress. Currently using a mock solver for testing.
+
+A command-line interface for the SolveSpace geometric constraint solver that turns mechanical design from manual sketching and complex math into simple constraint specification. Perfect for AI agents and automated mechanical system generation.
 
 ## Features
 
@@ -56,45 +58,72 @@ slvsx export input.json --format svg --output output.svg
 slvsx export input.json --format stl --output output.stl
 ```
 
-### JSON Format
+### Example: Four-Bar Linkage
+
+Without SLVSX, designing a four-bar linkage requires:
+- **Complex trigonometry** to solve the position equations
+- **Iterative calculations** for different input angles
+- **Manual verification** that the linkage doesn't bind or reach singularities
+- **Guess-and-check** for link length optimization
+
+With SLVSX, you simply specify the constraints:
 
 ```json
 {
-  "schema": "slvs-json/1",
+  "schema": "slvs-json/1", 
   "units": "mm",
   "parameters": {
-    "module": 2.0,
-    "sun_teeth": 24,
-    "planet_teeth": 12,
-    "ring_teeth": 72
+    "link1_length": 50.0,
+    "link2_length": 80.0, 
+    "link3_length": 70.0,
+    "link4_length": 40.0,
+    "input_angle": 45.0
   },
   "entities": [
-    {
-      "type": "gear",
-      "id": "sun",
-      "center": [0, 0, 0],
-      "teeth": "$sun_teeth",
-      "module": "$module",
-      "internal": false
-    }
+    {"type": "point", "id": "ground_a", "at": [0, 0, 0]},
+    {"type": "point", "id": "ground_b", "at": ["$link1_length", 0, 0]},
+    {"type": "point", "id": "joint_p", "at": [10, 10, 0]},
+    {"type": "point", "id": "joint_q", "at": [30, 20, 0]},
+    {"type": "line", "id": "input_link", "p1": "ground_a", "p2": "joint_p"},
+    {"type": "line", "id": "coupler", "p1": "joint_p", "p2": "joint_q"},
+    {"type": "line", "id": "output_link", "p1": "joint_q", "p2": "ground_b"}
   ],
   "constraints": [
-    {
-      "type": "mesh",
-      "gear1": "sun",
-      "gear2": "planet1"
-    }
+    {"type": "fixed", "entity": "ground_a"},
+    {"type": "fixed", "entity": "ground_b"}, 
+    {"type": "distance", "between": ["ground_a", "joint_p"], "value": "$link2_length"},
+    {"type": "distance", "between": ["joint_p", "joint_q"], "value": "$link3_length"},
+    {"type": "distance", "between": ["joint_q", "ground_b"], "value": "$link4_length"},
+    {"type": "angle", "between": ["ground_link", "input_link"], "value": "$input_angle"}
   ]
 }
+```
+
+The solver automatically:
+✅ Calculates exact joint positions  
+✅ Handles the complex trigonometry  
+✅ Validates the configuration is feasible  
+✅ Enables parameter sweeps for optimization  
+
+```bash
+# Solve the linkage - no math required!
+slvsx solve examples/testdata/four_bar_linkage.json
+
+# Trace the mechanism by varying input angle
+for angle in 0 30 60 90 120 150 180; do
+  slvsx solve four_bar_linkage.json --param input_angle=$angle
+done
 ```
 
 ## Examples
 
 See the `examples/` directory for complete examples including:
-- Simple gear pairs
-- Planetary gear systems
-- Double planetary systems with triangular meshing
-- Complex multi-stage gear trains
+- **Four-bar linkages** - Motion analysis without complex trigonometry
+- **Simple gear pairs** - Automatic center distance calculation
+- **Planetary systems** - Complex gear trains solved automatically  
+- **Constraint problems** - Let the solver find valid configurations
+
+Each example shows how SLVSX replaces manual math and guesswork with simple constraint specification.
 
 ## Development
 
