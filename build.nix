@@ -1,20 +1,9 @@
 { pkgs ? import (fetchTarball "https://github.com/NixOS/nixpkgs/archive/nixos-unstable.tar.gz") {} }:
 
-let
-  # Use Mozilla's Rust overlay for better Rust support
-  rustPlatform = pkgs.makeRustPlatform {
-    cargo = pkgs.cargo;
-    rustc = pkgs.rustc;
-  };
-in
 pkgs.mkShell {
   buildInputs = with pkgs; [
-    # Rust toolchain - using the default from nixpkgs which includes proc-macro support
-    cargo
-    rustc
-    rustfmt
-    clippy
-    rust-analyzer
+    # Use rustup for managing Rust versions
+    rustup
     
     # For code coverage and security
     cargo-tarpaulin
@@ -55,6 +44,13 @@ pkgs.mkShell {
   shellHook = ''
     echo "SLVSX Development Environment"
     echo "=============================="
+    
+    # Ensure stable Rust is installed
+    if ! rustup toolchain list | grep -q "stable"; then
+      echo "Installing stable Rust toolchain..."
+      rustup toolchain install stable
+    fi
+    rustup default stable
     
     echo "Building libslvs..."
     

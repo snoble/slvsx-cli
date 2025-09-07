@@ -1,7 +1,7 @@
 # SLVSX - SolveSpace Constraint Solver CLI
 
 <!-- CI Status Badge - Updated by run-ci-local.sh -->
-![CI Status](https://img.shields.io/badge/CI-passing-success)
+![CI Status](https://img.shields.io/badge/CI-failing-critical)
 
 A command-line interface and library for the SolveSpace geometric constraint solver, providing JSON-based constraint specification with multi-language support through WASM.
 
@@ -31,15 +31,46 @@ curl -L https://github.com/snoble/slvsx-cli/releases/latest/download/slvsx-linux
 # Download slvsx-windows-x86_64.exe.zip and extract
 ```
 
-### From Source
+### Building From Source
+
+#### Prerequisites
+- CMake, Make, and a C++ compiler
+- Rust toolchain (stable 1.74+) 
+- Git with submodule support
+
+#### Build Steps
 
 ```bash
-git clone https://github.com/snoble/slvsx-cli.git
-cd slvsx-cli
-nix-shell build.nix  # Sets up complete dev environment
+# Clone repository with submodules
+git clone --recursive https://github.com/snoble/slvsx-cli.git
+cd slvsx-cli/slvsx/slvsx-cli
+
+# Build libslvs static library
+cd libslvs/SolveSpaceLib
+mkdir -p build
+cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release
+make slvs_static -j$(nproc)
+cd ../../..
+
+# Build slvsx (now with static linking - no runtime dependencies!)
 cargo build --release
 ./target/release/slvsx --help
 ```
+
+#### Using Nix (Recommended)
+
+For a reproducible build environment with all dependencies:
+
+```bash
+git clone --recursive https://github.com/snoble/slvsx-cli.git
+cd slvsx-cli/slvsx/slvsx-cli
+nix-shell build.nix  # Installs all dependencies and builds libslvs
+cargo build --release
+./target/release/slvsx --help
+```
+
+The resulting binary is statically linked against libslvs and can be run anywhere without additional dependencies.
 
 ### WASM Module (JavaScript/TypeScript)
 

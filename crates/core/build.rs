@@ -22,6 +22,11 @@ fn main() {
                 .join("libslvs/SolveSpaceLib/build/bin")
                 .display()
         );
-        println!("cargo:rustc-link-lib=dylib=slvs");
+        // Link the static library and its dependencies
+        println!("cargo:rustc-link-lib=static=slvs");
+        println!("cargo:rustc-link-lib=static=mimalloc");
+        
+        // System libraries needed by libslvs
+        println!("cargo:rustc-link-lib=c++");
     }
 }

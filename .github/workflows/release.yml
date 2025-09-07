@@ -49,24 +49,34 @@ jobs:
             experimental-features = nix-command flakes
             access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
 
-      - name: Setup Cachix
-        uses: cachix/cachix-action@v12
-        with:
-          name: slvsx
-          authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
-          skipPush: ${{ secrets.CACHIX_AUTH_TOKEN == '' }}
+      # Cachix disabled - not configured
+      # - name: Setup Cachix
+      #   uses: cachix/cachix-action@v12
+      #   with:
+      #     name: slvsx
+      #     authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
+      #     skipPush: ${{ secrets.CACHIX_AUTH_TOKEN == '' }}
 
-      - name: Install libslvs headers
+      - name: Build libslvs static library
         run: |
-          # For now, use mock solver until we get proper libslvs integration
-          echo "Using mock solver for CI builds"
+          cd libslvs/SolveSpaceLib
+          mkdir -p build
+          cd build
+          cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_STATIC=ON
+          make slvs_static -j$(nproc)
+          cd ../../..
 
       - name: Build static binary
         run: |
           nix-shell build.nix --run "
+            # Install stable Rust if needed
+            rustup toolchain install stable
+            rustup default stable
+            rustup target add ${{ matrix.target }}
+            
             export CARGO_TARGET_DIR=target
             
-            # Build with real libslvs
+            # Build with static libslvs
             cargo build --release --target ${{ matrix.target }}
           "
 
@@ -199,7 +209,6 @@ jobs:
             ### Features
             - JSON-based constraint specification
             - SVG/DXF/STL export
-            - Gear meshing validation
             - Two-phase solving (geometry + phases)
             
             Built with Nix for reproducible, static binaries.
