@@ -42,42 +42,43 @@ jobs:
           
       - name: Build libslvs (static)
         run: |
-          # Try the full build first
           cd libslvs/SolveSpaceLib
-          mkdir -p build
-          cd build
           
-          # Try to build with full CMake
-          if cmake .. -DCMAKE_BUILD_TYPE=Release \
-                      -DBUILD_SHARED_LIBS=OFF \
-                      -DENABLE_GUI=OFF \
-                      -DENABLE_TESTS=OFF \
-                      -DENABLE_OPENGL=OFF 2>/dev/null; then
-            echo "Full CMake succeeded, building slvs target..."
-            make slvs_static -j$(nproc 2>/dev/null || sysctl -n hw.ncpu) || make slvs -j$(nproc 2>/dev/null || sysctl -n hw.ncpu)
-          else
-            echo "Full build failed, using minimal build approach..."
-            cd ../..
-            # Build only the essential slvs library files
-            mkdir -p build-minimal
-            cd build-minimal
-            
-            # Use direct compilation of slvs library
-            c++ -c -O3 -fPIC -std=c++11 \
-                -I../SolveSpaceLib/include \
-                -I../SolveSpaceLib/src \
-                -I../SolveSpaceLib/extlib/eigen \
-                ../SolveSpaceLib/src/slvs/lib.cpp \
-                -o slvs.o
-            
-            # Create static library
-            ar rcs libslvs.a slvs.o
-            mkdir -p ../SolveSpaceLib/build/src/slvs
-            cp libslvs.a ../SolveSpaceLib/build/src/slvs/
-          fi
+          # Clean any previous builds
+          rm -rf build-minimal
+          mkdir -p build-minimal
+          cd build-minimal
           
-          # Find and display all static libraries
-          find .. -name "*.a" -ls
+          # Compiler flags
+          CXX="${CXX:-c++}"
+          CXXFLAGS="-O3 -fPIC -std=c++11 -DLIBRARY -DSTATIC_LIB"
+          INCLUDES="-I../include -I../src -I../extlib/eigen -I../extlib/mimalloc/include"
+          
+          echo "Building minimal static libslvs..."
+          
+          # Compile the core solver files
+          $CXX -c $CXXFLAGS $INCLUDES ../src/util.cpp -o util.o
+          $CXX -c $CXXFLAGS $INCLUDES ../src/entity.cpp -o entity.o
+          $CXX -c $CXXFLAGS $INCLUDES ../src/expr.cpp -o expr.o
+          $CXX -c $CXXFLAGS $INCLUDES ../src/constrainteq.cpp -o constrainteq.o
+          $CXX -c $CXXFLAGS $INCLUDES ../src/system.cpp -o system.o
+          $CXX -c $CXXFLAGS $INCLUDES ../src/platform/platformbase.cpp -o platformbase.o
+          
+          # Compile the slvs library interface
+          $CXX -c $CXXFLAGS $INCLUDES ../src/slvs/lib.cpp -o lib.o
+          
+          echo "Creating static library..."
+          
+          # Create the static library
+          ar rcs libslvs.a util.o entity.o expr.o constrainteq.o system.o platformbase.o lib.o
+          
+          # Create the expected directory structure
+          mkdir -p ../build/src/slvs
+          cp libslvs.a ../build/src/slvs/
+          
+          echo "Library created:"
+          ls -la libslvs.a
+          ar -t libslvs.a
           
       - name: Build slvsx (static)
         run: |
