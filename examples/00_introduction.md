@@ -44,8 +44,33 @@ Start with the first example:
 
 ## Quick Reference
 
-- **Entities**: point, line, circle, arc, workplane
-- **Constraints**: fixed, distance, angle, parallel, perpendicular, coincident, and many more
+- **Entities**: point, line, circle, arc, gear, plane
+- **Constraints**: fixed, distance, angle, parallel, perpendicular, coincident, equal_length, equal_radius, symmetric, horizontal, vertical, point_on_line, point_on_circle, tangent, mesh
 - **Parameters**: Use `$name` to reference a parameter value
+
+## Complete Example Index
+
+### Fundamentals
+1. [Your First Point](01_first_point.md) - Fixed constraints and reference points
+2. [Distance Constraints](02_distance_constraint.md) - Setting distances with parameters
+3. [Lines and Length](03_lines_and_length.md) - Line entities and their behavior
+4. [Building a Triangle](04_triangle.md) - Combining multiple constraints
+
+### Geometric Relationships
+5. [Parallel and Perpendicular](05_parallel_perpendicular.md) - Angular relationships
+6. [Working with Circles](06_circles.md) - Circles and tangent constraints
+7. [Point on Line](07_point_on_line.md) - Sliding motion along paths
+8. [Angle Constraints](08_angles.md) - Precise angular control
+
+### Advanced Constraints
+9. [Coincident Points](09_coincident.md) - Points meeting at junctions
+10. [Equal Length](10_equal_length.md) - Maintaining equal sizes
+11. [Symmetric Constraints](11_symmetric.md) - Mirror symmetry
+12. [3D Basics](12_3d_basics.md) - Working in three dimensions
+13. [Horizontal & Vertical](13_horizontal_vertical.md) - Axis alignment shortcuts
+14. [Point on Circle](14_point_on_circle.md) - Circular motion paths
+15. [Equal Radius](15_equal_radius.md) - Matching circle sizes
+16. [Mesh Constraint (Gears)](16_mesh.md) - Gear tooth engagement
+17. [Complex Mechanisms](17_complex_mechanisms.md) - Putting it all together
 
 Let's begin!

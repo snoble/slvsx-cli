@@ -1,0 +1,73 @@
+{
+  "schema": "slvs-json/1",
+  "units": "mm",
+  "entities": [
+    {
+      "type": "point",
+      "id": "left",
+      "at": [0, 50, 0]
+    },
+    {
+      "type": "point",
+      "id": "right",
+      "at": [100, 50, 0]
+    },
+    {
+      "type": "point",
+      "id": "middle",
+      "at": [50, 50, 0]
+    },
+    {
+      "type": "line",
+      "id": "horizontal",
+      "p1": "left",
+      "p2": "right"
+    },
+    {
+      "type": "point",
+      "id": "triangle_top",
+      "at": [50, 100, 0]
+    },
+    {
+      "type": "line",
+      "id": "left_side",
+      "p1": "left",
+      "p2": "triangle_top"
+    },
+    {
+      "type": "line",
+      "id": "right_side",
+      "p1": "right",
+      "p2": "triangle_top"
+    },
+    {
+      "type": "line",
+      "id": "median",
+      "p1": "middle",
+      "p2": "triangle_top"
+    }
+  ],
+  "constraints": [
+    {
+      "type": "fixed",
+      "entity": "left"
+    },
+    {
+      "type": "fixed",
+      "entity": "right"
+    },
+    {
+      "type": "midpoint",
+      "point": "middle",
+      "line": "horizontal"
+    },
+    {
+      "type": "equal_length",
+      "entities": ["left_side", "right_side"]
+    },
+    {
+      "type": "perpendicular",
+      "entities": ["horizontal", "median"]
+    }
+  ]
+}

@@ -1,0 +1,63 @@
+{
+  "schema": "slvs-json/1",
+  "units": "mm",
+  "entities": [
+    {
+      "type": "point",
+      "id": "c1_center",
+      "at": [30, 50, 0]
+    },
+    {
+      "type": "point",
+      "id": "c2_center",
+      "at": [70, 50, 0]
+    },
+    {
+      "type": "point",
+      "id": "c3_center",
+      "at": [50, 80, 0]
+    },
+    {
+      "type": "circle",
+      "id": "c1",
+      "center": [30, 50, 0],
+      "diameter": 30
+    },
+    {
+      "type": "circle",
+      "id": "c2",
+      "center": [70, 50, 0],
+      "diameter": 30
+    },
+    {
+      "type": "circle",
+      "id": "c3",
+      "center": [50, 80, 0],
+      "diameter": 30
+    }
+  ],
+  "constraints": [
+    {
+      "type": "fixed",
+      "entity": "c1_center"
+    },
+    {
+      "type": "fixed",
+      "entity": "c2_center"
+    },
+    {
+      "type": "fixed",
+      "entity": "c3_center"
+    },
+    {
+      "type": "equal_radius",
+      "a": "c1",
+      "b": "c2"
+    },
+    {
+      "type": "equal_radius",
+      "a": "c2",
+      "b": "c3"
+    }
+  ]
+}

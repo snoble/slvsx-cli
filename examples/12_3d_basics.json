@@ -1,0 +1,78 @@
+{
+  "schema": "slvs-json/1",
+  "units": "mm",
+  "entities": [
+    {
+      "type": "point",
+      "id": "origin",
+      "at": [0, 0, 0]
+    },
+    {
+      "type": "point",
+      "id": "x_axis",
+      "at": [100, 0, 0]
+    },
+    {
+      "type": "point",
+      "id": "y_axis",
+      "at": [0, 100, 0]
+    },
+    {
+      "type": "point",
+      "id": "z_axis",
+      "at": [0, 0, 100]
+    },
+    {
+      "type": "point",
+      "id": "space_point",
+      "at": [50, 50, 50]
+    },
+    {
+      "type": "line",
+      "id": "x_line",
+      "p1": "origin",
+      "p2": "x_axis"
+    },
+    {
+      "type": "line",
+      "id": "y_line",
+      "p1": "origin",
+      "p2": "y_axis"
+    },
+    {
+      "type": "line",
+      "id": "z_line",
+      "p1": "origin",
+      "p2": "z_axis"
+    },
+    {
+      "type": "line",
+      "id": "diagonal",
+      "p1": "origin",
+      "p2": "space_point"
+    }
+  ],
+  "constraints": [
+    {
+      "type": "fixed",
+      "entity": "origin"
+    },
+    {
+      "type": "fixed",
+      "entity": "x_axis"
+    },
+    {
+      "type": "fixed",
+      "entity": "y_axis"
+    },
+    {
+      "type": "fixed",
+      "entity": "z_axis"
+    },
+    {
+      "type": "distance",
+      "between": ["origin", "space_point"],
+      "value": 86.6
+    }
+  ]
+}

@@ -1,0 +1,75 @@
+{
+  "schema": "slvs-json/1",
+  "units": "mm",
+  "entities": [
+    {
+      "type": "point",
+      "id": "center",
+      "at": [50, 50, 0]
+    },
+    {
+      "type": "circle",
+      "id": "path",
+      "center": [50, 50, 0],
+      "diameter": 80
+    },
+    {
+      "type": "point",
+      "id": "p1",
+      "at": [90, 50, 0]
+    },
+    {
+      "type": "point",
+      "id": "p2",
+      "at": [50, 90, 0]
+    },
+    {
+      "type": "point",
+      "id": "p3",
+      "at": [10, 50, 0]
+    },
+    {
+      "type": "line",
+      "id": "radius1",
+      "p1": "center",
+      "p2": "p1"
+    },
+    {
+      "type": "line",
+      "id": "radius2",
+      "p1": "center",
+      "p2": "p2"
+    },
+    {
+      "type": "line",
+      "id": "radius3",
+      "p1": "center",
+      "p2": "p3"
+    }
+  ],
+  "constraints": [
+    {
+      "type": "fixed",
+      "entity": "center"
+    },
+    {
+      "type": "fixed",
+      "entity": "path"
+    },
+    {
+      "type": "point_on_circle",
+      "point": "p1",
+      "circle": "path"
+    },
+    {
+      "type": "point_on_circle",
+      "point": "p2",
+      "circle": "path"
+    },
+    {
+      "type": "point_on_circle",
+      "point": "p3",
+      "circle": "path"
+    }
+  ]
+}

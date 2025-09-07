@@ -1,0 +1,106 @@
+{
+  "schema": "slvs-json/1",
+  "units": "mm",
+  "entities": [
+    {
+      "type": "point",
+      "id": "axis_top",
+      "at": [50, 100, 0]
+    },
+    {
+      "type": "point",
+      "id": "axis_bottom",
+      "at": [50, 0, 0]
+    },
+    {
+      "type": "line",
+      "id": "axis",
+      "p1": "axis_bottom",
+      "p2": "axis_top"
+    },
+    {
+      "type": "point",
+      "id": "tip",
+      "at": [50, 100, 0]
+    },
+    {
+      "type": "point",
+      "id": "left_barb",
+      "at": [30, 80, 0]
+    },
+    {
+      "type": "point",
+      "id": "right_barb",
+      "at": [70, 80, 0]
+    },
+    {
+      "type": "point",
+      "id": "left_base",
+      "at": [45, 0, 0]
+    },
+    {
+      "type": "point",
+      "id": "right_base",
+      "at": [55, 0, 0]
+    },
+    {
+      "type": "line",
+      "id": "left_side",
+      "p1": "tip",
+      "p2": "left_barb"
+    },
+    {
+      "type": "line",
+      "id": "right_side",
+      "p1": "tip",
+      "p2": "right_barb"
+    },
+    {
+      "type": "line",
+      "id": "left_shaft",
+      "p1": "left_barb",
+      "p2": "left_base"
+    },
+    {
+      "type": "line",
+      "id": "right_shaft",
+      "p1": "right_barb",
+      "p2": "right_base"
+    }
+  ],
+  "constraints": [
+    {
+      "type": "fixed",
+      "entity": "axis_bottom"
+    },
+    {
+      "type": "fixed",
+      "entity": "axis_top"
+    },
+    {
+      "type": "point_on_line",
+      "point": "tip",
+      "line": "axis"
+    },
+    {
+      "type": "symmetric",
+      "points": ["left_barb", "right_barb"],
+      "line": "axis"
+    },
+    {
+      "type": "symmetric",
+      "points": ["left_base", "right_base"],
+      "line": "axis"
+    },
+    {
+      "type": "distance",
+      "between": ["tip", "left_barb"],
+      "value": 30
+    },
+    {
+      "type": "distance",
+      "between": ["left_barb", "left_base"],
+      "value": 85
+    }
+  ]
+}

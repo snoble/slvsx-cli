@@ -1,0 +1,51 @@
+{
+  "schema": "slvs-json/1",
+  "units": "mm",
+  "entities": [
+    {
+      "type": "point",
+      "id": "sun_center",
+      "at": [100, 100, 0]
+    },
+    {
+      "type": "gear",
+      "id": "sun",
+      "center": [100, 100, 0],
+      "teeth": 30,
+      "module": 2.0,
+      "pressure_angle": 20.0,
+      "rotation": 0
+    },
+    {
+      "type": "point",
+      "id": "planet_center",
+      "at": [145, 100, 0]
+    },
+    {
+      "type": "gear",
+      "id": "planet",
+      "center": [145, 100, 0],
+      "teeth": 15,
+      "module": 2.0,
+      "pressure_angle": 20.0,
+      "rotation": 0
+    }
+  ],
+  "constraints": [
+    {
+      "type": "fixed",
+      "entity": "sun_center"
+    },
+    {
+      "type": "distance",
+      "between": ["sun_center", "planet_center"],
+      "value": 45,
+      "_comment": "Center distance = module * (teeth1 + teeth2) / 2 = 2 * (30 + 15) / 2 = 45"
+    },
+    {
+      "type": "mesh",
+      "gear1": "sun",
+      "gear2": "planet"
+    }
+  ]
+}

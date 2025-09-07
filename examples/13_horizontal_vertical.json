@@ -1,0 +1,75 @@
+{
+  "schema": "slvs-json/1",
+  "units": "mm",
+  "entities": [
+    {
+      "type": "point",
+      "id": "origin",
+      "at": [0, 0, 0]
+    },
+    {
+      "type": "point",
+      "id": "top",
+      "at": [10, 100, 0]
+    },
+    {
+      "type": "point",
+      "id": "right",
+      "at": [100, 10, 0]
+    },
+    {
+      "type": "point",
+      "id": "corner",
+      "at": [100, 100, 0]
+    },
+    {
+      "type": "line",
+      "id": "vertical_line",
+      "p1": "origin",
+      "p2": "top"
+    },
+    {
+      "type": "line",
+      "id": "horizontal_line",
+      "p1": "origin",
+      "p2": "right"
+    },
+    {
+      "type": "line",
+      "id": "diagonal",
+      "p1": "origin",
+      "p2": "corner"
+    }
+  ],
+  "constraints": [
+    {
+      "type": "fixed",
+      "entity": "origin"
+    },
+    {
+      "type": "vertical",
+      "a": "vertical_line"
+    },
+    {
+      "type": "horizontal",
+      "a": "horizontal_line"
+    },
+    {
+      "type": "distance",
+      "between": ["origin", "top"],
+      "value": 100
+    },
+    {
+      "type": "distance",
+      "between": ["origin", "right"],
+      "value": 100
+    },
+    {
+      "type": "angle",
+      "between": ["horizontal_line", "diagonal"],
+      "a": "horizontal_line",
+      "b": "diagonal",
+      "value": 45
+    }
+  ]
+}

@@ -1,0 +1,78 @@
+{
+  "schema": "slvs-json/1",
+  "units": "mm",
+  "entities": [
+    {
+      "type": "plane",
+      "id": "xy_plane",
+      "origin": [0, 0, 0],
+      "normal": [0, 0, 1]
+    },
+    {
+      "type": "plane",
+      "id": "tilted_plane",
+      "origin": [0, 0, 50],
+      "normal": [0, 0.707, 0.707]
+    },
+    {
+      "type": "point",
+      "id": "p1_xy",
+      "at": [50, 50, 0]
+    },
+    {
+      "type": "point",
+      "id": "p2_xy",
+      "at": [100, 50, 0]
+    },
+    {
+      "type": "point",
+      "id": "p1_tilted",
+      "at": [50, 35.35, 85.35]
+    },
+    {
+      "type": "point",
+      "id": "p2_tilted",
+      "at": [100, 35.35, 85.35]
+    },
+    {
+      "type": "line",
+      "id": "line_xy",
+      "p1": "p1_xy",
+      "p2": "p2_xy"
+    },
+    {
+      "type": "line",
+      "id": "line_tilted",
+      "p1": "p1_tilted",
+      "p2": "p2_tilted"
+    }
+  ],
+  "constraints": [
+    {
+      "type": "fixed",
+      "entity": "xy_plane"
+    },
+    {
+      "type": "fixed",
+      "entity": "tilted_plane"
+    },
+    {
+      "type": "fixed",
+      "entity": "p1_xy"
+    },
+    {
+      "type": "distance",
+      "between": ["p1_xy", "p2_xy"],
+      "value": 50
+    },
+    {
+      "type": "fixed",
+      "entity": "p1_tilted"
+    },
+    {
+      "type": "distance",
+      "between": ["p1_tilted", "p2_tilted"],
+      "value": 50
+    }
+  ]
+}

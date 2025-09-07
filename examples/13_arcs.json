@@ -1,0 +1,60 @@
+{
+  "schema": "slvs-json/1",
+  "units": "mm",
+  "entities": [
+    {
+      "type": "point",
+      "id": "center",
+      "at": [50, 50, 0]
+    },
+    {
+      "type": "point",
+      "id": "start",
+      "at": [100, 50, 0]
+    },
+    {
+      "type": "point",
+      "id": "end",
+      "at": [50, 100, 0]
+    },
+    {
+      "type": "arc",
+      "id": "quarter_circle",
+      "center": "center",
+      "start": "start",
+      "end": "end"
+    },
+    {
+      "type": "point",
+      "id": "tangent_center",
+      "at": [150, 50, 0]
+    },
+    {
+      "type": "circle",
+      "id": "tangent_circle",
+      "center": "tangent_center",
+      "diameter": 100
+    }
+  ],
+  "constraints": [
+    {
+      "type": "fixed",
+      "entity": "center"
+    },
+    {
+      "type": "distance",
+      "between": ["center", "start"],
+      "value": 50
+    },
+    {
+      "type": "distance",
+      "between": ["center", "end"],
+      "value": 50
+    },
+    {
+      "type": "tangent",
+      "a": "quarter_circle",
+      "b": "tangent_circle"
+    }
+  ]
+}
