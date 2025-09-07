@@ -46,7 +46,10 @@ jobs:
           mkdir -p build
           cd build
           cmake .. -DCMAKE_BUILD_TYPE=Release
-          make slvs_static -j$(nproc 2>/dev/null || sysctl -n hw.ncpu)
+          make -j$(nproc 2>/dev/null || sysctl -n hw.ncpu)
+          # Ensure the library is in the expected location
+          mkdir -p bin
+          find . -name "*.a" -exec cp {} bin/ \;
           
       - name: Build slvsx
         run: cargo build --release
