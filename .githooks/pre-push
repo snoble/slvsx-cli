@@ -1,0 +1,40 @@
+#!/bin/bash
+
+# Pre-push hook to remind about running CI
+
+YELLOW='\033[1;33m'
+RED='\033[0;31m'
+NC='\033[0m' # No Color
+
+echo -e "${YELLOW}================================================${NC}"
+echo -e "${YELLOW}        PRE-PUSH CI REMINDER${NC}"
+echo -e "${YELLOW}================================================${NC}"
+
+# Check when CI was last run
+if [ -f ci-latest-results.md ]; then
+    LAST_RUN=$(grep "Run completed at" ci-latest-results.md | tail -1)
+    echo -e "Last CI run: $LAST_RUN"
+    
+    # Check if CI passed
+    if grep -q "✅ PASSED" ci-latest-results.md; then
+        echo -e "Last CI status: ✅ PASSED"
+    else
+        echo -e "${RED}Last CI status: ❌ FAILED${NC}"
+        echo -e "${RED}Warning: Last CI run failed!${NC}"
+    fi
+else
+    echo -e "${RED}No CI results found!${NC}"
+fi
+
+echo ""
+echo "To run CI locally before pushing:"
+echo "  ./run-ci-local.sh"
+echo ""
+echo "To run CI and push results:"
+echo "  ./run-ci-local.sh --push"
+echo ""
+echo -e "${YELLOW}Proceeding with push...${NC}"
+echo ""
+
+# Allow push to continue
+exit 0

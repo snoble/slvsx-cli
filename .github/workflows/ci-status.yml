@@ -1,0 +1,44 @@
+name: CI Status
+
+on:
+  # Only run when we push CI results
+  push:
+    paths:
+      - 'ci-latest-results.md'
+      - 'ci-results/**'
+  
+  # Allow manual trigger
+  workflow_dispatch:
+
+jobs:
+  display-status:
+    name: Display CI Status
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Display Latest CI Results
+        run: |
+          echo "## Latest CI Results"
+          if [ -f ci-latest-results.md ]; then
+            cat ci-latest-results.md
+          else
+            echo "No CI results found. Run ./run-ci-local.sh locally."
+          fi
+
+      - name: Check Status
+        run: |
+          if [ -f ci-latest-results.md ]; then
+            if grep -q "✅ PASSED" ci-latest-results.md; then
+              echo "CI Status: PASSING ✅"
+              exit 0
+            else
+              echo "CI Status: FAILING ❌"
+              exit 1
+            fi
+          else
+            echo "No CI results available"
+            exit 0
+          fi
