@@ -40,65 +40,29 @@ jobs:
           toolchain: stable
           override: true
           
-      - name: Build libslvs (static)
+      - name: Build libslvs-static
         run: |
-          cd libslvs/SolveSpaceLib
+          # Build our forked libslvs-static (includes mimalloc)
+          cd libslvs-static
+          mkdir -p build
+          cd build
           
-          # Clean any previous builds
-          rm -rf build-minimal
-          mkdir -p build-minimal
-          cd build-minimal
+          # Configure with CMake
+          cmake .. -DCMAKE_BUILD_TYPE=Release
           
-          # Compiler flags
-          CXX="${CXX:-c++}"
-          CC="${CC:-cc}"
-          CXXFLAGS="-O3 -fPIC -std=c++11 -DLIBRARY -DSTATIC_LIB"
-          CFLAGS="-O3 -fPIC"
-          INCLUDES="-I../include -I../src -I../extlib/eigen -I../extlib/mimalloc/include"
+          # Build the combined static library
+          make -j$(nproc 2>/dev/null || sysctl -n hw.ncpu)
           
-          echo "Building minimal mimalloc..."
+          echo "Libraries created:"
+          ls -la *.a
           
-          # Build all mimalloc C files
-          for f in ../extlib/mimalloc/src/*.c; do
-            if [[ -f "$f" ]]; then
-              base=$(basename "$f" .c)
-              echo "  Compiling $base.c"
-              $CC -c $CFLAGS -I../extlib/mimalloc/include "$f" -o "$base.o"
-            fi
-          done
-          
-          echo "Building minimal static libslvs..."
-          
-          # Compile the core solver files
-          $CXX -c $CXXFLAGS $INCLUDES ../src/util.cpp -o util.o
-          $CXX -c $CXXFLAGS $INCLUDES ../src/entity.cpp -o entity.o
-          $CXX -c $CXXFLAGS $INCLUDES ../src/expr.cpp -o expr.o
-          $CXX -c $CXXFLAGS $INCLUDES ../src/constrainteq.cpp -o constrainteq.o
-          $CXX -c $CXXFLAGS $INCLUDES ../src/system.cpp -o system.o
-          $CXX -c $CXXFLAGS $INCLUDES ../src/platform/platformbase.cpp -o platformbase.o
-          
-          # Compile the slvs library interface
-          $CXX -c $CXXFLAGS $INCLUDES ../src/slvs/lib.cpp -o lib.o
-          
-          echo "Creating static library..."
-          
-          # Create the static library including all mimalloc objects
-          ar rcs libslvs.a \
-              util.o entity.o expr.o constrainteq.o system.o platformbase.o lib.o \
-              *.o
-          
-          # Create the expected directory structure
-          mkdir -p ../build/src/slvs
-          cp libslvs.a ../build/src/slvs/
-          
-          echo "Library created:"
-          ls -la libslvs.a
-          ar -t libslvs.a
+          # The combined library includes both libslvs and mimalloc
           
       - name: Build slvsx (static)
         run: |
-          export SLVS_LIB_DIR=$PWD/libslvs/SolveSpaceLib/build/src/slvs
+          export SLVS_LIB_DIR=$PWD/libslvs-static/build
           export SLVS_STATIC=1
+          export SLVS_USE_FORK=1
           
           # For Linux, link statically against libgcc and libstdc++ but not glibc
           # This creates a portable binary that only depends on glibc

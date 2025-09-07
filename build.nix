@@ -52,23 +52,25 @@ pkgs.mkShell {
     fi
     rustup default stable
     
-    echo "Building libslvs..."
+    echo "Building libslvs-static..."
     
-    # Build libslvs if not already built
-    if [ ! -f libslvs/SolveSpaceLib/build/libslvs.a ]; then
-      mkdir -p libslvs/SolveSpaceLib/build
-      cd libslvs/SolveSpaceLib/build
+    # Build libslvs-static if not already built
+    if [ ! -f libslvs-static/build/libslvs-combined.a ]; then
+      mkdir -p libslvs-static/build
+      cd libslvs-static/build
       
-      # Configure with proper paths for Nix environment
+      # Configure with CMake
       cmake .. -DCMAKE_BUILD_TYPE=Release || echo "CMake configuration failed, continuing anyway"
       
-      make -j$(nproc) || echo "libslvs build failed, continuing anyway"
-      cd ../../..
+      # Build the combined static library
+      make -j$(nproc) || echo "libslvs-static build failed, continuing anyway"
+      cd ../..
     fi
     
-    export LIBSLVS_DIR="$PWD/libslvs/SolveSpaceLib/build"
-    export LD_LIBRARY_PATH="$LIBSLVS_DIR:$LD_LIBRARY_PATH"
-    export DYLD_LIBRARY_PATH="$LIBSLVS_DIR:$DYLD_LIBRARY_PATH"
+    # Set environment variables for static build
+    export SLVS_LIB_DIR="$PWD/libslvs-static/build"
+    export SLVS_STATIC=1
+    export SLVS_USE_FORK=1
     
     echo "Environment ready!"
     echo ""

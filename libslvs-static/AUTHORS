@@ -1,0 +1,37 @@
+# Authors and Contributors
+
+## Original SolveSpace Authors
+
+SolveSpace and libslvs were created by Jonathan Westhues and are maintained
+by the SolveSpace development team. Major contributors include:
+
+* Jonathan Westhues - Original author and creator of the constraint solver
+* whitequark - Major contributor and maintainer
+* ruevs - Significant contributions and maintenance
+* phkahler - Feature development and bug fixes
+* Evil-Spirit - Rendering and graphics improvements
+* And many other contributors - see https://github.com/solvespace/solvespace/graphs/contributors
+
+## libslvs-static Fork
+
+This fork for static linking was created for the slvsx-cli project by:
+* slvsx-cli contributors
+
+## Third-Party Components
+
+This software includes:
+* Eigen - MPL2 licensed linear algebra library
+* mimalloc - MIT licensed memory allocator by Microsoft
+
+## License
+
+The complete work is licensed under GPL-3.0. See LICENSE and COPYING.txt for details.
+
+## Acknowledgments
+
+We are deeply grateful to Jonathan Westhues for creating SolveSpace and making
+it available as open source software. The constraint solver is a remarkable
+piece of engineering that enables many CAD and engineering applications.
+
+We also thank all SolveSpace contributors for their continued work on improving
+and maintaining this excellent software.

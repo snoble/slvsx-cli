@@ -1,0 +1,39 @@
+This directory contains a fork of SolveSpace's libslvs library.
+
+ORIGINAL PROJECT INFORMATION:
+=============================
+Project: SolveSpace
+Website: https://solvespace.com
+Source: https://github.com/solvespace/solvespace
+License: GNU General Public License v3.0 (GPL-3.0)
+Copyright: SolveSpace contributors
+
+COMPLIANCE NOTICE:
+==================
+This fork is created to enable static linking of libslvs with slvsx-cli.
+In compliance with GPL-3.0:
+
+1. The complete source code of libslvs is included in this directory
+2. All modifications are clearly documented
+3. The original copyright notices are preserved
+4. This combined work (slvsx-cli + libslvs) is distributed under GPL-3.0
+
+MODIFICATIONS:
+==============
+The only modifications made to the original SolveSpace code are:
+1. Build system changes to enable static library compilation
+2. No functionality has been removed or truncated
+3. All solver capabilities remain intact
+
+The original GPL-3.0 license text follows:
+
+================================================================================
+
+                    GNU GENERAL PUBLIC LICENSE
+                       Version 3, 29 June 2007
+
+ Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
+ Everyone is permitted to copy and distribute verbatim copies
+ of this license document, but changing it is not allowed.
+
+[Full GPL-3.0 text continues - see COPYING.txt for complete license]

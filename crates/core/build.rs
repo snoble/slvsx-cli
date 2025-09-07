@@ -9,11 +9,20 @@ fn main() {
         let project_root = manifest_dir.parent().unwrap().parent().unwrap();
 
         // Compile the real SLVS wrapper
+        // Support both the fork and the original submodule
+        let (include_dir, src_dir) = if env::var("SLVS_USE_FORK").is_ok() {
+            (project_root.join("libslvs-static/include"),
+             project_root.join("libslvs-static/src"))
+        } else {
+            (project_root.join("libslvs/SolveSpaceLib/include"),
+             project_root.join("libslvs/SolveSpaceLib"))
+        };
+        
         cc::Build::new()
             .file(project_root.join("ffi/real_slvs_wrapper.c"))
             .include(project_root.join("ffi"))
-            .include(project_root.join("libslvs/SolveSpaceLib/include"))
-            .include(project_root.join("libslvs/SolveSpaceLib"))
+            .include(include_dir)
+            .include(src_dir)
             .compile("real_slvs_wrapper");
 
         println!("cargo:rustc-link-lib=static=real_slvs_wrapper");
@@ -35,23 +44,30 @@ fn main() {
         );
         
         // Link the static library and its dependencies
-        println!("cargo:rustc-link-lib=static=slvs");
-        
-        // Check for static build of mimalloc - only link if the library file exists
-        let mimalloc_dir = project_root.join("libslvs/SolveSpaceLib/build/extlib/mimalloc");
-        let mimalloc_lib = mimalloc_dir.join("libmimalloc.a");
-        if mimalloc_lib.exists() {
-            println!("cargo:rustc-link-search=native={}", mimalloc_dir.display());
-            println!("cargo:rustc-link-lib=static=mimalloc");
+        // When using the fork, link the combined library that includes mimalloc
+        if env::var("SLVS_USE_FORK").is_ok() {
+            println!("cargo:rustc-link-lib=static=slvs-combined");
         } else {
-            // Try minimal build location
-            let minimal_mimalloc = project_root.join("libslvs/SolveSpaceLib/build-minimal/libmimalloc.a");
-            if minimal_mimalloc.exists() {
-                println!("cargo:rustc-link-search=native={}", 
-                    project_root.join("libslvs/SolveSpaceLib/build-minimal").display());
+            println!("cargo:rustc-link-lib=static=slvs");
+        }
+        
+        // Check for static build of mimalloc - only when not using fork (fork includes it)
+        if env::var("SLVS_USE_FORK").is_err() {
+            let mimalloc_dir = project_root.join("libslvs/SolveSpaceLib/build/extlib/mimalloc");
+            let mimalloc_lib = mimalloc_dir.join("libmimalloc.a");
+            if mimalloc_lib.exists() {
+                println!("cargo:rustc-link-search=native={}", mimalloc_dir.display());
                 println!("cargo:rustc-link-lib=static=mimalloc");
+            } else {
+                // Try minimal build location
+                let minimal_mimalloc = project_root.join("libslvs/SolveSpaceLib/build-minimal/libmimalloc.a");
+                if minimal_mimalloc.exists() {
+                    println!("cargo:rustc-link-search=native={}", 
+                        project_root.join("libslvs/SolveSpaceLib/build-minimal").display());
+                    println!("cargo:rustc-link-lib=static=mimalloc");
+                }
+                // If mimalloc is not found, we'll use system malloc
             }
-            // If mimalloc is not found, we'll use system malloc (built into our minimal libslvs.a)
         }
 
         // System libraries needed by libslvs
