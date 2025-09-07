@@ -1,0 +1,41 @@
+{
+  "status": "ok",
+  "diagnostics": {
+    "iters": 1,
+    "residual": 0.0,
+    "dof": 0,
+    "time_ms": 1
+  },
+  "entities": {
+    "center1": {
+      "at": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    "center2": {
+      "at": [
+        42.42640687119285,
+        42.42640687119285,
+        0.0
+      ]
+    },
+    "circle2": {
+      "center": [
+        60.0,
+        0.0,
+        0.0
+      ],
+      "diameter": 40.0
+    },
+    "circle1": {
+      "center": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "diameter": 40.0
+    }
+  }
+}

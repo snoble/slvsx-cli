@@ -10,6 +10,10 @@ typedef struct {
     int next_constraint;
     // Track circle radii separately since we're using point entities for now
     double circle_radii[1000];  // Simple array to store radii by entity ID
+    // Arrays for dragged entities
+    Slvs_hParam dragged[4];
+    // Array for failed constraints
+    Slvs_hConstraint failed[1000];
 } RealSlvsSystem;
 
 RealSlvsSystem* real_slvs_create() {
@@ -20,10 +24,14 @@ RealSlvsSystem* real_slvs_create() {
     s->sys.entity = (Slvs_Entity*)calloc(1000, sizeof(Slvs_Entity));
     s->sys.constraint = (Slvs_Constraint*)calloc(1000, sizeof(Slvs_Constraint));
     
-    // dragged is a fixed array, initialize to zero
-    for (int i = 0; i < 4; i++) {
-        s->sys.dragged[i] = 0;
-    }
+    // Set up dragged array (NULL means no dragged parameters)
+    s->sys.dragged = NULL;
+    s->sys.ndragged = 0;
+    
+    // Set up failed array (NULL means no space for failed constraints)
+    s->sys.failed = NULL;
+    s->sys.faileds = 0;
+    s->sys.calculateFaileds = 0;
     
     // Start with higher IDs to avoid conflicts
     s->next_param = 100;
@@ -51,14 +59,12 @@ int real_slvs_add_circle(RealSlvsSystem* s, int id, double cx, double cy, double
     int py = s->next_param++;
     int pz = s->next_param++;
     
-    fprintf(stderr, "DEBUG: Creating params %d,%d,%d for circle %d\n", px, py, pz, id);
     s->sys.param[s->sys.params++] = Slvs_MakeParam(px, g, cx);
     s->sys.param[s->sys.params++] = Slvs_MakeParam(py, g, cy);
     s->sys.param[s->sys.params++] = Slvs_MakeParam(pz, g, cz);
     
     // Use a unique entity ID based on input id
     Slvs_hEntity entity_id = 1000 + id;
-    fprintf(stderr, "DEBUG: Adding point entity with id %u, params %d,%d,%d\n", entity_id, px, py, pz);
     s->sys.entity[s->sys.entities++] = Slvs_MakePoint3d(entity_id, g, px, py, pz);
     
     // Store radius for later retrieval
@@ -101,14 +107,12 @@ int real_slvs_add_point(RealSlvsSystem* s, int id, double x, double y, double z)
     int py = s->next_param++;
     int pz = s->next_param++;
     
-    fprintf(stderr, "DEBUG: Creating params %d,%d,%d for point %d\n", px, py, pz, id);
     s->sys.param[s->sys.params++] = Slvs_MakeParam(px, g, x);
     s->sys.param[s->sys.params++] = Slvs_MakeParam(py, g, y);
     s->sys.param[s->sys.params++] = Slvs_MakeParam(pz, g, z);
     
     // Use a unique entity ID based on input id
     Slvs_hEntity entity_id = 1000 + id;
-    fprintf(stderr, "DEBUG: Adding point entity with id %u, params %d,%d,%d\n", entity_id, px, py, pz);
     s->sys.entity[s->sys.entities++] = Slvs_MakePoint3d(entity_id, g, px, py, pz);
     
     return 0;
@@ -123,7 +127,6 @@ int real_slvs_add_line(RealSlvsSystem* s, int id, int point1_id, int point2_id) 
     
     // Use a unique entity ID for the line
     Slvs_hEntity line_id = 1000 + id;
-    fprintf(stderr, "DEBUG: Adding line entity with id %u between points %u and %u\n", line_id, point1, point2);
     s->sys.entity[s->sys.entities++] = Slvs_MakeLineSegment(line_id, g, SLVS_FREE_IN_3D, point1, point2);
     
     return 0;
