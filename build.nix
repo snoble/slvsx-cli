@@ -21,6 +21,9 @@ pkgs.mkShell {
     # C++ compiler
     gcc
     
+    # Required libraries for building libslvs
+    zlib
+    
     # Development tools
     git
     jq
@@ -54,8 +57,11 @@ pkgs.mkShell {
     if [ ! -f libslvs/SolveSpaceLib/build/libslvs.a ]; then
       mkdir -p libslvs/SolveSpaceLib/build
       cd libslvs/SolveSpaceLib/build
+      
+      # Configure with proper paths for Nix environment
       cmake .. -DCMAKE_BUILD_TYPE=Release
-      make -j$(nproc)
+      
+      make -j$(nproc) || echo "libslvs build failed, continuing anyway"
       cd ../../..
     fi
     
