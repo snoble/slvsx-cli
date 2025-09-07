@@ -1,0 +1,17 @@
+{
+  "schema": "slvs-json/1",
+  "units": "mm",
+  "entities": [
+    {
+      "type": "point",
+      "id": "origin",
+      "at": [0, 0, 0]
+    }
+  ],
+  "constraints": [
+    {
+      "type": "fixed",
+      "entity": "origin"
+    }
+  ]
+}
