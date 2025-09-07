@@ -42,22 +42,42 @@ jobs:
           
       - name: Build libslvs (static)
         run: |
+          # Try the full build first
           cd libslvs/SolveSpaceLib
           mkdir -p build
           cd build
-          # Configure with policy version to avoid CMake errors
-          cmake .. -DCMAKE_BUILD_TYPE=Release \
-                   -DCMAKE_POLICY_VERSION_MINIMUM=3.1 \
-                   -DBUILD_SHARED_LIBS=OFF \
-                   -DENABLE_GUI=OFF \
-                   -DENABLE_TESTS=OFF \
-                   -DENABLE_OPENGL=OFF || echo "Full build failed, trying minimal build..."
           
-          # Build only the slvs target
-          make slvs_static -j$(nproc 2>/dev/null || sysctl -n hw.ncpu) || make slvs -j$(nproc 2>/dev/null || sysctl -n hw.ncpu)
+          # Try to build with full CMake
+          if cmake .. -DCMAKE_BUILD_TYPE=Release \
+                      -DBUILD_SHARED_LIBS=OFF \
+                      -DENABLE_GUI=OFF \
+                      -DENABLE_TESTS=OFF \
+                      -DENABLE_OPENGL=OFF 2>/dev/null; then
+            echo "Full CMake succeeded, building slvs target..."
+            make slvs_static -j$(nproc 2>/dev/null || sysctl -n hw.ncpu) || make slvs -j$(nproc 2>/dev/null || sysctl -n hw.ncpu)
+          else
+            echo "Full build failed, using minimal build approach..."
+            cd ../..
+            # Build only the essential slvs library files
+            mkdir -p build-minimal
+            cd build-minimal
+            
+            # Use direct compilation of slvs library
+            c++ -c -O3 -fPIC -std=c++11 \
+                -I../SolveSpaceLib/include \
+                -I../SolveSpaceLib/src \
+                -I../SolveSpaceLib/extlib/eigen \
+                ../SolveSpaceLib/src/slvs/lib.cpp \
+                -o slvs.o
+            
+            # Create static library
+            ar rcs libslvs.a slvs.o
+            mkdir -p ../SolveSpaceLib/build/src/slvs
+            cp libslvs.a ../SolveSpaceLib/build/src/slvs/
+          fi
           
           # Find and display all static libraries
-          find . -name "*.a" -ls
+          find .. -name "*.a" -ls
           
       - name: Build slvsx (static)
         run: |
