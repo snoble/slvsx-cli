@@ -18,12 +18,19 @@ fn main() {
              project_root.join("libslvs/SolveSpaceLib"))
         };
         
-        cc::Build::new()
+        let mut cc_build = cc::Build::new();
+        cc_build
             .file(project_root.join("ffi/real_slvs_wrapper.c"))
             .include(project_root.join("ffi"))
             .include(include_dir)
-            .include(src_dir)
-            .compile("real_slvs_wrapper");
+            .include(src_dir);
+        
+        // Add mimalloc stub when not using fork
+        if env::var("SLVS_USE_FORK").is_err() {
+            cc_build.file(project_root.join("ffi/mimalloc_stub.c"));
+        }
+        
+        cc_build.compile("real_slvs_wrapper");
 
         println!("cargo:rustc-link-lib=static=real_slvs_wrapper");
         
@@ -38,10 +45,16 @@ fn main() {
         println!("cargo:rustc-link-search=native={}", slvs_lib_dir.display());
         
         // Link the static library and its dependencies
-        // Always use the combined library from libslvs-static that includes mimalloc
-        println!("cargo:rustc-link-lib=static=slvs-combined");
+        // Use the library name that's actually built
+        let lib_name = if env::var("SLVS_USE_FORK").is_ok() {
+            "slvs-combined"
+        } else {
+            "slvs"
+        };
+        println!("cargo:rustc-link-lib=static={}", lib_name);
         
-        // mimalloc is included in slvs-combined, no need to link separately
+        // When not using fork, mimalloc symbols are in libslvs.a but we still
+        // need to provide dummy implementations for missing symbols
 
         // System libraries needed by libslvs
         #[cfg(target_os = "linux")]
