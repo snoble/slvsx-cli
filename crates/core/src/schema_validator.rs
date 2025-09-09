@@ -167,13 +167,8 @@ mod tests {
         assert!(result.is_err());
         match result.unwrap_err() {
             Error::SchemaValidation(msg) => {
-                // Check for various possible error messages
-                assert!(
-                    msg.contains("validation") || 
-                    msg.contains("required") || 
-                    msg.contains("missing"),
-                    "Unexpected error message: {}", msg
-                );
+                // The validator correctly reports the first missing required field
+                assert!(msg.contains("Missing required field: schema"))
             },
             _ => panic!("Wrong error type"),
         }
