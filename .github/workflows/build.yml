@@ -58,7 +58,14 @@ jobs:
           
           # The combined library includes both libslvs and mimalloc
           
-      - name: Build slvsx (static)
+      - name: Run tests (dynamic linking)
+        run: |
+          export SLVS_LIB_DIR=$PWD/libslvs-static/build
+          export SLVS_USE_FORK=1
+          # Run tests with dynamic linking to avoid SIGABRT issues
+          cargo test
+          
+      - name: Build slvsx (static release)
         run: |
           export SLVS_LIB_DIR=$PWD/libslvs-static/build
           export SLVS_STATIC=1
@@ -87,13 +94,14 @@ jobs:
           ls -lh target/release/slvsx*
           file target/release/slvsx
         
-      - name: Run tests
+      - name: Test static binary
         run: |
-          export SLVS_LIB_DIR=$PWD/libslvs-static/build
-          export SLVS_USE_FORK=1
-          # Tests pass but SIGABRT on exit - this is a known issue with libslvs cleanup
-          # The binaries work correctly in production
-          cargo test || true
+          # Test that the static binary actually works
+          ./target/release/slvsx --version
+          ./target/release/slvsx capabilities
+          # Test with a simple JSON input
+          echo '{"schema_version":"0.3.0","entities":{"p1":{"type":"point","point":{"x":0,"y":0,"z":0}}},"units":"mm"}' | ./target/release/slvsx validate -
+          echo '{"schema_version":"0.3.0","entities":{"p1":{"type":"point","point":{"x":0,"y":0,"z":0}}},"units":"mm"}' | ./target/release/slvsx export -f svg -
         
       - name: Test examples
         run: |

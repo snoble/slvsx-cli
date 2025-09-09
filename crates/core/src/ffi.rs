@@ -218,7 +218,7 @@ mod tests {
 
     #[test]
     #[cfg(not(feature = "mock-solver"))]
-    #[ignore = "FFI test crashes with SIGSEGV - but production code works fine"]
+    #[ignore = "FFI test crashes in test environment but works in production"]
     fn test_ffi_solver() {
         let mut solver = Solver::new();
 

@@ -33,37 +33,12 @@ RealSlvsSystem* real_slvs_create() {
     s->sys.params = 0;
     s->sys.entities = 0;
     s->sys.constraints = 0;
-    s->sys.dragged[0] = 0;
-    s->sys.dragged[1] = 0;
-    s->sys.dragged[2] = 0;
-    s->sys.dragged[3] = 0;
     s->sys.calculateFaileds = 0;
     
-    // Start numbering from 1
-    s->next_param = 1;
-    s->next_entity = 100;  // Start entities at 100 to leave room for special entities
+    // Start numbering from higher values to avoid conflicts
+    s->next_param = 100;
+    s->next_entity = 100;
     s->next_constraint = 100;
-    
-    // Initialize with default group
-    Slvs_hGroup g = 1;
-    
-    // Add the origin point
-    s->sys.param[s->sys.params++] = Slvs_MakeParam(1, g, 0.0);
-    s->sys.param[s->sys.params++] = Slvs_MakeParam(2, g, 0.0);
-    s->sys.param[s->sys.params++] = Slvs_MakeParam(3, g, 0.0);
-    s->sys.entity[s->sys.entities++] = Slvs_MakePoint3d(1, g, 1, 2, 3);
-    
-    // Add a quaternion for the normal (no rotation: 1,0,0,0)
-    s->sys.param[s->sys.params++] = Slvs_MakeParam(4, g, 1.0);
-    s->sys.param[s->sys.params++] = Slvs_MakeParam(5, g, 0.0);
-    s->sys.param[s->sys.params++] = Slvs_MakeParam(6, g, 0.0);
-    s->sys.param[s->sys.params++] = Slvs_MakeParam(7, g, 0.0);
-    s->sys.entity[s->sys.entities++] = Slvs_MakeNormal3d(2, g, 4, 5, 6, 7);
-    
-    // Add the XY workplane
-    s->sys.entity[s->sys.entities++] = Slvs_MakeWorkplane(3, g, 1, 2);
-    
-    s->next_param = 8;
     
     return s;
 }
@@ -145,18 +120,17 @@ int real_slvs_add_distance_constraint(RealSlvsSystem* s, int id, int entity1, in
     
     Slvs_hGroup g = 1;
     
-    // Create distance parameter
-    int dist_param = s->next_param++;
-    s->sys.param[s->sys.params++] = Slvs_MakeParam(dist_param, g, distance);
+    // Convert entity IDs to our internal IDs (circles are stored as points at 1000+id)
+    Slvs_hEntity point1 = (Slvs_hEntity)(1000 + entity1);
+    Slvs_hEntity point2 = (Slvs_hEntity)(1000 + entity2);
     
-    // Map circle IDs to their center point entities if needed
-    Slvs_hEntity e1 = (entity1 >= 1 && entity1 < 100) ? (1000 + entity1) : entity1;
-    Slvs_hEntity e2 = (entity2 >= 1 && entity2 < 100) ? (1000 + entity2) : entity2;
+    // Use a unique constraint ID
+    Slvs_hConstraint constraint_id = 10000 + id;
     
     // Add distance constraint between entities
     s->sys.constraint[s->sys.constraints++] = Slvs_MakeConstraint(
-        id, g, SLVS_C_PT_PT_DISTANCE, SLVS_FREE_IN_3D,
-        dist_param, e1, e2, 0, 0);
+        constraint_id, g, SLVS_C_PT_PT_DISTANCE, SLVS_FREE_IN_3D,
+        distance, point1, point2, 0, 0);
     
     return 0;
 }
