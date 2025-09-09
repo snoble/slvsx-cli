@@ -358,35 +358,45 @@
             }
         });
 
-        // For now, show a message that WASM is being developed
-        // In production, this would load and use the actual WASM module
-        solveBtn.addEventListener('click', async () => {
+        // Load WASM module
+        let wasmModule = null;
+        
+        async function loadWasm() {
             try {
-                // Parse input
-                const input = JSON.parse(inputEl.value);
+                statusEl.innerHTML = '<div class="loading">Loading WASM module...</div>';
                 
-                // TODO: Once WASM module is built, replace this with:
-                // const result = await wasm.solve_constraints(inputEl.value);
+                // Import the WASM module
+                const wasm = await import('./pkg/slvsx_core.js');
+                await wasm.default();
+                wasmModule = wasm;
                 
-                // For demo purposes, show a simulated result
-                statusEl.innerHTML = '<div class="success">✓ Constraints solved successfully</div>';
+                statusEl.innerHTML = '<div class="success">✓ WASM module loaded - libslvs running in your browser!</div>';
+                solveBtn.disabled = false;
+            } catch (error) {
+                statusEl.innerHTML = `<div class="error">Failed to load WASM: ${error.message}<br>Run ./build-wasm.sh first</div>`;
+                console.error('WASM load error:', error);
+            }
+        }
+        
+        // Solve using real WASM solver
+        solveBtn.addEventListener('click', async () => {
+            if (!wasmModule) {
+                statusEl.innerHTML = '<div class="error">WASM module not loaded</div>';
+                return;
+            }
+            
+            try {
+                // Use the actual WASM solver - this runs libslvs in the browser!
+                const result = await wasmModule.solve_constraints(inputEl.value);
+                const solution = JSON.parse(result);
                 
-                // Simulate a solution (in production, this would come from WASM)
-                const mockSolution = {
-                    status: "ok",
-                    diagnostics: {
-                        iters: 1,
-                        residual: 0.0,
-                        dof: 0,
-                        time_ms: 1
-                    },
-                    entities: Object.fromEntries(
-                        input.entities.map(e => [e.id, { at: e.at }])
-                    ),
-                    message: "Note: This is a demo. WASM module integration pending."
-                };
+                if (solution.status === 'ok') {
+                    statusEl.innerHTML = '<div class="success">✓ Constraints solved by libslvs in browser!</div>';
+                } else {
+                    statusEl.innerHTML = `<div class="error">Solver error: ${solution.error || 'Failed to solve'}</div>`;
+                }
                 
-                outputEl.value = JSON.stringify(mockSolution, null, 2);
+                outputEl.value = JSON.stringify(solution, null, 2);
                 
             } catch (error) {
                 statusEl.innerHTML = `<div class="error">Error: ${error.message}</div>`;
@@ -394,8 +404,11 @@
             }
         });
 
-        // Add note about WASM development
-        statusEl.innerHTML = '<div class="loading">WASM module integration in progress. Demo shows expected interface.</div>';
+        // Disable solve button until WASM loads
+        solveBtn.disabled = true;
+        
+        // Load WASM on page load
+        loadWasm();
     </script>
 </body>
 </html>
