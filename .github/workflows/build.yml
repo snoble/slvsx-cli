@@ -88,7 +88,10 @@ jobs:
           file target/release/slvsx
         
       - name: Run tests
-        run: cargo test
+        run: |
+          export SLVS_LIB_DIR=$PWD/libslvs-static/build
+          export SLVS_USE_FORK=1
+          cargo test
         
       - name: Test examples
         run: |
