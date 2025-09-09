@@ -20,8 +20,6 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/src
     ${CMAKE_CURRENT_SOURCE_DIR}/extlib/eigen
-    ${CMAKE_CURRENT_SOURCE_DIR}/extlib/eigen/Eigen
-    ${CMAKE_CURRENT_SOURCE_DIR}/extlib
     ${CMAKE_CURRENT_SOURCE_DIR}/extlib/mimalloc/include
 )
 
