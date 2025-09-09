@@ -8,8 +8,9 @@ save
 *.old
 *.gmo
 *.qm
-core
-core.*
+# Core dumps (but not Eigen/Core header!)
+/core
+/core.*
 *.bak
 *~
 *build*
