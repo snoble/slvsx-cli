@@ -1,46 +1,53 @@
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
+#include <math.h>
 #include "slvs.h"
 
+// Structure to hold the SolveSpace system
 typedef struct {
     Slvs_System sys;
     int next_param;
-    int next_entity;  
+    int next_entity;
     int next_constraint;
-    // Track circle radii separately since we're using point entities for now
-    double circle_radii[1000];  // Simple array to store radii by entity ID
-    // Arrays for dragged entities
-    Slvs_hParam dragged[4];
-    // Array for failed constraints
-    Slvs_hConstraint failed[1000];
+    double circle_radii[1000];  // Store circle radii
 } RealSlvsSystem;
 
+// Create a new system
 RealSlvsSystem* real_slvs_create() {
     RealSlvsSystem* s = (RealSlvsSystem*)calloc(1, sizeof(RealSlvsSystem));
+    if (!s) return NULL;
     
-    // Allocate arrays
-    s->sys.param = (Slvs_Param*)calloc(1000, sizeof(Slvs_Param));
-    s->sys.entity = (Slvs_Entity*)calloc(1000, sizeof(Slvs_Entity));
-    s->sys.constraint = (Slvs_Constraint*)calloc(1000, sizeof(Slvs_Constraint));
+    // Allocate space for parameters, entities, and constraints
+    s->sys.param = (Slvs_Param*)calloc(5000, sizeof(Slvs_Param));
+    s->sys.entity = (Slvs_Entity*)calloc(5000, sizeof(Slvs_Entity));
+    s->sys.constraint = (Slvs_Constraint*)calloc(5000, sizeof(Slvs_Constraint));
     
-    // Set up dragged array (NULL means no dragged parameters)
-    s->sys.dragged = NULL;
-    s->sys.ndragged = 0;
+    if (!s->sys.param || !s->sys.entity || !s->sys.constraint) {
+        free(s->sys.param);
+        free(s->sys.entity);
+        free(s->sys.constraint);
+        free(s);
+        return NULL;
+    }
     
-    // Set up failed array (NULL means no space for failed constraints)
-    s->sys.failed = NULL;
-    s->sys.faileds = 0;
+    s->sys.params = 0;
+    s->sys.entities = 0;
+    s->sys.constraints = 0;
+    s->sys.dragged[0] = 0;
+    s->sys.dragged[1] = 0;
+    s->sys.dragged[2] = 0;
+    s->sys.dragged[3] = 0;
     s->sys.calculateFaileds = 0;
     
-    // Start with higher IDs to avoid conflicts
-    s->next_param = 100;
-    s->next_entity = 100;
+    // Start numbering from 1
+    s->next_param = 1;
+    s->next_entity = 1;
     s->next_constraint = 100;
     
     return s;
 }
 
+// Destroy the system
 void real_slvs_destroy(RealSlvsSystem* s) {
     if (s) {
         free(s->sys.param);
@@ -50,11 +57,47 @@ void real_slvs_destroy(RealSlvsSystem* s) {
     }
 }
 
-int real_slvs_add_circle(RealSlvsSystem* s, int id, double cx, double cy, double cz, double radius) {
+// Add a 3D point
+int real_slvs_add_point(RealSlvsSystem* s, int id, double x, double y, double z) {
+    if (!s) return -1;
+    
     Slvs_hGroup g = 1;
     
-    // For now, just create a 3D point at the center
-    // This simplifies things and avoids workplane issues
+    // Create parameters for the point coordinates
+    int px = s->next_param++;
+    int py = s->next_param++;
+    int pz = s->next_param++;
+    
+    s->sys.param[s->sys.params++] = Slvs_MakeParam(px, g, x);
+    s->sys.param[s->sys.params++] = Slvs_MakeParam(py, g, y);
+    s->sys.param[s->sys.params++] = Slvs_MakeParam(pz, g, z);
+    
+    // Create the point entity
+    s->sys.entity[s->sys.entities++] = Slvs_MakePoint3d(id, g, px, py, pz);
+    
+    return 0;
+}
+
+// Add a line between two points
+int real_slvs_add_line(RealSlvsSystem* s, int id, int point1_id, int point2_id) {
+    if (!s) return -1;
+    
+    Slvs_hGroup g = 1;
+    
+    // Create line segment entity
+    s->sys.entity[s->sys.entities++] = Slvs_MakeLineSegment(id, g, 
+        SLVS_FREE_IN_3D, point1_id, point2_id);
+    
+    return 0;
+}
+
+// Add a circle (simplified - just stores center point and radius)
+int real_slvs_add_circle(RealSlvsSystem* s, int id, double cx, double cy, double cz, double radius) {
+    if (!s) return -1;
+    
+    Slvs_hGroup g = 1;
+    
+    // For simplicity, create a 3D point at the center
     int px = s->next_param++;
     int py = s->next_param++;
     int pz = s->next_param++;
@@ -75,141 +118,174 @@ int real_slvs_add_circle(RealSlvsSystem* s, int id, double cx, double cy, double
     return 0;
 }
 
+// Add a distance constraint
 int real_slvs_add_distance_constraint(RealSlvsSystem* s, int id, int entity1, int entity2, double distance) {
+    if (!s) return -1;
+    
     Slvs_hGroup g = 1;
     
-    // Convert entity IDs to our internal IDs
-    Slvs_hEntity point1 = (Slvs_hEntity)(1000 + entity1);
-    Slvs_hEntity point2 = (Slvs_hEntity)(1000 + entity2);
+    // Create distance parameter
+    int dist_param = s->next_param++;
+    s->sys.param[s->sys.params++] = Slvs_MakeParam(dist_param, g, distance);
     
-    // Use a unique constraint ID
-    Slvs_hConstraint constraint_id = 10000 + id;
+    // Map circle IDs to their center point entities if needed
+    Slvs_hEntity e1 = (entity1 >= 1 && entity1 < 100) ? (1000 + entity1) : entity1;
+    Slvs_hEntity e2 = (entity2 >= 1 && entity2 < 100) ? (1000 + entity2) : entity2;
+    
+    // Add distance constraint between entities
     s->sys.constraint[s->sys.constraints++] = Slvs_MakeConstraint(
-        constraint_id, g,
-        SLVS_C_PT_PT_DISTANCE,
-        SLVS_FREE_IN_3D,
-        distance,
-        point1, point2, 0, 0);
+        id, g, SLVS_C_PT_PT_DISTANCE, SLVS_FREE_IN_3D,
+        dist_param, e1, e2, 0, 0);
     
     return 0;
 }
 
-int real_slvs_solve(RealSlvsSystem* s) {
-    Slvs_Solve(&s->sys, 1);
-    return s->sys.result;
-}
-
-int real_slvs_add_point(RealSlvsSystem* s, int id, double x, double y, double z) {
-    Slvs_hGroup g = 1;
-    
-    // Create parameters for the point
-    int px = s->next_param++;
-    int py = s->next_param++;
-    int pz = s->next_param++;
-    
-    s->sys.param[s->sys.params++] = Slvs_MakeParam(px, g, x);
-    s->sys.param[s->sys.params++] = Slvs_MakeParam(py, g, y);
-    s->sys.param[s->sys.params++] = Slvs_MakeParam(pz, g, z);
-    
-    // Use a unique entity ID based on input id
-    Slvs_hEntity entity_id = 1000 + id;
-    s->sys.entity[s->sys.entities++] = Slvs_MakePoint3d(entity_id, g, px, py, pz);
-    
-    return 0;
-}
-
-int real_slvs_add_line(RealSlvsSystem* s, int id, int point1_id, int point2_id) {
-    Slvs_hGroup g = 1;
-    
-    // Convert point IDs to our internal entity IDs
-    Slvs_hEntity point1 = 1000 + point1_id;
-    Slvs_hEntity point2 = 1000 + point2_id;
-    
-    // Use a unique entity ID for the line
-    Slvs_hEntity line_id = 1000 + id;
-    s->sys.entity[s->sys.entities++] = Slvs_MakeLineSegment(line_id, g, SLVS_FREE_IN_3D, point1, point2);
-    
-    return 0;
-}
-
+// Add a fixed constraint
 int real_slvs_add_fixed_constraint(RealSlvsSystem* s, int id, int entity_id) {
+    if (!s) return -1;
+    
     Slvs_hGroup g = 1;
     
-    // Convert entity ID to our internal ID  
-    Slvs_hEntity entity = 1000 + entity_id;
+    // Map circle IDs to their center point entities if needed
+    Slvs_hEntity e = (entity_id >= 1 && entity_id < 100) ? (1000 + entity_id) : entity_id;
     
-    // Use a unique constraint ID
-    Slvs_hConstraint constraint_id = 10000 + id;
+    // Where the point is constrained to be
     s->sys.constraint[s->sys.constraints++] = Slvs_MakeConstraint(
-        constraint_id, g,
-        SLVS_C_WHERE_DRAGGED,
-        SLVS_FREE_IN_3D,
-        0.0,
-        entity, 0, 0, 0);
+        id, g, SLVS_C_WHERE_DRAGGED, SLVS_FREE_IN_3D,
+        0, e, 0, 0, 0);
     
     return 0;
 }
 
-int real_slvs_get_point_position(RealSlvsSystem* s, int id, double* x, double* y, double* z) {
-    // Find the 3D point entity
-    Slvs_hEntity entity_id = (Slvs_hEntity)(1000 + id);
+// Add parallel constraint
+int real_slvs_add_parallel_constraint(RealSlvsSystem* s, int id, int line1_id, int line2_id) {
+    if (!s) return -1;
     
+    Slvs_hGroup g = 1;
+    
+    s->sys.constraint[s->sys.constraints++] = Slvs_MakeConstraint(
+        id, g, SLVS_C_PARALLEL, SLVS_FREE_IN_3D,
+        0, 0, 0, line1_id, line2_id);
+    
+    return 0;
+}
+
+// Add perpendicular constraint
+int real_slvs_add_perpendicular_constraint(RealSlvsSystem* s, int id, int line1_id, int line2_id) {
+    if (!s) return -1;
+    
+    Slvs_hGroup g = 1;
+    
+    s->sys.constraint[s->sys.constraints++] = Slvs_MakeConstraint(
+        id, g, SLVS_C_PERPENDICULAR, SLVS_FREE_IN_3D,
+        0, 0, 0, line1_id, line2_id);
+    
+    return 0;
+}
+
+// Add angle constraint
+int real_slvs_add_angle_constraint(RealSlvsSystem* s, int id, int line1_id, int line2_id, double angle) {
+    if (!s) return -1;
+    
+    Slvs_hGroup g = 1;
+    
+    // Create angle parameter (in degrees)
+    int angle_param = s->next_param++;
+    s->sys.param[s->sys.params++] = Slvs_MakeParam(angle_param, g, angle);
+    
+    s->sys.constraint[s->sys.constraints++] = Slvs_MakeConstraint(
+        id, g, SLVS_C_ANGLE, SLVS_FREE_IN_3D,
+        angle_param, 0, 0, line1_id, line2_id);
+    
+    return 0;
+}
+
+// Solve the system
+int real_slvs_solve(RealSlvsSystem* s) {
+    if (!s) return -1;
+    
+    // Solve the system
+    Slvs_Solve(&s->sys, 1);
+    
+    // Return status (0 = success, 1 = inconsistent, 2 = didn't converge, 3 = too many unknowns)
+    if (s->sys.result == SLVS_RESULT_OKAY) {
+        return 0;
+    } else if (s->sys.result == SLVS_RESULT_INCONSISTENT) {
+        return 1;
+    } else if (s->sys.result == SLVS_RESULT_DIDNT_CONVERGE) {
+        return 2;
+    } else if (s->sys.result == SLVS_RESULT_TOO_MANY_UNKNOWNS) {
+        return 3;
+    }
+    
+    return -1;
+}
+
+// Get point position after solving
+int real_slvs_get_point_position(RealSlvsSystem* s, int point_id, double* x, double* y, double* z) {
+    if (!s || !x || !y || !z) return -1;
+    
+    // Find the point entity
     for (int i = 0; i < s->sys.entities; i++) {
-        if (s->sys.entity[i].h == entity_id && s->sys.entity[i].type == SLVS_E_POINT_IN_3D) {
-            // Get the parameter handles
-            Slvs_hParam px = s->sys.entity[i].param[0];
-            Slvs_hParam py = s->sys.entity[i].param[1];
-            Slvs_hParam pz = s->sys.entity[i].param[2];
+        if (s->sys.entity[i].h == point_id && 
+            s->sys.entity[i].type == SLVS_E_POINT_IN_3D) {
             
-            // Find the parameter values
+            // Get the parameter values
             for (int j = 0; j < s->sys.params; j++) {
-                if (s->sys.param[j].h == px) *x = s->sys.param[j].val;
-                if (s->sys.param[j].h == py) *y = s->sys.param[j].val;
-                if (s->sys.param[j].h == pz) *z = s->sys.param[j].val;
+                if (s->sys.param[j].h == s->sys.entity[i].param[0]) {
+                    *x = s->sys.param[j].val;
+                }
+                if (s->sys.param[j].h == s->sys.entity[i].param[1]) {
+                    *y = s->sys.param[j].val;
+                }
+                if (s->sys.param[j].h == s->sys.entity[i].param[2]) {
+                    *z = s->sys.param[j].val;
+                }
             }
             return 0;
         }
     }
     
-    // Couldn't find the entity - return defaults
-    *x = 0;
-    *y = 0;
-    *z = 0;
-    return 0;
+    return -1;
 }
 
-int real_slvs_get_circle_position(RealSlvsSystem* s, int id, double* cx, double* cy, double* cz, double* radius) {
-    // Get the stored radius
-    if (id < 1000) {
-        *radius = s->circle_radii[id];
-    } else {
-        *radius = 0;
-    }
+// Get circle position and radius after solving
+int real_slvs_get_circle_position(RealSlvsSystem* s, int circle_id, double* cx, double* cy, double* cz, double* radius) {
+    if (!s || !cx || !cy || !cz || !radius) return -1;
     
-    // Find the 3D point entity
-    Slvs_hEntity entity_id = (Slvs_hEntity)(1000 + id);
+    // For our simplified circles, get the center point
+    Slvs_hEntity entity_id = 1000 + circle_id;
     
-    // Find the 3D point entity
     for (int i = 0; i < s->sys.entities; i++) {
-        if (s->sys.entity[i].h == entity_id && s->sys.entity[i].type == SLVS_E_POINT_IN_3D) {
-            // Get the parameter handles
-            Slvs_hParam px = s->sys.entity[i].param[0];
-            Slvs_hParam py = s->sys.entity[i].param[1];
-            Slvs_hParam pz = s->sys.entity[i].param[2];
+        if (s->sys.entity[i].h == entity_id && 
+            s->sys.entity[i].type == SLVS_E_POINT_IN_3D) {
             
-            // Find the parameter values
+            // Get the parameter values
             for (int j = 0; j < s->sys.params; j++) {
-                if (s->sys.param[j].h == px) *cx = s->sys.param[j].val;
-                if (s->sys.param[j].h == py) *cy = s->sys.param[j].val;
-                if (s->sys.param[j].h == pz) *cz = s->sys.param[j].val;
+                if (s->sys.param[j].h == s->sys.entity[i].param[0]) {
+                    *cx = s->sys.param[j].val;
+                }
+                if (s->sys.param[j].h == s->sys.entity[i].param[1]) {
+                    *cy = s->sys.param[j].val;
+                }
+                if (s->sys.param[j].h == s->sys.entity[i].param[2]) {
+                    *cz = s->sys.param[j].val;
+                }
+            }
+            
+            // Get stored radius
+            if (circle_id < 1000) {
+                *radius = s->circle_radii[circle_id];
             }
             return 0;
         }
     }
     
-    // Couldn't find the entity - return defaults
-    *cx = 0;
-    *cy = 0;
-    *cz = 0;
-    return 0;
+    return -1;
+}
+
+// Get solver DOF (degrees of freedom)
+int real_slvs_get_dof(RealSlvsSystem* s) {
+    if (!s) return -1;
+    return s->sys.dof;
 }
