@@ -8,6 +8,7 @@ slvsx-cli is a command-line interface wrapper for the SolveSpace constraint solv
 - **Static Binaries**: All artifacts MUST be statically linked. This is non-negotiable.
 - **No Mocking**: The project depends on libslvs actually working. Never attempt to mock it.
 - **Cross-Platform**: Must build on Ubuntu Linux and macOS
+- **Fork Only**: We use only the libslvs-static fork, not the original SolveSpace submodule
 
 ## Repository Structure
 
@@ -26,10 +27,9 @@ slvsx-cli/
 ├── ffi/
 │   ├── real_slvs_wrapper.c  # C wrapper for libslvs
 │   └── slvs_wrapper.h
-├── libslvs/
-│   └── SolveSpaceLib/     # Git submodule of SolveSpace
-│       ├── include/slvs.h
-│       └── src/slvs/      # Modified to build static library
+├── libslvs-static/        # Fork with static build and mimalloc
+│   ├── include/slvs.h
+│   └── src/               # Pre-built static library
 ├── examples/              # Example .slvs files
 └── tests/                # Integration tests
 ```
@@ -38,12 +38,12 @@ slvsx-cli/
 
 ### Local Build Process
 
-1. **Build libslvs static library**:
+1. **Build libslvs-static library**:
    ```bash
-   cd libslvs/SolveSpaceLib
+   cd libslvs-static
    mkdir build && cd build
-   cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF
-   make slvs_static
+   cmake .. -DCMAKE_BUILD_TYPE=Release
+   make
    ```
 
 2. **Build slvsx with static linking**:
@@ -57,19 +57,16 @@ slvsx-cli/
 - Links libslvs statically
 - Compiles real_slvs_wrapper.c
 - Searches for libraries in:
-  - `libslvs/SolveSpaceLib/build/src/slvs/` (default)
+  - `libslvs-static/build/` (default)
   - `$SLVS_LIB_DIR` (environment variable for CI)
 - Links required system libraries (stdc++ on Linux, c++ on macOS)
 
-#### libslvs/SolveSpaceLib Modifications
-The submodule has been modified in `src/slvs/CMakeLists.txt` to add:
-```cmake
-# Also build static library
-add_library(slvs_static STATIC)
-target_compile_definitions(slvs_static PRIVATE -DSTATIC_LIB)
-target_link_libraries(slvs_static PRIVATE slvs-interface)
-set_target_properties(slvs_static PROPERTIES OUTPUT_NAME slvs)
-```
+#### libslvs-static Fork
+The fork includes:
+- Static library build by default
+- mimalloc integration for better memory management
+- Simplified CMake without GUI dependencies
+- Pre-built `libslvs-combined.a` that includes all dependencies
 
 ## GitHub Actions CI
 
@@ -90,10 +87,10 @@ Each step in `.github/workflows/build.yml` must:
    - Ubuntu: `cmake build-essential libpng-dev zlib1g-dev`
    - macOS: cmake is pre-installed
    
-3. **Build libslvs Static Library**
-   - Navigate to correct path: `libslvs/SolveSpaceLib`
-   - Use minimal CMake flags to avoid GUI dependencies
-   - Target: `slvs_static` (our custom target)
+3. **Build libslvs-static Library**
+   - Navigate to: `libslvs-static`
+   - Simple CMake build without GUI
+   - Output: `libslvs-combined.a`
    
 4. **Build slvsx Binary**
    - Set `SLVS_LIB_DIR` environment variable
@@ -150,7 +147,7 @@ gh run view <run-id> --log-failed
 
 2. **Static Linking is Critical**: The entire purpose is to create a standalone binary. Always verify with `ldd` or `otool`.
 
-3. **Submodule Modifications**: The libslvs/SolveSpaceLib submodule has local modifications for static building. These need to be preserved or moved to a fork.
+3. **Fork Usage**: We use the libslvs-static fork exclusively, which has all necessary modifications for static building.
 
 4. **Build Order Matters**: 
    - First: Build libslvs static library
@@ -162,32 +159,28 @@ gh run view <run-id> --log-failed
    - Linux needs explicit static flags for gcc/g++
    - macOS handles some static linking differently
 
-## Recommended Long-term Solution
+## Current Solution
 
-1. **Fork SolveSpace/solvespace** repository
-2. **Create a minimal branch** that:
-   - Removes GUI dependencies
-   - Focuses only on slvs library
-   - Has static build as default
-3. **Update submodule** to point to the fork
-4. **Simplify build process** with the fork
+We use the libslvs-static fork which:
+- Removes GUI dependencies
+- Focuses only on slvs library
+- Has static build as default
+- Includes mimalloc for memory management
+- Provides `libslvs-combined.a` with all dependencies
 
-This will eliminate most CI build issues and ensure consistent static builds.
+This eliminates CI build issues and ensures consistent static builds.
 
 ## Commands Reference
 
 ```bash
-# Update submodules
-git submodule update --init --recursive
-
-# Build libslvs manually
-cd libslvs/SolveSpaceLib && \
+# Build libslvs-static
+cd libslvs-static && \
   mkdir -p build && cd build && \
-  cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF && \
-  make slvs_static
+  cmake .. -DCMAKE_BUILD_TYPE=Release && \
+  make
 
 # Build with static linking
-export SLVS_LIB_DIR=$PWD/libslvs/SolveSpaceLib/build/src/slvs
+export SLVS_LIB_DIR=$PWD/libslvs-static/build
 export RUSTFLAGS="-C target-feature=+crt-static"
 cargo build --release
 
@@ -203,5 +196,5 @@ ldd target/release/slvsx 2>/dev/null || echo "Static binary!"
 - Issue tracker: Use GitHub Issues for problems
 
 ---
-*Last updated: 2024-09-07*
+*Last updated: 2024-09-09*
 *This document should be updated whenever significant changes are made to the build system or CI configuration.*

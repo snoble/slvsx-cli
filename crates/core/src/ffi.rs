@@ -219,7 +219,6 @@ mod tests {
     use super::*;
 
     #[test]
-    #[cfg(not(feature = "mock-solver"))]
     fn test_ffi_solver() {
         let mut solver = Solver::new();
 

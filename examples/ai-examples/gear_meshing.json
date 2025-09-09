@@ -1,0 +1,56 @@
+{
+  "schema_version": "0.3.0",
+  "description": "Position planetary gears with proper meshing distances",
+  "units": "mm",
+  "entities": {
+    "sun_center": {
+      "type": "point",
+      "point": {"x": 0, "y": 0, "z": 0}
+    },
+    "planet1_center": {
+      "type": "point",
+      "point": {"x": 36, "y": 0, "z": 0}
+    },
+    "planet2_center": {
+      "type": "point",
+      "point": {"x": -18, "y": 31.18, "z": 0}
+    },
+    "planet3_center": {
+      "type": "point",
+      "point": {"x": -18, "y": -31.18, "z": 0}
+    }
+  },
+  "constraints": [
+    {
+      "type": "fixed",
+      "entity": "sun_center"
+    },
+    {
+      "type": "distance",
+      "entities": ["sun_center", "planet1_center"],
+      "distance": 36,
+      "comment": "Sun radius (24) + Planet radius (12)"
+    },
+    {
+      "type": "distance",
+      "entities": ["sun_center", "planet2_center"],
+      "distance": 36
+    },
+    {
+      "type": "distance",
+      "entities": ["sun_center", "planet3_center"],
+      "distance": 36
+    },
+    {
+      "type": "distance",
+      "entities": ["planet1_center", "planet2_center"],
+      "distance": 62.35,
+      "comment": "120 degrees apart on circle"
+    },
+    {
+      "type": "distance",
+      "entities": ["planet2_center", "planet3_center"],
+      "distance": 62.35
+    }
+  ]
+}

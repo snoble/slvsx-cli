@@ -39,4 +39,21 @@ Thumbs.db
 *.dxf
 !examples/**/*.svg
 !examples/**/*.stl
-!examples/**/*.dxfci-artifacts/
+!examples/**/*.dxf
+
+# CI artifacts
+ci-artifacts*/
+ci-results/
+
+# Test artifacts
+test-*
+!test-examples.sh
+*.dSYM/
+
+# Temporary files
+*.tmp
+*.bak
+
+# Local environment
+.env
+.env.local

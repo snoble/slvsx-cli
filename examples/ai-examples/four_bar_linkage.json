@@ -1,0 +1,51 @@
+{
+  "schema_version": "0.3.0",
+  "description": "Four-bar linkage mechanism validation",
+  "units": "mm",
+  "entities": {
+    "ground1": {
+      "type": "point",
+      "point": {"x": 0, "y": 0, "z": 0}
+    },
+    "ground2": {
+      "type": "point",
+      "point": {"x": 100, "y": 0, "z": 0}
+    },
+    "joint1": {
+      "type": "point",
+      "point": {"x": 20, "y": 60, "z": 0}
+    },
+    "joint2": {
+      "type": "point",
+      "point": {"x": 120, "y": 80, "z": 0}
+    }
+  },
+  "constraints": [
+    {
+      "type": "fixed",
+      "entity": "ground1"
+    },
+    {
+      "type": "fixed",
+      "entity": "ground2"
+    },
+    {
+      "type": "distance",
+      "entities": ["ground1", "joint1"],
+      "distance": 70,
+      "comment": "Crank length"
+    },
+    {
+      "type": "distance",
+      "entities": ["ground2", "joint2"],
+      "distance": 90,
+      "comment": "Rocker length"
+    },
+    {
+      "type": "distance",
+      "entities": ["joint1", "joint2"],
+      "distance": 100,
+      "comment": "Coupler length"
+    }
+  ]
+}

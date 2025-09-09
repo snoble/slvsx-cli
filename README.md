@@ -1,342 +1,113 @@
 # SLVSX - SolveSpace Constraint Solver CLI
 
-<!-- CI Status Badge - Updated by run-ci-local.sh -->
-![CI Status](https://img.shields.io/badge/CI-failing-critical)
+[![CI Status](https://github.com/snoble/slvsx-cli/actions/workflows/build.yml/badge.svg)](https://github.com/snoble/slvsx-cli/actions)
 
-A command-line interface and library for the SolveSpace geometric constraint solver, providing JSON-based constraint specification with multi-language support through WASM.
+A command-line tool that makes the SolveSpace geometric constraint solver accessible to AI agents and developers through a simple JSON interface.
 
 ## Features
 
-- **JSON-based constraint specification** - Define geometric constraints using a simple, type-safe JSON schema
-- **Multi-language support** - Use from Rust, JavaScript/TypeScript (via WASM), or any language that can generate JSON
-- **MCP Server** - Use with Claude Desktop and other AI assistants via Model Context Protocol
-- **Type-safe workflow** - Rust types → JSON Schema → TypeScript/Python types, ensuring compatibility across languages
-- **Cross-platform** - Native binaries for Linux, macOS, Windows, plus WASM for browsers/Node.js
-- **Comprehensive constraint support** - Points, lines, circles, distance/angle/perpendicular constraints, and more
-- **Export formats** - SVG, DXF, STL output for solved geometries
-- **Parameter support** - Define parametric designs with variables
+- 🤖 **AI-Ready** - Designed for use by AI agents through subprocess calls
+- 📦 **Static Binary** - Single executable with no dependencies
+- 🔧 **JSON Interface** - Simple input/output format
+- 🎯 **Constraint Solving** - Points, lines, circles, distances, angles, and more
+- 📐 **Export Formats** - SVG, DXF, STL output
+- 🚀 **Fast** - Native C++ solver wrapped in Rust
 
 ## Installation
 
-### Native Binary
-
-Download the latest release for your platform from the [releases page](https://github.com/snoble/slvsx-cli/releases):
+### Download Static Binary (Recommended)
 
 ```bash
-# Linux/macOS
-curl -L https://github.com/snoble/slvsx-cli/releases/latest/download/slvsx-linux-x86_64.tar.gz | tar xz
-./slvsx --help
+# Linux/macOS - Download and install in one command
+curl -L https://github.com/snoble/slvsx-cli/releases/latest/download/slvsx-$(uname -s)-$(uname -m) -o slvsx
+chmod +x slvsx
+sudo mv slvsx /usr/local/bin/
 
-# Windows
-# Download slvsx-windows-x86_64.exe.zip and extract
+# Test installation
+slvsx --version
 ```
 
-### Building From Source
+### Build from Source
 
-#### Prerequisites
-- CMake, Make, and a C++ compiler
-- Rust toolchain (stable 1.74+) 
-- Git with submodule support
+See [docs/BUILDING.md](docs/BUILDING.md) for detailed build instructions.
 
-#### Build Steps
+## Quick Start
+
+### Basic Example
 
 ```bash
-# Clone repository with submodules
-git clone --recursive https://github.com/snoble/slvsx-cli.git
-cd slvsx-cli/slvsx/slvsx-cli
-
-# Build libslvs static library
-cd libslvs/SolveSpaceLib
-mkdir -p build
-cd build
-cmake .. -DCMAKE_BUILD_TYPE=Release
-make slvs_static -j$(nproc)
-cd ../../..
-
-# Build slvsx (now with static linking - no runtime dependencies!)
-cargo build --release
-./target/release/slvsx --help
-```
-
-#### Using Nix (Recommended)
-
-For a reproducible build environment with all dependencies:
-
-```bash
-git clone --recursive https://github.com/snoble/slvsx-cli.git
-cd slvsx-cli/slvsx/slvsx-cli
-nix-shell build.nix  # Installs all dependencies and builds libslvs
-cargo build --release
-./target/release/slvsx --help
-```
-
-The resulting binary is statically linked against libslvs and can be run anywhere without additional dependencies.
-
-### WASM Module (JavaScript/TypeScript)
-
-```bash
-npm install @slvsx/core
-```
-
-```javascript
-import init, { WasmSolver } from '@slvsx/core';
-
-await init();
-const solver = new WasmSolver();
-const result = solver.solve(constraintJson);
-```
-
-### MCP Server (for Claude Desktop)
-
-```bash
-npm install -g @slvsx/mcp-server
-```
-
-Then add to Claude Desktop config:
-```json
+# Create a simple constraint problem
+cat > triangle.json << 'EOF'
 {
-  "mcpServers": {
-    "slvsx": {
-      "command": "npx",
-      "args": ["@slvsx/mcp-server"]
-    }
-  }
-}
-```
-
-See [MCP_README.md](MCP_README.md) for detailed setup.
-
-## Usage
-
-### Command Line
-
-```bash
-# Solve constraints and output results
-slvsx solve input.json
-
-# Validate constraint document
-slvsx validate input.json
-
-# Export to SVG
-slvsx export --format svg --output design.svg input.json
-
-# Generate JSON schema for type generation
-slvsx schema > schema.json
-```
-
-### JSON Constraint Format
-
-The solver accepts constraints in JSON format following this structure:
-
-```json
-{
-  "schema": "slvs-json/1",
+  "schema_version": "0.3.0",
   "units": "mm",
-  "parameters": {
-    "width": 100,
-    "height": 50
+  "entities": {
+    "A": {"type": "point", "point": {"x": 0, "y": 0}},
+    "B": {"type": "point", "point": {"x": 100, "y": 0}},
+    "C": {"type": "point", "point": {"x": 50, "y": 50}}
   },
-  "entities": [
-    {
-      "id": "p1",
-      "type": "Point",
-      "x": 0,
-      "y": 0
-    },
-    {
-      "id": "p2", 
-      "type": "Point",
-      "x": "$width",
-      "y": 0
-    },
-    {
-      "id": "line1",
-      "type": "Line",
-      "points": ["p1", "p2"]
-    }
-  ],
   "constraints": [
-    {
-      "type": "Fixed",
-      "entity": "p1"
-    },
-    {
-      "type": "HorizontalDistance",
-      "entities": ["p1", "p2"],
-      "distance": "$width"
-    }
+    {"type": "fixed", "entity": "A"},
+    {"type": "fixed", "entity": "B"},
+    {"type": "distance", "entities": ["A", "C"], "distance": 80},
+    {"type": "distance", "entities": ["B", "C"], "distance": 60}
   ]
 }
+EOF
+
+# Solve it
+slvsx solve triangle.json
 ```
 
-### Type-Safe Development
-
-#### Generate Types from Schema
+### Commands
 
 ```bash
-# Generate JSON schema
-slvsx schema > schema.json
-
-# TypeScript
-npx json-schema-to-typescript schema.json -o types.ts
-
-# Python
-datamodel-codegen --input schema.json --output types.py
+slvsx solve input.json          # Solve constraints
+slvsx validate input.json       # Check validity
+slvsx export -f svg input.json  # Export to SVG
 ```
 
-#### TypeScript Example
+### Use from Python
 
-```typescript
-import { InputDocument, Entity, Constraint } from './types';
+```python
+import json, subprocess
 
-function createTriangle(sideLength: number): InputDocument {
-  return {
-    schema: 'slvs-json/1',
-    units: 'mm',
-    entities: [
-      { id: 'p1', type: 'Point', x: 0, y: 0 },
-      { id: 'p2', type: 'Point', x: sideLength, y: 0 },
-      { id: 'p3', type: 'Point', x: sideLength/2, y: sideLength * 0.866 }
-    ],
-    constraints: [
-      { type: 'Fixed', entity: 'p1' },
-      { type: 'Distance', entities: ['p1', 'p2'], distance: sideLength },
-      { type: 'Distance', entities: ['p2', 'p3'], distance: sideLength },
-      { type: 'Distance', entities: ['p3', 'p1'], distance: sideLength }
-    ]
-  };
-}
+def solve(problem):
+    result = subprocess.run(
+        ['slvsx', 'solve', '-'],
+        input=json.dumps(problem),
+        capture_output=True,
+        text=True
+    )
+    return json.loads(result.stdout) if result.returncode == 0 else None
 ```
 
-## Architecture
+## For AI Agents
 
-### Core Components
+SLVSX is designed to be used by AI agents for solving geometric constraint problems. See:
 
-1. **`slvsx-core`** - Rust library with constraint solver logic
-   - FFI bindings to libslvs (SolveSpace's C++ solver)
-   - JSON schema generation from Rust types
-   - WASM compilation support
-   - Mock solver for testing
-
-2. **`slvsx-cli`** - Command-line interface
-   - Constraint solving and validation
-   - Export to various formats (SVG, DXF, STL)
-   - Schema generation for type safety
-
-3. **`slvsx-exporters`** - Format conversion
-   - SVG generation with proper scaling
-   - DXF export for CAD software
-   - STL for 3D printing
-
-### Type Generation Flow
-
-```
-Rust Types (source of truth)
-    ↓
-JSON Schema (schemars)
-    ↓
-TypeScript/Python/etc Types (json-schema-to-typescript, datamodel-codegen)
-```
-
-This ensures all language bindings stay in sync with the Rust implementation.
-
-## Supported Constraints
-
-### Entities
-- **Point** - 2D/3D points with x, y, z coordinates
-- **Line** - Line segments between two points
-- **Circle** - Circles with center and radius
-- **Arc** - Circular arcs with start/end angles
-- **Cubic** - Cubic Bezier curves
-
-### Constraints
-- **Fixed** - Fix entity position
-- **Distance** - Set distance between points/lines
-- **Angle** - Set angle between lines
-- **Perpendicular** - Make lines perpendicular
-- **Parallel** - Make lines parallel
-- **Horizontal/Vertical** - Align to axes
-- **PointOnLine** - Constrain point to line
-- **PointOnCircle** - Constrain point to circle
-- **Radius** - Set circle/arc radius
-- **Equal** - Make distances/radii equal
-- **Symmetric** - Mirror symmetry constraint
+- [MCP Integration Guide](docs/MCP_INTEGRATION.md) - How to use with Claude and other AI
+- [AI Examples](examples/ai-examples/) - Ready-to-use constraint problems
+- [MCP Server](MCP_SERVER.md) - Future native MCP support
 
 ## Examples
 
-See the [`examples/`](examples/) directory for complete examples including:
+The [`examples/`](examples/) directory contains many constraint problems:
 
-- Basic shapes (triangles, squares, polygons)
-- Parametric designs with variables
-- Mechanical linkages and mechanisms
-- 3D constraints and assemblies
-- Over-constrained system detection
-- TypeScript constraint generation
+- [AI Examples](examples/ai-examples/) - Designed for AI agent use
+- [Basic Shapes](examples/01_first_point.json) - Simple geometric constructions
+- [Mechanisms](examples/four_bar_linkage.json) - Kinematic linkages
+- [Gears](examples/planetary_gears_simple.json) - Gear train positioning
 
-## Development
+## Documentation
 
-### Prerequisites
-
-```bash
-# Install Nix package manager
-curl -L https://nixos.org/nix/install | sh
-
-# Enter development environment
-nix-shell build.nix
-```
-
-This provides:
-- Rust toolchain with WASM target
-- CMake for building libslvs
-- wasm-pack for WASM builds
-- Testing and coverage tools
-
-### Building
-
-```bash
-# Native CLI
-cargo build --release
-
-# WASM module
-cd crates/core
-wasm-pack build --target web --features wasm
-
-# Run tests
-cargo test
-
-# Generate coverage
-cargo tarpaulin
-```
-
-### Testing
-
-```bash
-# Unit tests
-cargo test
-
-# Integration tests with real solver
-cargo test --features real-solver
-
-# WASM tests
-wasm-pack test --node
-```
-
-## Contributing
-
-Contributions are welcome! Please:
-
-1. Fork the repository
-2. Create a feature branch
-3. Add tests for new functionality
-4. Ensure all tests pass
-5. Submit a pull request
+- [Building from Source](docs/BUILDING.md)
+- [MCP Integration](docs/MCP_INTEGRATION.md)
+- [Development Guide](docs/DEVELOPMENT.md)
+- [JSON Schema](schema/slvs-json.schema.json)
 
 ## License
 
-GPLv3 - See [LICENSE](LICENSE) file for details
+GPLv3 - See [LICENSE](LICENSE) file for details.
 
-This project incorporates code from SolveSpace, which is licensed under GPLv3. As a result, this entire project must be distributed under GPLv3 terms.
-
-## Acknowledgments
-
-Built on top of [SolveSpace](https://solvespace.com/)'s powerful constraint solver library.
+Built on top of [SolveSpace](https://solvespace.com/)'s constraint solver library.
