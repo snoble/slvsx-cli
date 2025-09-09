@@ -61,7 +61,6 @@ jobs:
       - name: Run tests (dynamic linking)
         run: |
           export SLVS_LIB_DIR=$PWD/libslvs-static/build
-          export SLVS_USE_FORK=1
           # Tests pass but SIGABRT on exit - this is a cleanup issue not a functional issue
           cargo test || true
           
@@ -69,7 +68,6 @@ jobs:
         run: |
           export SLVS_LIB_DIR=$PWD/libslvs-static/build
           export SLVS_STATIC=1
-          export SLVS_USE_FORK=1
           
           # For Linux, link statically against libgcc and libstdc++ but not glibc
           # This creates a portable binary that only depends on glibc
@@ -100,8 +98,8 @@ jobs:
           ./target/release/slvsx --version
           ./target/release/slvsx capabilities
           # Test with a simple JSON input
-          echo '{"schema_version":"0.3.0","entities":{"p1":{"type":"point","point":{"x":0,"y":0,"z":0}}},"units":"mm"}' | ./target/release/slvsx validate -
-          echo '{"schema_version":"0.3.0","entities":{"p1":{"type":"point","point":{"x":0,"y":0,"z":0}}},"units":"mm"}' | ./target/release/slvsx export -f svg -
+          echo '{"schema_version":"0.3.0","entities":{"p1":{"type":"point","point":{"x":0,"y":0,"z":0}}},"constraints":[],"units":"mm"}' | ./target/release/slvsx validate -
+          echo '{"schema_version":"0.3.0","entities":{"p1":{"type":"point","point":{"x":0,"y":0,"z":0}}},"constraints":[],"units":"mm"}' | ./target/release/slvsx export -f svg -
         
       - name: Test examples
         run: |
