@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <stdio.h>
 #include "slvs.h"
 
 // Structure to hold the SolveSpace system
@@ -46,9 +47,9 @@ RealSlvsSystem* real_slvs_create() {
 // Destroy the system
 void real_slvs_destroy(RealSlvsSystem* s) {
     if (s) {
-        free(s->sys.param);
-        free(s->sys.entity);
-        free(s->sys.constraint);
+        if (s->sys.param) free(s->sys.param);
+        if (s->sys.entity) free(s->sys.entity);
+        if (s->sys.constraint) free(s->sys.constraint);
         free(s);
     }
 }

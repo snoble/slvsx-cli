@@ -73,9 +73,11 @@ pub struct Solver {
 impl Solver {
     pub fn new() -> Self {
         unsafe {
-            Self {
-                system: real_slvs_create(),
+            let system = real_slvs_create();
+            if system.is_null() {
+                panic!("Failed to create solver system");
             }
+            Self { system }
         }
     }
 
@@ -218,7 +220,6 @@ mod tests {
 
     #[test]
     #[cfg(not(feature = "mock-solver"))]
-    #[ignore = "FFI test crashes in test environment but works in production"]
     fn test_ffi_solver() {
         let mut solver = Solver::new();
 
