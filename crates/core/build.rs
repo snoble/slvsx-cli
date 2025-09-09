@@ -31,44 +31,17 @@ fn main() {
         let slvs_lib_dir = if let Ok(dir) = env::var("SLVS_LIB_DIR") {
             PathBuf::from(dir)
         } else {
-            // Default path for local builds
-            project_root.join("libslvs/SolveSpaceLib/build/src/slvs")
+            // Default path for local builds - use libslvs-static
+            project_root.join("libslvs-static/build")
         };
         
         println!("cargo:rustc-link-search=native={}", slvs_lib_dir.display());
         
-        // Also check common build directories
-        println!(
-            "cargo:rustc-link-search=native={}",
-            project_root.join("libslvs/SolveSpaceLib/build/bin").display()
-        );
-        
         // Link the static library and its dependencies
-        // When using the fork, link the combined library that includes mimalloc
-        if env::var("SLVS_USE_FORK").is_ok() {
-            println!("cargo:rustc-link-lib=static=slvs-combined");
-        } else {
-            println!("cargo:rustc-link-lib=static=slvs");
-        }
+        // Always use the combined library from libslvs-static that includes mimalloc
+        println!("cargo:rustc-link-lib=static=slvs-combined");
         
-        // Check for static build of mimalloc - only when not using fork (fork includes it)
-        if env::var("SLVS_USE_FORK").is_err() {
-            let mimalloc_dir = project_root.join("libslvs/SolveSpaceLib/build/extlib/mimalloc");
-            let mimalloc_lib = mimalloc_dir.join("libmimalloc.a");
-            if mimalloc_lib.exists() {
-                println!("cargo:rustc-link-search=native={}", mimalloc_dir.display());
-                println!("cargo:rustc-link-lib=static=mimalloc");
-            } else {
-                // Try minimal build location
-                let minimal_mimalloc = project_root.join("libslvs/SolveSpaceLib/build-minimal/libmimalloc.a");
-                if minimal_mimalloc.exists() {
-                    println!("cargo:rustc-link-search=native={}", 
-                        project_root.join("libslvs/SolveSpaceLib/build-minimal").display());
-                    println!("cargo:rustc-link-lib=static=mimalloc");
-                }
-                // If mimalloc is not found, we'll use system malloc
-            }
-        }
+        // mimalloc is included in slvs-combined, no need to link separately
 
         // System libraries needed by libslvs
         #[cfg(target_os = "linux")]
