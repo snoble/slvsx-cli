@@ -225,10 +225,7 @@ int real_slvs_add_angle_constraint(RealSlvsSystem* s, int id, int line1_id, int 
 int real_slvs_solve(RealSlvsSystem* s) {
     if (!s) return -1;
     
-    // Set a default group (group 1) for all entities and constraints
-    s->sys.group = 1;
-    
-    // Solve the system for group 1
+    // Solve the system for group 1 (default group)
     Slvs_Solve(&s->sys, 1);
     
     // Return status (0 = success, 1 = inconsistent, 2 = didn't converge, 3 = too many unknowns)
