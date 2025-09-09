@@ -41,8 +41,29 @@ RealSlvsSystem* real_slvs_create() {
     
     // Start numbering from 1
     s->next_param = 1;
-    s->next_entity = 1;
+    s->next_entity = 100;  // Start entities at 100 to leave room for special entities
     s->next_constraint = 100;
+    
+    // Initialize with default group
+    Slvs_hGroup g = 1;
+    
+    // Add the origin point
+    s->sys.param[s->sys.params++] = Slvs_MakeParam(1, g, 0.0);
+    s->sys.param[s->sys.params++] = Slvs_MakeParam(2, g, 0.0);
+    s->sys.param[s->sys.params++] = Slvs_MakeParam(3, g, 0.0);
+    s->sys.entity[s->sys.entities++] = Slvs_MakePoint3d(1, g, 1, 2, 3);
+    
+    // Add a quaternion for the normal (no rotation: 1,0,0,0)
+    s->sys.param[s->sys.params++] = Slvs_MakeParam(4, g, 1.0);
+    s->sys.param[s->sys.params++] = Slvs_MakeParam(5, g, 0.0);
+    s->sys.param[s->sys.params++] = Slvs_MakeParam(6, g, 0.0);
+    s->sys.param[s->sys.params++] = Slvs_MakeParam(7, g, 0.0);
+    s->sys.entity[s->sys.entities++] = Slvs_MakeNormal3d(2, g, 4, 5, 6, 7);
+    
+    // Add the XY workplane
+    s->sys.entity[s->sys.entities++] = Slvs_MakeWorkplane(3, g, 1, 2);
+    
+    s->next_param = 8;
     
     return s;
 }
@@ -204,7 +225,10 @@ int real_slvs_add_angle_constraint(RealSlvsSystem* s, int id, int line1_id, int 
 int real_slvs_solve(RealSlvsSystem* s) {
     if (!s) return -1;
     
-    // Solve the system
+    // Set a default group (group 1) for all entities and constraints
+    s->sys.group = 1;
+    
+    // Solve the system for group 1
     Slvs_Solve(&s->sys, 1);
     
     // Return status (0 = success, 1 = inconsistent, 2 = didn't converge, 3 = too many unknowns)
