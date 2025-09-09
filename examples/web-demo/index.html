@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SLVSX Constraint Solver - Web Demo</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        header {
+            background: #2d3748;
+            color: white;
+            padding: 20px 30px;
+        }
+        h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .subtitle {
+            color: #a0aec0;
+            margin-top: 5px;
+        }
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+            min-height: 500px;
+        }
+        .panel {
+            padding: 20px;
+        }
+        .input-panel {
+            border-right: 1px solid #e2e8f0;
+        }
+        .output-panel {
+            background: #f7fafc;
+        }
+        h2 {
+            margin-top: 0;
+            color: #2d3748;
+            font-size: 18px;
+        }
+        textarea {
+            width: 100%;
+            height: 350px;
+            border: 1px solid #cbd5e0;
+            border-radius: 6px;
+            padding: 12px;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 13px;
+            resize: vertical;
+        }
+        #output {
+            background: white;
+            color: #2d3748;
+        }
+        .controls {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+        }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background: #5a67d8;
+        }
+        button:disabled {
+            background: #a0aec0;
+            cursor: not-allowed;
+        }
+        select {
+            padding: 10px;
+            border: 1px solid #cbd5e0;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        .error {
+            color: #f56565;
+            background: #fff5f5;
+            border: 1px solid #feb2b2;
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 10px;
+        }
+        .success {
+            color: #48bb78;
+            background: #f0fff4;
+            border: 1px solid #9ae6b4;
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 10px;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #718096;
+        }
+        .examples-info {
+            margin: 10px 0;
+            padding: 10px;
+            background: #edf2f7;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #4a5568;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>SLVSX Constraint Solver</h1>
+            <div class="subtitle">SolveSpace constraint solver running in your browser via WebAssembly</div>
+        </header>
+        
+        <div class="content">
+            <div class="panel input-panel">
+                <h2>Input JSON</h2>
+                <div class="controls">
+                    <select id="exampleSelect">
+                        <option value="">-- Select Example --</option>
+                        <option value="simple-point">Simple Point</option>
+                        <option value="distance">Distance Constraint</option>
+                        <option value="triangle">Triangle</option>
+                        <option value="parallel">Parallel Lines</option>
+                    </select>
+                    <button id="solveBtn">Solve Constraints</button>
+                </div>
+                <div class="examples-info">
+                    Select an example above or paste your own JSON constraint definition
+                </div>
+                <textarea id="input" placeholder="Paste or type your constraint JSON here...">{
+  "schema": "slvs-json/1",
+  "units": "mm",
+  "parameters": {},
+  "entities": [
+    {
+      "type": "point",
+      "id": "A",
+      "at": [0, 0, 0]
+    },
+    {
+      "type": "point",
+      "id": "B",
+      "at": [100, 0, 0]
+    }
+  ],
+  "constraints": [
+    {
+      "type": "fixed",
+      "entity": "A"
+    },
+    {
+      "type": "distance",
+      "between": ["A", "B"],
+      "value": 50.0
+    }
+  ]
+}</textarea>
+            </div>
+            
+            <div class="panel output-panel">
+                <h2>Solution</h2>
+                <div id="status"></div>
+                <textarea id="output" readonly placeholder="Solution will appear here..."></textarea>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Example constraint problems
+        const examples = {
+            'simple-point': {
+                "schema": "slvs-json/1",
+                "units": "mm",
+                "parameters": {},
+                "entities": [
+                    {
+                        "type": "point",
+                        "id": "origin",
+                        "at": [0, 0, 0]
+                    }
+                ],
+                "constraints": [
+                    {
+                        "type": "fixed",
+                        "entity": "origin"
+                    }
+                ]
+            },
+            'distance': {
+                "schema": "slvs-json/1",
+                "units": "mm",
+                "parameters": {},
+                "entities": [
+                    {
+                        "type": "point",
+                        "id": "A",
+                        "at": [0, 0, 0]
+                    },
+                    {
+                        "type": "point",
+                        "id": "B",
+                        "at": [100, 0, 0]
+                    }
+                ],
+                "constraints": [
+                    {
+                        "type": "fixed",
+                        "entity": "A"
+                    },
+                    {
+                        "type": "distance",
+                        "between": ["A", "B"],
+                        "value": 75.0
+                    }
+                ]
+            },
+            'triangle': {
+                "schema": "slvs-json/1",
+                "units": "mm",
+                "parameters": {
+                    "side_a": 50,
+                    "side_b": 40,
+                    "side_c": 30
+                },
+                "entities": [
+                    {
+                        "type": "point",
+                        "id": "A",
+                        "at": [0, 0, 0]
+                    },
+                    {
+                        "type": "point",
+                        "id": "B",
+                        "at": [50, 0, 0]
+                    },
+                    {
+                        "type": "point",
+                        "id": "C",
+                        "at": [25, 25, 0]
+                    }
+                ],
+                "constraints": [
+                    {
+                        "type": "fixed",
+                        "entity": "A"
+                    },
+                    {
+                        "type": "distance",
+                        "between": ["A", "B"],
+                        "value": "$side_a"
+                    },
+                    {
+                        "type": "distance",
+                        "between": ["B", "C"],
+                        "value": "$side_b"
+                    },
+                    {
+                        "type": "distance",
+                        "between": ["C", "A"],
+                        "value": "$side_c"
+                    }
+                ]
+            },
+            'parallel': {
+                "schema": "slvs-json/1",
+                "units": "mm",
+                "parameters": {},
+                "entities": [
+                    {
+                        "type": "point",
+                        "id": "A",
+                        "at": [0, 0, 0]
+                    },
+                    {
+                        "type": "point",
+                        "id": "B",
+                        "at": [100, 0, 0]
+                    },
+                    {
+                        "type": "point",
+                        "id": "C",
+                        "at": [0, 50, 0]
+                    },
+                    {
+                        "type": "point",
+                        "id": "D",
+                        "at": [100, 50, 0]
+                    },
+                    {
+                        "type": "line",
+                        "id": "AB",
+                        "p1": "A",
+                        "p2": "B"
+                    },
+                    {
+                        "type": "line",
+                        "id": "CD",
+                        "p1": "C",
+                        "p2": "D"
+                    }
+                ],
+                "constraints": [
+                    {
+                        "type": "fixed",
+                        "entity": "A"
+                    },
+                    {
+                        "type": "fixed",
+                        "entity": "B"
+                    },
+                    {
+                        "type": "fixed",
+                        "entity": "C"
+                    },
+                    {
+                        "type": "parallel",
+                        "entities": ["AB", "CD"]
+                    }
+                ]
+            }
+        };
+
+        // Initialize UI
+        const inputEl = document.getElementById('input');
+        const outputEl = document.getElementById('output');
+        const statusEl = document.getElementById('status');
+        const solveBtn = document.getElementById('solveBtn');
+        const exampleSelect = document.getElementById('exampleSelect');
+
+        // Load example when selected
+        exampleSelect.addEventListener('change', (e) => {
+            const example = examples[e.target.value];
+            if (example) {
+                inputEl.value = JSON.stringify(example, null, 2);
+            }
+        });
+
+        // For now, show a message that WASM is being developed
+        // In production, this would load and use the actual WASM module
+        solveBtn.addEventListener('click', async () => {
+            try {
+                // Parse input
+                const input = JSON.parse(inputEl.value);
+                
+                // TODO: Once WASM module is built, replace this with:
+                // const result = await wasm.solve_constraints(inputEl.value);
+                
+                // For demo purposes, show a simulated result
+                statusEl.innerHTML = '<div class="success">✓ Constraints solved successfully</div>';
+                
+                // Simulate a solution (in production, this would come from WASM)
+                const mockSolution = {
+                    status: "ok",
+                    diagnostics: {
+                        iters: 1,
+                        residual: 0.0,
+                        dof: 0,
+                        time_ms: 1
+                    },
+                    entities: Object.fromEntries(
+                        input.entities.map(e => [e.id, { at: e.at }])
+                    ),
+                    message: "Note: This is a demo. WASM module integration pending."
+                };
+                
+                outputEl.value = JSON.stringify(mockSolution, null, 2);
+                
+            } catch (error) {
+                statusEl.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+                outputEl.value = '';
+            }
+        });
+
+        // Add note about WASM development
+        statusEl.innerHTML = '<div class="loading">WASM module integration in progress. Demo shows expected interface.</div>';
+    </script>
+</body>
+</html>

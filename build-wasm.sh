@@ -1,33 +1,28 @@
 #!/bin/bash
 set -e
 
-# Build libslvs with Emscripten
-echo "Building libslvs with Emscripten..."
-cd libslvs/SolveSpaceLib
+echo "Building SLVSX WASM Module"
+echo "=========================="
 
-# Create build directory for Emscripten
-mkdir -p build-wasm
-cd build-wasm
+# Build libslvs-static first if needed
+if [ ! -f libslvs-static/build/libslvs-combined.a ]; then
+    echo "Building libslvs-static..."
+    mkdir -p libslvs-static/build
+    cd libslvs-static/build
+    cmake .. -DCMAKE_BUILD_TYPE=Release
+    make -j$(nproc 2>/dev/null || sysctl -n hw.ncpu)
+    cd ../..
+fi
 
-# Configure with Emscripten
-emcmake cmake .. \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DENABLE_GUI=OFF \
-    -DENABLE_TESTS=OFF
+# Set environment for WASM build
+export SLVS_LIB_DIR="$PWD/libslvs-static/build"
+export SLVS_STATIC=1
+export SLVS_USE_FORK=1
 
-# Build libslvs WASM
-emmake make slvs-wasm -j$(nproc)
-
-# Copy the generated JS file
-cp src/slvs/slvs.js ../../../wasm-dist/libslvs.js
-
-cd ../../../
-
-echo "libslvs WASM build complete!"
-
-# Now build our Rust WASM wrapper that will use libslvs
-echo "Building Rust WASM wrapper..."
+# Build WASM with wasm-pack
+echo "Building WASM module..."
 cd crates/core
-wasm-pack build --target web --features wasm --out-dir ../../wasm-dist
+wasm-pack build --target web --out-dir ../../examples/web-demo/pkg
 
 echo "WASM build complete!"
+echo "Open examples/web-demo/index.html in a browser to test"
