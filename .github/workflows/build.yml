@@ -58,10 +58,10 @@ jobs:
           
           # The combined library uses standard memory allocation
           
-      - name: Run tests (dynamic linking)
+      - name: Run tests
         run: |
           export SLVS_LIB_DIR=$PWD/libslvs-static/build
-          # Run all tests
+          # Run tests without static linking flags (proc-macros need dynamic linking)
           cargo test
           
       - name: Build slvsx (static release)
