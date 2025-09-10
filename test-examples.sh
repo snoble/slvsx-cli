@@ -20,8 +20,7 @@ TOTAL=0
 PASSED=0
 FAILED=0
 
-# Set library path for binary
-export DYLD_LIBRARY_PATH="./libslvs/SolveSpaceLib/build/bin:$DYLD_LIBRARY_PATH"
+# No need to set library path - we're using static linking
 
 # Extract and test each example
 for example in examples/*.md; do
