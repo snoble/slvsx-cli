@@ -56,12 +56,12 @@ jobs:
           echo "Libraries created:"
           ls -la *.a
           
-          # The combined library now uses standard memory allocation (mimalloc removed)
+          # The combined library uses standard memory allocation
           
       - name: Run tests (dynamic linking)
         run: |
           export SLVS_LIB_DIR=$PWD/libslvs-static/build
-          # Run all tests - SIGABRT issue has been fixed by removing mimalloc
+          # Run all tests
           cargo test
           
       - name: Build slvsx (static release)
@@ -104,8 +104,6 @@ jobs:
       - name: Test examples
         run: |
           chmod +x test-examples.sh
-          # TODO: CRITICAL - Fix solver constraint handling after removing mimalloc
-          # Currently fails with "Cannot find handle" errors
           ./test-examples.sh
           
       - name: Upload static binary artifact

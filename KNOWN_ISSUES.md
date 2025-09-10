@@ -1,39 +1,30 @@
 # Known Issues
 
-## CRITICAL BUG: Solver Constraint Handling Broken (2025-09-10)
+## ~~CRITICAL BUG: Solver Constraint Handling Broken~~ FIXED (2025-09-10)
 
-### Issue
-After removing mimalloc to fix SIGABRT crashes, the solver now fails when processing constraints with the error:
+### Issue (FIXED)
+After removing mimalloc to fix SIGABRT crashes, the solver was failing when processing constraints with the error:
 ```
 File libslvs-static/src/dsc.h, line 534, function FindById:
 Assertion failed: t != nullptr.
 Message: Cannot find handle.
 ```
 
-### Impact
-**⚠️ THE PROJECT IS CURRENTLY UNUSABLE FOR ITS MAIN PURPOSE ⚠️**
-- Basic validation and export work correctly
-- Simple solving without constraints works
-- **Complex constraint solving FAILS in 16 out of 17 test examples**
-- **This breaks the core functionality of the constraint solver**
-
 ### Root Cause
-The memory allocator changes may have affected how handles are stored/retrieved in the solver's internal data structures. The TempMemoryPool replacement for mimalloc's heap may not be preserving some data correctly across solver operations.
+The issue was caused by incorrect ID mapping in `ffi/real_slvs_wrapper.c`. The working version from Sept 6 used a consistent `1000+` offset for all entity IDs to avoid conflicts with internal SolveSpace entities. During refactoring, this offset was accidentally removed.
 
-### Fix Priority
-**CRITICAL - MUST FIX IMMEDIATELY**
+### Solution
+Restored the proper ID mapping strategy:
+- All entities (points, lines, circles) use `1000 + id` for internal IDs
+- All constraints use `10000 + id` for internal IDs  
+- Distance constraints pass the distance value directly (not as a parameter)
 
-No other work should proceed until this is fixed. The project is non-functional without constraint solving.
+This fix was verified against the working commit 8f2cc06 from Sept 6, 2025.
 
-### Investigation Needed
-1. How the solver manages entity handles
-2. Whether the TempMemoryPool needs different lifecycle management  
-3. If there are other mimalloc-specific behaviors we need to replicate
-4. Consider reverting to mimalloc but fixing the SIGABRT differently (e.g., proper shutdown sequence)
-
-### Tests Affected
-- test-examples.sh (16 out of 17 examples fail)
-- Unit tests pass (they don't use complex constraints)
+### Tests Status
+✅ All tests now pass
+✅ All 17 example files solve correctly
+✅ CI pipeline is green
 
 ## SIGABRT on Exit (FIXED)
 
