@@ -104,6 +104,8 @@ jobs:
       - name: Test examples
         run: |
           chmod +x test-examples.sh
+          # TODO: CRITICAL - Fix solver constraint handling after removing mimalloc
+          # Currently fails with "Cannot find handle" errors
           ./test-examples.sh
           
       - name: Upload static binary artifact
