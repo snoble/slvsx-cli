@@ -36,6 +36,13 @@ for example in examples/*.md; do
     basename=$(basename "$example" .md)
     echo -e "\n${YELLOW}Testing: $basename${NC}"
     
+    # Check if this test is expected to fail
+    EXPECT_FAILURE=false
+    if grep -q "❌ FAILS" "$example" || grep -q "Over-Constrained" "$example"; then
+        EXPECT_FAILURE=true
+        echo -e "${YELLOW}  (Expected to fail - over-constrained)${NC}"
+    fi
+    
     # Extract only the FIRST JSON content block between ```json and ```
     awk '/```json/{flag=1; next} /```/{if(flag) exit} flag' "$example" > "$TEMP_DIR/$basename.json"
     
@@ -49,24 +56,34 @@ for example in examples/*.md; do
     
     # Test with slvsx solver
     if ./target/release/slvsx solve "$TEMP_DIR/$basename.json" > "$TEMP_DIR/$basename.output" 2>&1; then
-        echo -e "${GREEN}  ✅ Solved successfully${NC}"
-        PASSED=$((PASSED + 1))
-        
-        # Generate SVG if it doesn't exist
-        SVG_FILE="examples/$basename.svg"
-        if [ ! -f "$SVG_FILE" ]; then
-            echo -e "${YELLOW}  Generating SVG...${NC}"
-            if ./target/release/slvsx export --format svg --output "$SVG_FILE" "$TEMP_DIR/$basename.json" 2>&1; then
-                echo -e "${GREEN}  ✅ SVG generated: $SVG_FILE${NC}"
-            else
-                echo -e "${RED}  ❌ Failed to generate SVG${NC}"
+        if [ "$EXPECT_FAILURE" = true ]; then
+            echo -e "${RED}  ❌ Unexpectedly succeeded (should have failed)${NC}"
+            FAILED=$((FAILED + 1))
+        else
+            echo -e "${GREEN}  ✅ Solved successfully${NC}"
+            PASSED=$((PASSED + 1))
+            
+            # Generate SVG if it doesn't exist
+            SVG_FILE="examples/$basename.svg"
+            if [ ! -f "$SVG_FILE" ]; then
+                echo -e "${YELLOW}  Generating SVG...${NC}"
+                if ./target/release/slvsx export --format svg --output "$SVG_FILE" "$TEMP_DIR/$basename.json" 2>&1; then
+                    echo -e "${GREEN}  ✅ SVG generated: $SVG_FILE${NC}"
+                else
+                    echo -e "${RED}  ❌ Failed to generate SVG${NC}"
+                fi
             fi
         fi
     else
-        echo -e "${RED}  ❌ Failed to solve${NC}"
-        echo -e "${RED}  Error output:${NC}"
-        cat "$TEMP_DIR/$basename.output" | head -10
-        FAILED=$((FAILED + 1))
+        if [ "$EXPECT_FAILURE" = true ]; then
+            echo -e "${GREEN}  ✅ Failed as expected (over-constrained)${NC}"
+            PASSED=$((PASSED + 1))
+        else
+            echo -e "${RED}  ❌ Failed to solve${NC}"
+            echo -e "${RED}  Error output:${NC}"
+            cat "$TEMP_DIR/$basename.output" | head -10
+            FAILED=$((FAILED + 1))
+        fi
     fi
 done
 
