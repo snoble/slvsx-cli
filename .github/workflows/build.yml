@@ -97,9 +97,9 @@ jobs:
           # Test that the static binary actually works
           ./target/release/slvsx --version
           ./target/release/slvsx capabilities
-          # Test with a simple JSON input
-          echo '{"schema_version":"0.3.0","entities":{"p1":{"type":"point","point":{"x":0,"y":0,"z":0}}},"constraints":[],"units":"mm"}' | ./target/release/slvsx validate -
-          echo '{"schema_version":"0.3.0","entities":{"p1":{"type":"point","point":{"x":0,"y":0,"z":0}}},"constraints":[],"units":"mm"}' | ./target/release/slvsx export -f svg -
+          # Test with a simple JSON input (correct format for InputDocument)
+          echo '{"schema":"slvs-json/1","entities":[{"type":"point3d","id":"p1","x":0,"y":0,"z":0}],"constraints":[],"units":"mm"}' | ./target/release/slvsx validate -
+          echo '{"schema":"slvs-json/1","entities":[{"type":"point3d","id":"p1","x":0,"y":0,"z":0}],"constraints":[],"units":"mm"}' | ./target/release/slvsx export -f svg -
         
       - name: Test examples
         run: |
