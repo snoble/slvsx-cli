@@ -135,8 +135,11 @@ impl Solver {
         for constraint in &doc.constraints {
             match constraint {
                 crate::ir::Constraint::Fixed { entity } => {
-                    let entity_id = entity_id_map.get(entity).copied().unwrap_or(0);
-                    eprintln!("Adding fixed constraint for entity {}", entity);
+                    let entity_id = entity_id_map.get(entity).copied().unwrap_or_else(|| {
+                        eprintln!("WARNING: Entity '{}' not found in map! Available entities: {:?}", entity, entity_id_map.keys().collect::<Vec<_>>());
+                        0
+                    });
+                    eprintln!("Adding fixed constraint for entity {} (ID: {})", entity, entity_id);
                     ffi_solver
                         .add_fixed_constraint(constraint_id, entity_id)
                         .map_err(|e| crate::error::Error::Ffi(e))?;

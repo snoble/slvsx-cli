@@ -1,6 +1,7 @@
 #include "solvespace.h"
 // mimalloc removed to fix memory allocator conflicts
 #include <vector>
+#include <memory>
 #include <cstdlib>
 
 #if defined(WIN32)
@@ -68,36 +69,52 @@ void DebugPrint(const char *fmt, ...) {
 // Temporary arena.
 //-----------------------------------------------------------------------------
 
-// Simple memory pool for temporary allocations
-// Replaced mimalloc with standard allocation to fix memory conflicts
+// Arena-style memory pool for temporary allocations
+// Mimics the behavior of mimalloc's heap without the allocator conflicts
 struct TempMemoryPool {
-    std::vector<void*> allocations;
-    
-    ~TempMemoryPool() {
-        for(void* ptr : allocations) {
-            free(ptr);
+    struct Arena {
+        std::vector<void*> allocations;
+        
+        ~Arena() {
+            for(void* ptr : allocations) {
+                free(ptr);
+            }
         }
+        
+        void *alloc(size_t size) {
+            void *ptr = calloc(1, size);
+            ssassert(ptr != NULL, "out of memory");
+            allocations.push_back(ptr);
+            return ptr;
+        }
+    };
+    
+    std::unique_ptr<Arena> current;
+    
+    TempMemoryPool() : current(new Arena()) {}
+    
+    void *alloc(size_t size) {
+        if (!current) {
+            current.reset(new Arena());
+        }
+        return current->alloc(size);
     }
     
-    void clear() {
-        for(void* ptr : allocations) {
-            free(ptr);
-        }
-        allocations.clear();
+    void reset() {
+        // Create a new arena, destroying the old one
+        // This mimics mimalloc's heap replacement behavior
+        current.reset(new Arena());
     }
 };
 
 static thread_local TempMemoryPool TempArena;
 
 void *AllocTemporary(size_t size) {
-    void *ptr = calloc(1, size);
-    ssassert(ptr != NULL, "out of memory");
-    TempArena.allocations.push_back(ptr);
-    return ptr;
+    return TempArena.alloc(size);
 }
 
 void FreeAllTemporary() {
-    TempArena.clear();
+    TempArena.reset();
 }
 
 }

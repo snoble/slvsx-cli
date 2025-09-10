@@ -37,9 +37,10 @@ RealSlvsSystem* real_slvs_create() {
     s->sys.calculateFaileds = 0;
     
     // Start numbering from higher values to avoid conflicts
-    s->next_param = 100;
-    s->next_entity = 100;
-    s->next_constraint = 100;
+    // Use different ranges to prevent ID collisions
+    s->next_param = 10000;  // Parameters: 10000+
+    s->next_entity = 100;   // Entities stay at 100+
+    s->next_constraint = 100; // Constraints stay at 100+
     
     return s;
 }
@@ -70,6 +71,7 @@ int real_slvs_add_point(RealSlvsSystem* s, int id, double x, double y, double z)
     s->sys.param[s->sys.params++] = Slvs_MakeParam(pz, g, z);
     
     // Create the point entity
+    fprintf(stderr, "DEBUG: Creating point entity with ID %d, params %d,%d,%d\n", id, px, py, pz);
     s->sys.entity[s->sys.entities++] = Slvs_MakePoint3d(id, g, px, py, pz);
     
     return 0;
@@ -138,17 +140,29 @@ int real_slvs_add_distance_constraint(RealSlvsSystem* s, int id, int entity1, in
 
 // Add a fixed constraint
 int real_slvs_add_fixed_constraint(RealSlvsSystem* s, int id, int entity_id) {
+    fprintf(stderr, "DEBUG: real_slvs_add_fixed_constraint called with id=%d, entity_id=%d\n", id, entity_id);
+    fflush(stderr);
     if (!s) return -1;
     
     Slvs_hGroup g = 1;
     
-    // Map circle IDs to their center point entities if needed
-    Slvs_hEntity e = (entity_id >= 1 && entity_id < 100) ? (1000 + entity_id) : entity_id;
+    // Debug: Check if entity exists
+    fprintf(stderr, "DEBUG: Looking for entity %d in system with %d entities\n", entity_id, s->sys.entities);
+    for (int i = 0; i < s->sys.entities; i++) {
+        fprintf(stderr, "  Entity[%d].h = %d, type = %d\n", i, s->sys.entity[i].h, s->sys.entity[i].type);
+    }
+    
+    // Use the entity ID directly - the ID mapping was causing issues
+    Slvs_hEntity e = entity_id;
+    
+    fprintf(stderr, "DEBUG: Creating SLVS_C_WHERE_DRAGGED constraint with entity %d\n", e);
     
     // Where the point is constrained to be
     s->sys.constraint[s->sys.constraints++] = Slvs_MakeConstraint(
         id, g, SLVS_C_WHERE_DRAGGED, SLVS_FREE_IN_3D,
         0, e, 0, 0, 0);
+    
+    fprintf(stderr, "DEBUG: Constraint created successfully\n");
     
     return 0;
 }
@@ -199,6 +213,9 @@ int real_slvs_add_angle_constraint(RealSlvsSystem* s, int id, int line1_id, int 
 // Solve the system
 int real_slvs_solve(RealSlvsSystem* s) {
     if (!s) return -1;
+    
+    fprintf(stderr, "DEBUG: About to solve with %d entities, %d constraints\n", 
+            s->sys.entities, s->sys.constraints);
     
     // Solve the system for group 1 (default group)
     Slvs_Solve(&s->sys, 1);
