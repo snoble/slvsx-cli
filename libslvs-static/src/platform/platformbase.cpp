@@ -1,5 +1,7 @@
 #include "solvespace.h"
-#include <mimalloc.h>
+// mimalloc removed to fix memory allocator conflicts
+#include <vector>
+#include <cstdlib>
 
 #if defined(WIN32)
 #   include <Windows.h>
@@ -66,30 +68,36 @@ void DebugPrint(const char *fmt, ...) {
 // Temporary arena.
 //-----------------------------------------------------------------------------
 
-struct MimallocHeap {
-    mi_heap_t *heap = NULL;
-
-    ~MimallocHeap() {
-        if(heap != NULL)
-            mi_heap_destroy(heap);
+// Simple memory pool for temporary allocations
+// Replaced mimalloc with standard allocation to fix memory conflicts
+struct TempMemoryPool {
+    std::vector<void*> allocations;
+    
+    ~TempMemoryPool() {
+        for(void* ptr : allocations) {
+            free(ptr);
+        }
+    }
+    
+    void clear() {
+        for(void* ptr : allocations) {
+            free(ptr);
+        }
+        allocations.clear();
     }
 };
 
-static thread_local MimallocHeap TempArena;
+static thread_local TempMemoryPool TempArena;
 
 void *AllocTemporary(size_t size) {
-    if(TempArena.heap == NULL) {
-        TempArena.heap = mi_heap_new();
-        ssassert(TempArena.heap != NULL, "out of memory");
-    }
-    void *ptr = mi_heap_zalloc(TempArena.heap, size);
+    void *ptr = calloc(1, size);
     ssassert(ptr != NULL, "out of memory");
+    TempArena.allocations.push_back(ptr);
     return ptr;
 }
 
 void FreeAllTemporary() {
-    MimallocHeap temp;
-    std::swap(TempArena.heap, temp.heap);
+    TempArena.clear();
 }
 
 }
