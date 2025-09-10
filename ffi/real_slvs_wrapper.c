@@ -70,9 +70,9 @@ int real_slvs_add_point(RealSlvsSystem* s, int id, double x, double y, double z)
     s->sys.param[s->sys.params++] = Slvs_MakeParam(py, g, y);
     s->sys.param[s->sys.params++] = Slvs_MakeParam(pz, g, z);
     
-    // Create the point entity
-    fprintf(stderr, "DEBUG: Creating point entity with ID %d, params %d,%d,%d\n", id, px, py, pz);
-    s->sys.entity[s->sys.entities++] = Slvs_MakePoint3d(id, g, px, py, pz);
+    // Create the point entity with 1000+ offset like working version
+    Slvs_hEntity entity_id = 1000 + id;
+    s->sys.entity[s->sys.entities++] = Slvs_MakePoint3d(entity_id, g, px, py, pz);
     
     return 0;
 }
@@ -83,9 +83,12 @@ int real_slvs_add_line(RealSlvsSystem* s, int id, int point1_id, int point2_id) 
     
     Slvs_hGroup g = 1;
     
-    // Create line segment entity
-    s->sys.entity[s->sys.entities++] = Slvs_MakeLineSegment(id, g, 
-        SLVS_FREE_IN_3D, point1_id, point2_id);
+    // Create line segment entity with proper ID mapping
+    Slvs_hEntity line_id = 1000 + id;
+    Slvs_hEntity p1 = 1000 + point1_id;
+    Slvs_hEntity p2 = 1000 + point2_id;
+    s->sys.entity[s->sys.entities++] = Slvs_MakeLineSegment(line_id, g, 
+        SLVS_FREE_IN_3D, p1, p2);
     
     return 0;
 }
@@ -121,48 +124,41 @@ int real_slvs_add_circle(RealSlvsSystem* s, int id, double cx, double cy, double
 int real_slvs_add_distance_constraint(RealSlvsSystem* s, int id, int entity1, int entity2, double distance) {
     if (!s) return -1;
     
+    
     Slvs_hGroup g = 1;
     
-    // Convert entity IDs to our internal IDs (circles are stored as points at 1000+id)
-    Slvs_hEntity point1 = (Slvs_hEntity)(1000 + entity1);
-    Slvs_hEntity point2 = (Slvs_hEntity)(1000 + entity2);
+    // Convert entity IDs to internal IDs with 1000+ offset
+    Slvs_hEntity point1 = 1000 + entity1;
+    Slvs_hEntity point2 = 1000 + entity2;
     
-    // Use a unique constraint ID
+    // Use a unique constraint ID with large offset
     Slvs_hConstraint constraint_id = 10000 + id;
     
-    // Add distance constraint between entities
+    // Add distance constraint - pass distance directly as valParam like working version
     s->sys.constraint[s->sys.constraints++] = Slvs_MakeConstraint(
         constraint_id, g, SLVS_C_PT_PT_DISTANCE, SLVS_FREE_IN_3D,
         distance, point1, point2, 0, 0);
+    
     
     return 0;
 }
 
 // Add a fixed constraint
 int real_slvs_add_fixed_constraint(RealSlvsSystem* s, int id, int entity_id) {
-    fprintf(stderr, "DEBUG: real_slvs_add_fixed_constraint called with id=%d, entity_id=%d\n", id, entity_id);
-    fflush(stderr);
     if (!s) return -1;
     
     Slvs_hGroup g = 1;
     
-    // Debug: Check if entity exists
-    fprintf(stderr, "DEBUG: Looking for entity %d in system with %d entities\n", entity_id, s->sys.entities);
-    for (int i = 0; i < s->sys.entities; i++) {
-        fprintf(stderr, "  Entity[%d].h = %d, type = %d\n", i, s->sys.entity[i].h, s->sys.entity[i].type);
-    }
+    // Convert entity ID to internal ID with 1000+ offset
+    Slvs_hEntity e = 1000 + entity_id;
     
-    // Use the entity ID directly - the ID mapping was causing issues
-    Slvs_hEntity e = entity_id;
-    
-    fprintf(stderr, "DEBUG: Creating SLVS_C_WHERE_DRAGGED constraint with entity %d\n", e);
+    // Use a unique constraint ID with large offset
+    Slvs_hConstraint constraint_id = 10000 + id;
     
     // Where the point is constrained to be
     s->sys.constraint[s->sys.constraints++] = Slvs_MakeConstraint(
-        id, g, SLVS_C_WHERE_DRAGGED, SLVS_FREE_IN_3D,
+        constraint_id, g, SLVS_C_WHERE_DRAGGED, SLVS_FREE_IN_3D,
         0, e, 0, 0, 0);
-    
-    fprintf(stderr, "DEBUG: Constraint created successfully\n");
     
     return 0;
 }
@@ -173,9 +169,14 @@ int real_slvs_add_parallel_constraint(RealSlvsSystem* s, int id, int line1_id, i
     
     Slvs_hGroup g = 1;
     
+    // Use proper ID mapping for constraint and entities
+    Slvs_hConstraint constraint_id = 10000 + id;
+    Slvs_hEntity line1 = 1000 + line1_id;
+    Slvs_hEntity line2 = 1000 + line2_id;
+    
     s->sys.constraint[s->sys.constraints++] = Slvs_MakeConstraint(
-        id, g, SLVS_C_PARALLEL, SLVS_FREE_IN_3D,
-        0, 0, 0, line1_id, line2_id);
+        constraint_id, g, SLVS_C_PARALLEL, SLVS_FREE_IN_3D,
+        0, 0, 0, line1, line2);
     
     return 0;
 }
@@ -186,9 +187,14 @@ int real_slvs_add_perpendicular_constraint(RealSlvsSystem* s, int id, int line1_
     
     Slvs_hGroup g = 1;
     
+    // Use proper ID mapping for constraint and entities
+    Slvs_hConstraint constraint_id = 10000 + id;
+    Slvs_hEntity line1 = 1000 + line1_id;
+    Slvs_hEntity line2 = 1000 + line2_id;
+    
     s->sys.constraint[s->sys.constraints++] = Slvs_MakeConstraint(
-        id, g, SLVS_C_PERPENDICULAR, SLVS_FREE_IN_3D,
-        0, 0, 0, line1_id, line2_id);
+        constraint_id, g, SLVS_C_PERPENDICULAR, SLVS_FREE_IN_3D,
+        0, 0, 0, line1, line2);
     
     return 0;
 }
@@ -203,9 +209,14 @@ int real_slvs_add_angle_constraint(RealSlvsSystem* s, int id, int line1_id, int 
     int angle_param = s->next_param++;
     s->sys.param[s->sys.params++] = Slvs_MakeParam(angle_param, g, angle);
     
+    // Use proper ID mapping for constraint and entities
+    Slvs_hConstraint constraint_id = 10000 + id;
+    Slvs_hEntity line1 = 1000 + line1_id;
+    Slvs_hEntity line2 = 1000 + line2_id;
+    
     s->sys.constraint[s->sys.constraints++] = Slvs_MakeConstraint(
-        id, g, SLVS_C_ANGLE, SLVS_FREE_IN_3D,
-        angle_param, 0, 0, line1_id, line2_id);
+        constraint_id, g, SLVS_C_ANGLE, SLVS_FREE_IN_3D,
+        angle_param, 0, 0, line1, line2);
     
     return 0;
 }
@@ -213,9 +224,6 @@ int real_slvs_add_angle_constraint(RealSlvsSystem* s, int id, int line1_id, int 
 // Solve the system
 int real_slvs_solve(RealSlvsSystem* s) {
     if (!s) return -1;
-    
-    fprintf(stderr, "DEBUG: About to solve with %d entities, %d constraints\n", 
-            s->sys.entities, s->sys.constraints);
     
     // Solve the system for group 1 (default group)
     Slvs_Solve(&s->sys, 1);
@@ -238,9 +246,10 @@ int real_slvs_solve(RealSlvsSystem* s) {
 int real_slvs_get_point_position(RealSlvsSystem* s, int point_id, double* x, double* y, double* z) {
     if (!s || !x || !y || !z) return -1;
     
-    // Find the point entity
+    // Find the point entity (look for internal ID with 1000+ offset)
+    Slvs_hEntity internal_id = 1000 + point_id;
     for (int i = 0; i < s->sys.entities; i++) {
-        if (s->sys.entity[i].h == point_id && 
+        if (s->sys.entity[i].h == internal_id && 
             s->sys.entity[i].type == SLVS_E_POINT_IN_3D) {
             
             // Get the parameter values

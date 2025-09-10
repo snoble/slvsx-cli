@@ -1,5 +1,4 @@
 #include "solvespace.h"
-// mimalloc removed to fix memory allocator conflicts
 #include <vector>
 #include <memory>
 #include <cstdlib>
@@ -70,7 +69,6 @@ void DebugPrint(const char *fmt, ...) {
 //-----------------------------------------------------------------------------
 
 // Arena-style memory pool for temporary allocations
-// Mimics the behavior of mimalloc's heap without the allocator conflicts
 struct TempMemoryPool {
     struct Arena {
         std::vector<void*> allocations;
@@ -102,7 +100,6 @@ struct TempMemoryPool {
     
     void reset() {
         // Create a new arena, destroying the old one
-        // This mimics mimalloc's heap replacement behavior
         current.reset(new Arena());
     }
 };

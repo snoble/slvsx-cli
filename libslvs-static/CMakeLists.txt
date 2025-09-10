@@ -22,7 +22,6 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/extlib/eigen
 )
 
-# mimalloc removed to fix memory allocator conflicts
 
 # Core solver sources
 set(SOLVER_SOURCES
@@ -50,8 +49,6 @@ target_compile_definitions(slvs PRIVATE
     STATIC_LIB
 )
 
-# mimalloc removed to fix memory allocator conflicts
-# target_link_libraries(slvs PRIVATE mimalloc-static)
 
 # Set properties
 set_target_properties(slvs PROPERTIES
@@ -66,12 +63,8 @@ install(TARGETS slvs
     PUBLIC_HEADER DESTINATION include
 )
 
-# mimalloc removed
-# install(TARGETS mimalloc-static
-#     ARCHIVE DESTINATION lib
-# )
 
-# Create a combined static library (mimalloc removed)
+# Create a combined static library
 add_custom_target(slvs-combined ALL
     COMMAND ${CMAKE_AR} -x $<TARGET_FILE:slvs>
     COMMAND ${CMAKE_AR} -qcs ${CMAKE_CURRENT_BINARY_DIR}/libslvs-combined.a *.o
@@ -92,5 +85,4 @@ message(STATUS "Building libslvs-static:")
 message(STATUS "  Version: ${PROJECT_VERSION}")
 message(STATUS "  Build type: ${CMAKE_BUILD_TYPE}")
 message(STATUS "  Static library: libslvs.a")
-message(STATUS "  Includes mimalloc: No (removed to fix memory conflicts)")
 message(STATUS "  GPL-3.0 Licensed")
