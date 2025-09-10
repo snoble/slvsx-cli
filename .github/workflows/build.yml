@@ -56,13 +56,13 @@ jobs:
           echo "Libraries created:"
           ls -la *.a
           
-          # The combined library includes both libslvs and mimalloc
+          # The combined library now uses standard memory allocation (mimalloc removed)
           
       - name: Run tests (dynamic linking)
         run: |
           export SLVS_LIB_DIR=$PWD/libslvs-static/build
-          # Tests pass but SIGABRT on exit - this is a cleanup issue not a functional issue
-          cargo test || true
+          # Run all tests - SIGABRT issue has been fixed by removing mimalloc
+          cargo test
           
       - name: Build slvsx (static release)
         run: |
@@ -95,17 +95,16 @@ jobs:
       - name: Test static binary
         run: |
           # Test that the static binary actually works
-          # Note: The binary may SIGABRT on exit due to cleanup issues, but this doesn't affect functionality
-          ./target/release/slvsx --version || true
-          ./target/release/slvsx capabilities || true
+          ./target/release/slvsx --version
+          ./target/release/slvsx capabilities
           # Test with a simple JSON input (correct format for InputDocument)
-          echo '{"schema":"slvs-json/1","entities":[{"type":"point3d","id":"p1","x":0,"y":0,"z":0}],"constraints":[],"units":"mm"}' | ./target/release/slvsx validate - || true
-          echo '{"schema":"slvs-json/1","entities":[{"type":"point3d","id":"p1","x":0,"y":0,"z":0}],"constraints":[],"units":"mm"}' | ./target/release/slvsx export -f svg - || true
+          echo '{"schema":"slvs-json/1","entities":[{"type":"point","id":"p1","at":[0,0,0]}],"constraints":[],"units":"mm"}' | ./target/release/slvsx validate -
+          echo '{"schema":"slvs-json/1","entities":[{"type":"point","id":"p1","at":[0,0,0]}],"constraints":[],"units":"mm"}' | ./target/release/slvsx export -f svg -
         
       - name: Test examples
         run: |
           chmod +x test-examples.sh
-          ./test-examples.sh || true
+          ./test-examples.sh
           
       - name: Upload static binary artifact
         uses: actions/upload-artifact@v4
