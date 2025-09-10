@@ -2,6 +2,7 @@ use std::env;
 use std::path::PathBuf;
 
 fn main() {
+    // Force rebuild: v2 with ID offset fixes
     let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
     let project_root = manifest_dir.parent().unwrap().parent().unwrap();
 
