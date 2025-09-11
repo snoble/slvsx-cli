@@ -61,9 +61,7 @@ jobs:
       - name: Run tests
         run: |
           export SLVS_LIB_DIR=$PWD/libslvs-static/build
-          # Remove Cargo.lock to let CI generate fresh dependencies
-          rm -f Cargo.lock
-          # Run tests - cargo will handle proc-macro compilation
+          # Run tests directly - Cargo.lock is committed
           cargo test
           
       - name: Build slvsx (static release)
