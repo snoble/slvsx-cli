@@ -72,7 +72,8 @@ jobs:
             # Using --target ensures RUSTFLAGS don't apply to proc-macros (host tools)
             cargo test --target x86_64-unknown-linux-gnu
           else
-            cargo test --target x86_64-apple-darwin
+            # On macOS, just run without target (it's not needed for proc-macro issues)
+            cargo test
           fi
           
       - name: Build slvsx (static release)
@@ -88,7 +89,7 @@ jobs:
             cargo build --release --target x86_64-unknown-linux-gnu
           else
             # For macOS, use default linking (already mostly static)
-            cargo build --release --target x86_64-apple-darwin
+            cargo build --release
           fi
           
       - name: Verify static binary
