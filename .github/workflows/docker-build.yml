@@ -1,0 +1,49 @@
+name: Docker Build and Test
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  docker-build:
+    name: Build and Test with Docker
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          
+      - name: Build Docker image
+        run: |
+          docker build -t slvsx-builder .
+          
+      - name: Extract binary from Docker
+        run: |
+          # Create container and copy binary out
+          docker create --name temp-container slvsx-builder
+          docker cp temp-container:/app/target/release/slvsx ./slvsx-linux
+          docker rm temp-container
+          
+      - name: Test extracted binary
+        run: |
+          chmod +x ./slvsx-linux
+          ./slvsx-linux --version
+          ./slvsx-linux capabilities
+          
+      - name: Verify static linking
+        run: |
+          echo "Checking binary dependencies:"
+          ldd ./slvsx-linux | grep -E "(libstdc|libgcc)" || echo "No libstdc++/libgcc dependencies (good!)"
+          echo "Full dependency list:"
+          ldd ./slvsx-linux || echo "Fully static binary!"
+          file ./slvsx-linux
+          
+      - name: Upload binary artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: slvsx-linux-docker
+          path: ./slvsx-linux

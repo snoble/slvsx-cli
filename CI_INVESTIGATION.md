@@ -189,9 +189,24 @@ The Cargo.lock file is being regenerated in CI differently than locally because:
 2. Check if Cargo.lock is actually being used
 3. Investigate why fresh Cargo.lock generation fails
 
+## Current Mystery
+
+Even with Cargo.lock committed and no RUSTFLAGS set, Ubuntu CI still fails with:
+```
+error: cannot produce proc-macro for `clap_derive v4.4.7` as the target `x86_64-unknown-linux-gnu` does not support these crate types
+```
+
+Key observations:
+1. The error mentions target even though we're not using --target
+2. macOS works fine, only Ubuntu fails
+3. Cargo.lock IS being used (same versions)
+4. No RUSTFLAGS are set
+
+This suggests the issue is with how Cargo on Ubuntu CI is configured by default.
+
 ## Lessons Learned
 1. Using `--target` has side effects beyond just controlling where RUSTFLAGS apply
 2. When --target matches the host, it can trigger different linking behavior
 3. Static PIE linking on Linux has specific requirements
-4. The original proc-macro error might have been a Cargo.lock consistency issue
-5. Don't assume --target is a no-op when targeting the host platform
+4. The proc-macro error can occur even without explicit --target or RUSTFLAGS
+5. Cargo.lock being in .gitignore was masking the real issue
