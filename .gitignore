@@ -1,6 +1,6 @@
 # Rust
 target/
-Cargo.lock
+# Cargo.lock should be committed for binary crates
 **/*.rs.bk
 *.pdb
 

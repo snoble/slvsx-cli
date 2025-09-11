@@ -167,20 +167,27 @@ Since RUSTFLAGS are NOT set during the test phase, the original proc-macro issue
 2. No --target flag needed
 3. The Cargo.lock issue was the real problem
 
-## Final Solution
+## Update: The Real Issue
 
-After systematic investigation:
+The proc-macro error persists even WITHOUT --target! This means:
 
-1. **For tests**: Run `cargo test` normally on both platforms
-   - No RUSTFLAGS are set during tests
-   - No --target needed
-   - The proc-macro issue doesn't occur without static linking flags
+1. The issue is NOT about --target flags
+2. The issue is NOT about RUSTFLAGS (we confirmed they're not set)
+3. The issue IS about Cargo.lock generation in CI
 
-2. **For release builds**: Keep using --target on Linux
-   - RUSTFLAGS are set for static linking of libgcc/libstdc++
-   - --target ensures proc-macros aren't affected
+When CI generates a fresh Cargo.lock (ignoring the committed one), it's somehow creating a configuration that tries to build proc-macros with incompatible settings.
 
-3. **Root cause**: The original error was likely from Cargo.lock inconsistency or environment contamination, not from the test step itself
+## New Theory
+
+The Cargo.lock file is being regenerated in CI differently than locally because:
+1. Different Rust/Cargo versions?
+2. Different default target configurations?
+3. Some CI environment setting affecting Cargo?
+
+## Next Investigation
+1. Force CI to use the committed Cargo.lock
+2. Check if Cargo.lock is actually being used
+3. Investigate why fresh Cargo.lock generation fails
 
 ## Lessons Learned
 1. Using `--target` has side effects beyond just controlling where RUSTFLAGS apply
