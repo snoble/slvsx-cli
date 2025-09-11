@@ -61,13 +61,6 @@ jobs:
       - name: Run tests
         run: |
           export SLVS_LIB_DIR=$PWD/libslvs-static/build
-          # Debug: Check environment
-          echo "RUSTFLAGS=${RUSTFLAGS:-not set}"
-          echo "Cargo version:"
-          cargo --version
-          rustc --version
-          
-          # Run tests normally - no RUSTFLAGS are set, so no proc-macro issues
           cargo test
           
       - name: Build slvsx (static release)

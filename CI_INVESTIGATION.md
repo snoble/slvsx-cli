@@ -189,20 +189,19 @@ The Cargo.lock file is being regenerated in CI differently than locally because:
 2. Check if Cargo.lock is actually being used
 3. Investigate why fresh Cargo.lock generation fails
 
-## Current Mystery
+## ROOT CAUSE FOUND
 
-Even with Cargo.lock committed and no RUSTFLAGS set, Ubuntu CI still fails with:
+The issue was in `.cargo/config.toml` which had:
+```toml
+[build]
+rustflags = ["-C", "target-feature=+crt-static"]
 ```
-error: cannot produce proc-macro for `clap_derive v4.4.7` as the target `x86_64-unknown-linux-gnu` does not support these crate types
-```
 
-Key observations:
-1. The error mentions target even though we're not using --target
-2. macOS works fine, only Ubuntu fails
-3. Cargo.lock IS being used (same versions)
-4. No RUSTFLAGS are set
+This global rustflags setting was being applied to ALL compilation, including proc-macros. Proc-macros MUST be built as dynamic libraries and cannot use `+crt-static`.
 
-This suggests the issue is with how Cargo on Ubuntu CI is configured by default.
+The fix: Remove the global `[build]` section and only set rustflags for specific targets. This ensures proc-macros are built normally while target binaries can still be static.
+
+Why macOS worked sometimes: macOS handles static linking differently and the error manifests less consistently.
 
 ## Lessons Learned
 1. Using `--target` has side effects beyond just controlling where RUSTFLAGS apply
