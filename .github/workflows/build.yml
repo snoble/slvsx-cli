@@ -67,14 +67,8 @@ jobs:
           cargo --version
           rustc --version
           
-          # Run tests - use explicit target on Linux to avoid proc-macro issues
-          if [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
-            # Using --target ensures RUSTFLAGS don't apply to proc-macros (host tools)
-            cargo test --target x86_64-unknown-linux-gnu
-          else
-            # On macOS, just run without target (it's not needed for proc-macro issues)
-            cargo test
-          fi
+          # Run tests normally - no RUSTFLAGS are set, so no proc-macro issues
+          cargo test
           
       - name: Build slvsx (static release)
         run: |

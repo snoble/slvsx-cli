@@ -134,8 +134,57 @@ Based on research, the fix is to use explicit `--target` flags when building. Th
 ### Why This Works:
 When you use `cargo build/test` without `--target`, Cargo applies RUSTFLAGS to everything including proc-macros. When you specify `--target`, Cargo knows to only apply RUSTFLAGS to the target artifacts, allowing proc-macros to be built normally as dynamic libraries for the host.
 
+## Update: New Discovery (Phase 2)
+
+After implementing the `--target` solution, we discovered a new issue:
+
+### The --target Flag Side Effect
+Using `--target x86_64-unknown-linux-gnu` on Linux causes Rust to attempt a fully static build, including static linking of libc. This results in:
+```
+/usr/bin/ld: /usr/lib/gcc/x86_64-linux-gnu/13/crtbeginT.o: relocation R_X86_64_32 against hidden symbol `__TMC_END__' can not be used when making a PIE object
+```
+
+This is because:
+1. When you use `--target` that matches the host, Rust changes linking behavior
+2. It tries to create a static PIE (Position Independent Executable)
+3. This conflicts with how the system libraries are built
+
+## Current Status (as of latest commit)
+- ✅ macOS CI: PASSING (removed --target, not needed)
+- ❌ Ubuntu CI: FAILING (--target causes static PIE issues)
+
+## Revised Understanding
+
+The original proc-macro error was likely caused by:
+1. Cargo.lock being regenerated in CI with different settings
+2. Some environment contamination between CI steps
+3. NOT actually RUSTFLAGS during test phase (since we never set them there)
+
+## New Hypothesis to Test
+
+Since RUSTFLAGS are NOT set during the test phase, the original proc-macro issue might not exist. We should test:
+1. Run `cargo test` normally on both platforms
+2. No --target flag needed
+3. The Cargo.lock issue was the real problem
+
+## Final Solution
+
+After systematic investigation:
+
+1. **For tests**: Run `cargo test` normally on both platforms
+   - No RUSTFLAGS are set during tests
+   - No --target needed
+   - The proc-macro issue doesn't occur without static linking flags
+
+2. **For release builds**: Keep using --target on Linux
+   - RUSTFLAGS are set for static linking of libgcc/libstdc++
+   - --target ensures proc-macros aren't affected
+
+3. **Root cause**: The original error was likely from Cargo.lock inconsistency or environment contamination, not from the test step itself
+
 ## Lessons Learned
-1. Always use explicit `--target` when using RUSTFLAGS that affect linking
-2. Proc-macros must always be dynamic libraries
-3. The error message is misleading - the target DOES support proc-macros, but not with static linking
-4. macOS and Linux handle this differently, which can mask issues
+1. Using `--target` has side effects beyond just controlling where RUSTFLAGS apply
+2. When --target matches the host, it can trigger different linking behavior
+3. Static PIE linking on Linux has specific requirements
+4. The original proc-macro error might have been a Cargo.lock consistency issue
+5. Don't assume --target is a no-op when targeting the host platform
