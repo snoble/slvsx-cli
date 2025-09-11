@@ -61,8 +61,19 @@ jobs:
       - name: Run tests
         run: |
           export SLVS_LIB_DIR=$PWD/libslvs-static/build
-          # Run tests directly - Cargo.lock is committed
-          cargo test
+          # Debug: Check environment
+          echo "RUSTFLAGS=${RUSTFLAGS:-not set}"
+          echo "Cargo version:"
+          cargo --version
+          rustc --version
+          
+          # Run tests - use explicit target on Linux to avoid proc-macro issues
+          if [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
+            # Using --target ensures RUSTFLAGS don't apply to proc-macros (host tools)
+            cargo test --target x86_64-unknown-linux-gnu
+          else
+            cargo test --target x86_64-apple-darwin
+          fi
           
       - name: Build slvsx (static release)
         run: |
@@ -73,10 +84,11 @@ jobs:
           # This creates a portable binary that only depends on glibc
           if [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
             export RUSTFLAGS="-C link-arg=-static-libgcc -C link-arg=-static-libstdc++"
-            cargo build --release
+            # Use explicit target so RUSTFLAGS only apply to target, not proc-macros
+            cargo build --release --target x86_64-unknown-linux-gnu
           else
             # For macOS, use default linking (already mostly static)
-            cargo build --release
+            cargo build --release --target x86_64-apple-darwin
           fi
           
       - name: Verify static binary
