@@ -61,8 +61,9 @@ jobs:
       - name: Run tests
         run: |
           export SLVS_LIB_DIR=$PWD/libslvs-static/build
-          # Clear any RUSTFLAGS to ensure proc-macros can be built
-          unset RUSTFLAGS
+          # Build dependencies first to ensure proc-macros are built correctly
+          cargo build --tests
+          # Then run the tests
           cargo test
           
       - name: Build slvsx (static release)
