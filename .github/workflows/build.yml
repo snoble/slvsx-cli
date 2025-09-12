@@ -81,25 +81,40 @@ jobs:
           
       - name: Verify static binary
         run: |
-          echo "Checking binary dependencies:"
+          # Find the binary location (different for --target builds)
           if [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
-            ldd target/release/slvsx | grep -E "(libstdc|libgcc)" || echo "No libstdc++/libgcc dependencies (good!)"
-            echo "Full dependency list:"
-            ldd target/release/slvsx
+            BINARY_PATH="target/x86_64-unknown-linux-gnu/release/slvsx"
           else
-            otool -L target/release/slvsx
+            BINARY_PATH="target/release/slvsx"
           fi
-          ls -lh target/release/slvsx*
-          file target/release/slvsx
+          
+          echo "Checking binary at: $BINARY_PATH"
+          echo "Binary dependencies:"
+          if [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
+            ldd "$BINARY_PATH" | grep -E "(libstdc|libgcc)" || echo "No libstdc++/libgcc dependencies (good!)"
+            echo "Full dependency list:"
+            ldd "$BINARY_PATH"
+          else
+            otool -L "$BINARY_PATH"
+          fi
+          ls -lh "$BINARY_PATH"*
+          file "$BINARY_PATH"
         
       - name: Test static binary
         run: |
+          # Find the binary location (different for --target builds)
+          if [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
+            BINARY_PATH="target/x86_64-unknown-linux-gnu/release/slvsx"
+          else
+            BINARY_PATH="target/release/slvsx"
+          fi
+          
           # Test that the static binary actually works
-          ./target/release/slvsx --version
-          ./target/release/slvsx capabilities
+          "$BINARY_PATH" --version
+          "$BINARY_PATH" capabilities
           # Test with a simple JSON input (correct format for InputDocument)
-          echo '{"schema":"slvs-json/1","entities":[{"type":"point","id":"p1","at":[0,0,0]}],"constraints":[],"units":"mm"}' | ./target/release/slvsx validate -
-          echo '{"schema":"slvs-json/1","entities":[{"type":"point","id":"p1","at":[0,0,0]}],"constraints":[],"units":"mm"}' | ./target/release/slvsx export -f svg -
+          echo '{"schema":"slvs-json/1","entities":[{"type":"point","id":"p1","at":[0,0,0]}],"constraints":[],"units":"mm"}' | "$BINARY_PATH" validate -
+          echo '{"schema":"slvs-json/1","entities":[{"type":"point","id":"p1","at":[0,0,0]}],"constraints":[],"units":"mm"}' | "$BINARY_PATH" export -f svg -
         
       - name: Test examples
         run: |
@@ -110,7 +125,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: slvsx-static-${{ matrix.os }}
-          path: target/release/slvsx*
+          path: |
+            target/release/slvsx*
+            target/x86_64-unknown-linux-gnu/release/slvsx*
           
       - name: Upload example SVGs
         uses: actions/upload-artifact@v4
