@@ -11,6 +11,24 @@ echo "================================================"
 echo "         Testing All Examples"
 echo "================================================"
 
+# Find the slvsx binary (could be in different locations depending on build target)
+if [ -f "./target/release/slvsx" ]; then
+    SLVSX_BIN="./target/release/slvsx"
+elif [ -f "./target/x86_64-unknown-linux-gnu/release/slvsx" ]; then
+    SLVSX_BIN="./target/x86_64-unknown-linux-gnu/release/slvsx"
+elif [ -f "./target/debug/slvsx" ]; then
+    SLVSX_BIN="./target/debug/slvsx"
+else
+    echo -e "${RED}Error: slvsx binary not found!${NC}"
+    echo "Looked in:"
+    echo "  ./target/release/slvsx"
+    echo "  ./target/x86_64-unknown-linux-gnu/release/slvsx"
+    echo "  ./target/debug/slvsx"
+    exit 1
+fi
+
+echo "Using binary: $SLVSX_BIN"
+
 # Create temp directory for extracted JSON
 TEMP_DIR=$(mktemp -d)
 trap "rm -rf $TEMP_DIR" EXIT
@@ -55,7 +73,7 @@ for example in examples/*.md; do
     TOTAL=$((TOTAL + 1))
     
     # Test with slvsx solver
-    if ./target/release/slvsx solve "$TEMP_DIR/$basename.json" > "$TEMP_DIR/$basename.output" 2>&1; then
+    if "$SLVSX_BIN" solve "$TEMP_DIR/$basename.json" > "$TEMP_DIR/$basename.output" 2>&1; then
         if [ "$EXPECT_FAILURE" = true ]; then
             echo -e "${RED}  ❌ Unexpectedly succeeded (should have failed)${NC}"
             FAILED=$((FAILED + 1))
@@ -67,7 +85,7 @@ for example in examples/*.md; do
             SVG_FILE="examples/$basename.svg"
             if [ ! -f "$SVG_FILE" ]; then
                 echo -e "${YELLOW}  Generating SVG...${NC}"
-                if ./target/release/slvsx export --format svg --output "$SVG_FILE" "$TEMP_DIR/$basename.json" 2>&1; then
+                if "$SLVSX_BIN" export --format svg --output "$SVG_FILE" "$TEMP_DIR/$basename.json" 2>&1; then
                     echo -e "${GREEN}  ✅ SVG generated: $SVG_FILE${NC}"
                 else
                     echo -e "${RED}  ❌ Failed to generate SVG${NC}"

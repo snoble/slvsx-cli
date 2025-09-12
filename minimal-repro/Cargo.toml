@@ -1,0 +1,14 @@
+[package]
+name = "minimal-proc-macro-test"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75"
+
+[dependencies]
+# Just clap with derive feature to trigger proc-macro compilation
+clap = { version = "4.4.7", features = ["derive"] }
+
+# Minimal binary
+[[bin]]
+name = "test-binary"
+path = "src/main.rs"

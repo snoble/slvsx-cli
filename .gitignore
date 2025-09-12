@@ -12,8 +12,11 @@ libslvs/SolveSpaceLib/build/
 *.dylib
 *.dll
 
-# Local Rust/Cargo directories
-.cargo/
+# Local Rust/Cargo directories (but keep config.toml)
+.cargo/registry/
+.cargo/git/
+.cargo/.package-cache
+!.cargo/config.toml
 .rustup/
 
 # IDE
