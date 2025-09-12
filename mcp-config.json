@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "slvsx": {
+      "command": "~/.local/bin/slvsx",
+      "args": ["mcp-server"],
+      "env": {},
+      "description": "Geometric constraint solver for CAD problems"
+    }
+  }
+}

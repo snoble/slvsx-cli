@@ -1,0 +1,15 @@
+{
+  "name": "slvsx",
+  "version": "0.1.0",
+  "description": "Geometric constraint solver - zero install via npx",
+  "bin": {
+    "slvsx": "./index.js"
+  },
+  "scripts": {
+    "postinstall": "node install.js"
+  },
+  "keywords": ["geometry", "solver", "cad", "constraints"],
+  "author": "snoble",
+  "license": "GPL-3.0-or-later",
+  "repository": "github:snoble/slvsx-cli"
+}
