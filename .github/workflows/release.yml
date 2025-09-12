@@ -21,149 +21,75 @@ jobs:
     strategy:
       matrix:
         include:
-          - target: aarch64-unknown-linux-gnu
+          - target: x86_64-unknown-linux-gnu
             os: ubuntu-latest
-            name: slvsx-linux-aarch64
+            name: slvsx-linux
           - target: x86_64-apple-darwin
             os: macos-latest
-            name: slvsx-macos-x86_64
+            name: slvsx-macos
           - target: aarch64-apple-darwin
-            os: macos-latest
-            name: slvsx-macos-aarch64
-          - target: x86_64-pc-windows-gnu
-            os: ubuntu-latest
-            name: slvsx-windows-x86_64.exe
+            os: macos-latest  
+            name: slvsx-macos-arm64
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           submodules: recursive
-          fetch-depth: 0
 
-      - name: Install Nix
-        uses: cachix/install-nix-action@v24
-        with:
-          nix_path: nixpkgs=channel:nixos-unstable
-          extra_nix_config: |
-            experimental-features = nix-command flakes
-            access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
-
-      # Cachix disabled - not configured
-      # - name: Setup Cachix
-      #   uses: cachix/cachix-action@v12
-      #   with:
-      #     name: slvsx
-      #     authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
-      #     skipPush: ${{ secrets.CACHIX_AUTH_TOKEN == '' }}
-
-      - name: Build libslvs static library
+      - name: Install dependencies (Ubuntu)
+        if: matrix.os == 'ubuntu-latest'
         run: |
-          cd libslvs/SolveSpaceLib
+          sudo apt-get update
+          sudo apt-get install -y cmake build-essential libpng-dev zlib1g-dev
+          
+      - name: Setup Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+          target: ${{ matrix.target }}
+
+      - name: Build libslvs-static
+        run: |
+          cd libslvs-static
           mkdir -p build
           cd build
-          cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_STATIC=ON
-          make slvs_static -j$(nproc)
-          cd ../../..
+          cmake .. -DCMAKE_BUILD_TYPE=Release
+          make -j$(nproc 2>/dev/null || sysctl -n hw.ncpu)
+          echo "Libraries created:"
+          ls -la *.a
+          cd ../..
 
       - name: Build static binary
         run: |
-          nix-shell build.nix --run "
-            # Install stable Rust if needed
-            rustup toolchain install stable
-            rustup default stable
-            rustup target add ${{ matrix.target }}
-            
-            export CARGO_TARGET_DIR=target
-            
-            # Build with static libslvs
-            cargo build --release --target ${{ matrix.target }}
-          "
+          export SLVS_LIB_DIR=$PWD/libslvs-static/build
+          export SLVS_STATIC=1
+          
+          # For Linux, link statically against libgcc and libstdc++
+          if [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
+            export RUSTFLAGS="-C link-arg=-static-libgcc -C link-arg=-static-libstdc++"
+          fi
+          
+          cargo build --release --target ${{ matrix.target }}
 
       - name: Create archive
         run: |
           cd target/${{ matrix.target }}/release
-          if [[ "${{ matrix.os }}" == "windows-"* ]]; then
-            7z a ../../../${{ matrix.name }}.zip slvsx.exe
-          else
-            tar czf ../../../${{ matrix.name }}.tar.gz slvsx
-          fi
+          # Create both versioned and simple names for compatibility
+          cp slvsx ${{ matrix.name }}
+          tar czf ../../../${{ matrix.name }}.tar.gz slvsx
+          cd ../../..
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.name }}
-          path: |
-            ${{ matrix.name }}.tar.gz
-            ${{ matrix.name }}.zip
-
-  build-wasm:
-    name: Build WASM
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          submodules: recursive
-
-      - name: Install Emscripten
-        uses: mymindstorm/setup-emsdk@v14
-        with:
-          version: 'latest'
-
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: wasm32-unknown-unknown
-
-      - name: Install wasm-pack
-        run: |
-          curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
-
-      - name: Build libslvs with Emscripten
-        run: |
-          cd libslvs/SolveSpaceLib
-          mkdir -p build-wasm
-          cd build-wasm
-          emcmake cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_GUI=OFF -DENABLE_TESTS=OFF
-          emmake make slvs-wasm -j$(nproc)
-          # Copy generated JS file for later packaging
-          cp src/slvs/slvs.js ../../../wasm-dist/libslvs.js || mkdir -p ../../../wasm-dist && cp src/slvs/slvs.js ../../../wasm-dist/libslvs.js
-
-      - name: Build WASM module
-        run: |
-          cd crates/core
-          # Build WASM module wrapper
-          wasm-pack build --target web --features wasm --out-dir ../../wasm-dist
-
-      - name: Create NPM package
-        run: |
-          cd wasm-dist
-          npm init -y
-          npm pkg set name="@slvsx/core"
-          npm pkg set version="${{ github.event.inputs.tag || github.ref_name }}"
-          npm pkg set description="SLVSX constraint solver WASM module"
-          npm pkg set license="GPL-3.0-or-later"
-          npm pkg set main="slvsx_core.js"
-          npm pkg set types="slvsx_core.d.ts"
-          npm pkg set repository="https://github.com/snoble/slvsx-cli"
-          
-      - name: Package WASM
-        run: |
-          tar czf slvsx-wasm.tar.gz wasm-dist/
-          zip -r slvsx-wasm.zip wasm-dist/
-
-      - name: Upload WASM artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: slvsx-wasm
-          path: |
-            slvsx-wasm.tar.gz
-            slvsx-wasm.zip
+          path: ${{ matrix.name }}.tar.gz
 
   release:
     name: Create Release
-    needs: [build, build-wasm]
+    needs: [build]
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
     
@@ -186,35 +112,37 @@ jobs:
             
             Static binaries for SolveSpace constraint solver CLI.
             
-            ### Downloads
+            ### Installation
             
-            #### Native Binaries
-            - **Linux ARM64**: `slvsx-linux-aarch64.tar.gz` 
-            - **macOS x86_64**: `slvsx-macos-x86_64.tar.gz`
-            - **macOS ARM64**: `slvsx-macos-aarch64.tar.gz`
-            - **Windows x86_64**: `slvsx-windows-x86_64.exe.zip`
-            
-            #### WASM Module
-            - **Web/Node.js**: `slvsx-wasm.tar.gz` or `slvsx-wasm.zip`
-            
-            ### Usage
+            #### One-line installer (recommended):
             ```bash
-            # Extract and run (Linux/macOS)
-            tar xzf slvsx-*.tar.gz
-            ./slvsx --help
+            curl -fsSL https://raw.githubusercontent.com/snoble/slvsx-cli/main/install.sh | bash
+            ```
             
-            # Windows: extract zip and run slvsx.exe
+            #### Manual download:
+            - **Linux x86_64**: `slvsx-linux.tar.gz`
+            - **macOS x86_64**: `slvsx-macos.tar.gz`
+            - **macOS ARM64**: `slvsx-macos-arm64.tar.gz`
+            
+            ### Quick Test
+            ```bash
+            # Extract and test
+            tar xzf slvsx-*.tar.gz
+            ./slvsx --version
+            
+            # Simple example
+            echo '{"entities":[{"type":"point","id":"p1","at":[0,0,0]}],"constraints":[],"units":"mm"}' | ./slvsx solve -
             ```
             
             ### Features
             - JSON-based constraint specification
             - SVG/DXF/STL export
-            - Two-phase solving (geometry + phases)
+            - MCP server mode for AI agents
+            - Static binary with no dependencies
             
-            Built with Nix for reproducible, static binaries.
+            See README for full documentation.
           files: |
             artifacts/**/*.tar.gz
-            artifacts/**/*.zip
           draft: false
           prerelease: false
         env:
