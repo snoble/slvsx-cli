@@ -69,6 +69,8 @@ impl Translator {
                 point,
                 circle: line,
             } => vec![point.clone(), line.clone()],
+            Constraint::Symmetric { a, b, about } => vec![a.clone(), b.clone(), about.clone()],
+            Constraint::Midpoint { point, of } => vec![point.clone(), of.clone()],
         }
     }
 }

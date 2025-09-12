@@ -148,6 +148,15 @@ pub enum Constraint {
     Fixed {
         entity: String,
     },
+    Symmetric {
+        a: String,
+        b: String,
+        about: String,
+    },
+    Midpoint {
+        point: String,
+        of: String,
+    },
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, JsonSchema)]

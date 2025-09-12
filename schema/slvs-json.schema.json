@@ -1,231 +1,537 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://slvsx.org/schema/slvs-json/v1",
-  "title": "SLVS JSON Schema",
-  "description": "JSON schema for SolveSpace constraint documents",
+  "title": "InputDocument",
   "type": "object",
-  "required": ["schema", "units"],
+  "required": [
+    "constraints",
+    "entities",
+    "schema"
+  ],
   "properties": {
-    "schema": {
-      "type": "string",
-      "const": "slvs-json/1",
-      "description": "Schema version identifier"
-    },
-    "units": {
-      "type": "string",
-      "enum": ["mm", "in", "m"],
-      "description": "Units for all measurements"
-    },
-    "parameters": {
-      "type": "object",
-      "description": "Named parameters that can be referenced in expressions",
-      "additionalProperties": {
-        "type": "number"
+    "constraints": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Constraint"
       }
     },
     "entities": {
       "type": "array",
-      "description": "Geometric entities (gears, circles, etc.)",
       "items": {
-        "$ref": "#/$defs/Entity"
+        "$ref": "#/definitions/Entity"
       }
     },
-    "constraints": {
-      "type": "array", 
-      "description": "Constraints between entities",
-      "items": {
-        "$ref": "#/$defs/Constraint"
+    "parameters": {
+      "default": {},
+      "type": "object",
+      "additionalProperties": {
+        "type": "number",
+        "format": "double"
       }
+    },
+    "schema": {
+      "type": "string",
+      "pattern": "^slvs-json/1$"
+    },
+    "units": {
+      "default": "mm",
+      "type": "string"
     }
   },
-  "$defs": {
-    "Entity": {
-      "type": "object",
-      "required": ["type", "id"],
-      "properties": {
-        "type": {
-          "type": "string",
-          "enum": ["gear", "circle", "point", "line"]
-        },
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for this entity"
-        }
-      },
-      "oneOf": [
-        {"$ref": "#/$defs/GearEntity"},
-        {"$ref": "#/$defs/CircleEntity"},
-        {"$ref": "#/$defs/PointEntity"},
-        {"$ref": "#/$defs/LineEntity"}
-      ]
-    },
-    "GearEntity": {
-      "type": "object",
-      "required": ["type", "id", "center", "teeth", "module", "pressure_angle"],
-      "properties": {
-        "type": {"const": "gear"},
-        "id": {"type": "string"},
-        "center": {
-          "$ref": "#/$defs/Point3D"
-        },
-        "teeth": {
-          "oneOf": [
-            {"type": "integer", "minimum": 1},
-            {"type": "string", "pattern": "^\\$[a-zA-Z_][a-zA-Z0-9_]*$"}
-          ]
-        },
-        "module": {
-          "oneOf": [
-            {"type": "number", "minimum": 0},
-            {"type": "string", "pattern": "^\\$[a-zA-Z_][a-zA-Z0-9_]*$"}
-          ]
-        },
-        "pressure_angle": {
-          "oneOf": [
-            {"type": "number", "minimum": 0, "maximum": 90},
-            {"type": "string", "pattern": "^\\$[a-zA-Z_][a-zA-Z0-9_]*$"}
-          ]
-        },
-        "phase": {
-          "type": "number",
-          "description": "Rotational phase in degrees"
-        },
-        "internal": {
-          "type": "boolean",
-          "description": "Whether this is an internal gear (ring gear)"
-        }
-      }
-    },
-    "CircleEntity": {
-      "type": "object",
-      "required": ["type", "id", "center", "diameter"],
-      "properties": {
-        "type": {"const": "circle"},
-        "id": {"type": "string"},
-        "center": {
-          "$ref": "#/$defs/Point3D"
-        },
-        "diameter": {
-          "oneOf": [
-            {"type": "number", "minimum": 0},
-            {"type": "string"}
-          ]
-        }
-      }
-    },
-    "PointEntity": {
-      "type": "object",
-      "required": ["type", "id", "position"],
-      "properties": {
-        "type": {"const": "point"},
-        "id": {"type": "string"},
-        "position": {
-          "$ref": "#/$defs/Point3D"
-        }
-      }
-    },
-    "LineEntity": {
-      "type": "object",
-      "required": ["type", "id", "start", "end"],
-      "properties": {
-        "type": {"const": "line"},
-        "id": {"type": "string"},
-        "start": {
-          "$ref": "#/$defs/Point3D"
-        },
-        "end": {
-          "$ref": "#/$defs/Point3D"
-        }
-      }
-    },
-    "Point3D": {
-      "type": "array",
-      "items": {"type": "number"},
-      "minItems": 3,
-      "maxItems": 3,
-      "description": "3D point as [x, y, z]"
-    },
+  "definitions": {
     "Constraint": {
-      "type": "object",
-      "required": ["type"],
-      "properties": {
-        "type": {
-          "type": "string",
-          "enum": ["mesh", "distance", "angle", "coincident"]
-        }
-      },
       "oneOf": [
-        {"$ref": "#/$defs/MeshConstraint"},
-        {"$ref": "#/$defs/DistanceConstraint"},
-        {"$ref": "#/$defs/AngleConstraint"},
-        {"$ref": "#/$defs/CoincidentConstraint"}
+        {
+          "type": "object",
+          "required": [
+            "at",
+            "of",
+            "type"
+          ],
+          "properties": {
+            "at": {
+              "type": "string"
+            },
+            "of": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "coincident"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "between",
+            "type",
+            "value"
+          ],
+          "properties": {
+            "between": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "distance"
+              ]
+            },
+            "value": {
+              "$ref": "#/definitions/ExprOrNumber"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "between",
+            "type",
+            "value"
+          ],
+          "properties": {
+            "between": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "angle"
+              ]
+            },
+            "value": {
+              "$ref": "#/definitions/ExprOrNumber"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "a",
+            "b",
+            "type"
+          ],
+          "properties": {
+            "a": {
+              "type": "string"
+            },
+            "b": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "perpendicular"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "a",
+            "b",
+            "type"
+          ],
+          "properties": {
+            "a": {
+              "type": "string"
+            },
+            "b": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "parallel"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "a",
+            "type"
+          ],
+          "properties": {
+            "a": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "horizontal"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "a",
+            "type"
+          ],
+          "properties": {
+            "a": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "vertical"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "a",
+            "b",
+            "type"
+          ],
+          "properties": {
+            "a": {
+              "type": "string"
+            },
+            "b": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "equal_length"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "a",
+            "b",
+            "type"
+          ],
+          "properties": {
+            "a": {
+              "type": "string"
+            },
+            "b": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "equal_radius"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "a",
+            "b",
+            "type"
+          ],
+          "properties": {
+            "a": {
+              "type": "string"
+            },
+            "b": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "tangent"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "line",
+            "point",
+            "type"
+          ],
+          "properties": {
+            "line": {
+              "type": "string"
+            },
+            "point": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "point_on_line"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "circle",
+            "point",
+            "type"
+          ],
+          "properties": {
+            "circle": {
+              "type": "string"
+            },
+            "point": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "point_on_circle"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "entity",
+            "type"
+          ],
+          "properties": {
+            "entity": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "fixed"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "a",
+            "about",
+            "b",
+            "type"
+          ],
+          "properties": {
+            "a": {
+              "type": "string"
+            },
+            "about": {
+              "type": "string"
+            },
+            "b": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "symmetric"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "of",
+            "point",
+            "type"
+          ],
+          "properties": {
+            "of": {
+              "type": "string"
+            },
+            "point": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "midpoint"
+              ]
+            }
+          }
+        }
       ]
     },
-    "MeshConstraint": {
-      "type": "object",
-      "required": ["type", "gear1", "gear2"],
-      "properties": {
-        "type": {"const": "mesh"},
-        "gear1": {
-          "type": "string",
-          "description": "ID of first gear"
+    "Entity": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "at",
+            "id",
+            "type"
+          ],
+          "properties": {
+            "at": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ExprOrNumber"
+              }
+            },
+            "id": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "point"
+              ]
+            }
+          }
         },
-        "gear2": {
-          "type": "string",
-          "description": "ID of second gear"
-        }
-      }
-    },
-    "DistanceConstraint": {
-      "type": "object",
-      "required": ["type", "between", "value"],
-      "properties": {
-        "type": {"const": "distance"},
-        "between": {
-          "type": "array",
-          "items": {"type": "string"},
-          "minItems": 2,
-          "maxItems": 2,
-          "description": "IDs of two entities"
+        {
+          "type": "object",
+          "required": [
+            "id",
+            "p1",
+            "p2",
+            "type"
+          ],
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "p1": {
+              "type": "string"
+            },
+            "p2": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "line"
+              ]
+            }
+          }
         },
-        "value": {
-          "oneOf": [
-            {"type": "number", "minimum": 0},
-            {"type": "string"}
-          ]
-        }
-      }
-    },
-    "AngleConstraint": {
-      "type": "object",
-      "required": ["type", "between", "value"],
-      "properties": {
-        "type": {"const": "angle"},
-        "between": {
-          "type": "array",
-          "items": {"type": "string"},
-          "minItems": 2,
-          "maxItems": 2
+        {
+          "type": "object",
+          "required": [
+            "center",
+            "diameter",
+            "id",
+            "type"
+          ],
+          "properties": {
+            "center": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ExprOrNumber"
+              }
+            },
+            "diameter": {
+              "$ref": "#/definitions/ExprOrNumber"
+            },
+            "id": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "circle"
+              ]
+            }
+          }
         },
-        "value": {
-          "oneOf": [
-            {"type": "number"},
-            {"type": "string"}
-          ]
+        {
+          "type": "object",
+          "required": [
+            "center",
+            "end",
+            "id",
+            "start",
+            "type"
+          ],
+          "properties": {
+            "center": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ExprOrNumber"
+              }
+            },
+            "end": {
+              "type": "string"
+            },
+            "id": {
+              "type": "string"
+            },
+            "start": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "arc"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "id",
+            "normal",
+            "origin",
+            "type"
+          ],
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "normal": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ExprOrNumber"
+              }
+            },
+            "origin": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ExprOrNumber"
+              }
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "plane"
+              ]
+            }
+          }
         }
-      }
+      ]
     },
-    "CoincidentConstraint": {
-      "type": "object",
-      "required": ["type", "entities"],
-      "properties": {
-        "type": {"const": "coincident"},
-        "entities": {
-          "type": "array",
-          "items": {"type": "string"},
-          "minItems": 2
+    "ExprOrNumber": {
+      "anyOf": [
+        {
+          "type": "number",
+          "format": "double"
+        },
+        {
+          "type": "string"
         }
-      }
+      ]
     }
   }
 }

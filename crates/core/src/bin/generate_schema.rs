@@ -7,10 +7,10 @@ fn main() {
     let json = serde_json::to_string_pretty(&schema).unwrap();
 
     // Write to schema file
-    fs::create_dir_all("../../schemas").expect("Failed to create schemas directory");
-    fs::write("../../schemas/slvs-json-v1-generated.schema.json", &json)
+    fs::create_dir_all("schema").expect("Failed to create schema directory");
+    fs::write("schema/slvs-json.schema.json", &json)
         .expect("Failed to write schema file");
 
-    println!("Schema generated successfully!");
+    println!("Schema generated successfully at schema/slvs-json.schema.json");
     println!("{}", json);
 }
