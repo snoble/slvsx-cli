@@ -16,20 +16,17 @@ env:
 
 jobs:
   build:
-    name: Build ${{ matrix.target }}
+    name: Build ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         include:
-          - target: x86_64-unknown-linux-gnu
-            os: ubuntu-latest
+          - os: ubuntu-latest
             name: slvsx-linux
-          - target: x86_64-apple-darwin
-            os: macos-latest
+            target: x86_64-unknown-linux-gnu
+          - os: macos-latest
             name: slvsx-macos
-          - target: aarch64-apple-darwin
-            os: macos-latest  
-            name: slvsx-macos-arm64
+            # Don't specify target for macOS - let it build native
 
     steps:
       - name: Checkout code
@@ -48,7 +45,6 @@ jobs:
         with:
           toolchain: stable
           override: true
-          target: ${{ matrix.target }}
 
       - name: Build libslvs-static
         run: |
@@ -66,20 +62,28 @@ jobs:
           export SLVS_LIB_DIR=$PWD/libslvs-static/build
           export SLVS_STATIC=1
           
-          # For Linux, link statically against libgcc and libstdc++
+          # For Linux, link statically against libgcc and libstdc++ with explicit target
           if [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
             export RUSTFLAGS="-C link-arg=-static-libgcc -C link-arg=-static-libstdc++"
+            cargo build --release --target ${{ matrix.target }}
+          else
+            # For macOS, build native (will be ARM64 on M1 runners, x86_64 on Intel)
+            cargo build --release
           fi
-          
-          cargo build --release --target ${{ matrix.target }}
 
       - name: Create archive
         run: |
-          cd target/${{ matrix.target }}/release
-          # Create both versioned and simple names for compatibility
-          cp slvsx ${{ matrix.name }}
-          tar czf ../../../${{ matrix.name }}.tar.gz slvsx
-          cd ../../..
+          # Find the binary location (different for --target builds)
+          if [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
+            BINARY_PATH="target/${{ matrix.target }}/release/slvsx"
+          else
+            BINARY_PATH="target/release/slvsx"
+          fi
+          
+          # Create archive with the binary
+          cp $BINARY_PATH slvsx
+          tar czf ${{ matrix.name }}.tar.gz slvsx
+          rm slvsx
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
