@@ -4,12 +4,17 @@ on:
   push:
     tags:
       - 'v*'
+  release:
+    types: [created]
   workflow_dispatch:
     inputs:
       tag:
         description: 'Release tag (e.g., v0.1.0)'
         required: true
         default: 'v0.1.0'
+
+permissions:
+  contents: write  # Required for creating releases
 
 env:
   CARGO_TERM_COLOR: always
@@ -25,8 +30,11 @@ jobs:
             name: slvsx-linux
             target: x86_64-unknown-linux-gnu
           - os: macos-latest
-            name: slvsx-macos
-            # Don't specify target for macOS - let it build native
+            name: slvsx-macos-x86_64
+            target: x86_64-apple-darwin
+          - os: macos-latest
+            name: slvsx-macos-arm64
+            target: aarch64-apple-darwin
 
     steps:
       - name: Checkout code
@@ -45,6 +53,7 @@ jobs:
         with:
           toolchain: stable
           override: true
+          target: ${{ matrix.target }}
 
       - name: Build libslvs-static
         run: |
@@ -62,23 +71,19 @@ jobs:
           export SLVS_LIB_DIR=$PWD/libslvs-static/build
           export SLVS_STATIC=1
           
-          # For Linux, link statically against libgcc and libstdc++ with explicit target
+          # For Linux, link statically against libgcc and libstdc++
+          # Use explicit target to avoid proc-macro compilation issues with RUSTFLAGS
           if [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
             export RUSTFLAGS="-C link-arg=-static-libgcc -C link-arg=-static-libstdc++"
-            cargo build --release --target ${{ matrix.target }}
-          else
-            # For macOS, build native (will be ARM64 on M1 runners, x86_64 on Intel)
-            cargo build --release
           fi
+          
+          # Build with explicit target for all platforms
+          cargo build --release --target ${{ matrix.target }}
 
       - name: Create archive
         run: |
-          # Find the binary location (different for --target builds)
-          if [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
-            BINARY_PATH="target/${{ matrix.target }}/release/slvsx"
-          else
-            BINARY_PATH="target/release/slvsx"
-          fi
+          # Binary is always in target-specific directory since we use --target
+          BINARY_PATH="target/${{ matrix.target }}/release/slvsx"
           
           # Create archive with the binary
           cp $BINARY_PATH slvsx
@@ -95,7 +100,7 @@ jobs:
     name: Create Release
     needs: [build]
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
+    if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch' || github.event_name == 'release'
     
     steps:
       - name: Checkout code
@@ -106,11 +111,12 @@ jobs:
         with:
           path: artifacts
 
-      - name: Create Release
+      - name: Create or Update Release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ github.event.inputs.tag || github.ref_name }}
           name: Release ${{ github.event.inputs.tag || github.ref_name }}
+          # This action will update existing releases if they exist
           body: |
             ## SLVSX CLI ${{ github.event.inputs.tag || github.ref_name }}
             
@@ -125,8 +131,8 @@ jobs:
             
             #### Manual download:
             - **Linux x86_64**: `slvsx-linux.tar.gz`
-            - **macOS x86_64**: `slvsx-macos.tar.gz`
-            - **macOS ARM64**: `slvsx-macos-arm64.tar.gz`
+            - **macOS Intel (x86_64)**: `slvsx-macos-x86_64.tar.gz`
+            - **macOS Apple Silicon (ARM64)**: `slvsx-macos-arm64.tar.gz`
             
             ### Quick Test
             ```bash

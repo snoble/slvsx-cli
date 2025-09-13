@@ -57,6 +57,18 @@ extern "C" {
         point1_id: c_int,
         point2_id: c_int,
     ) -> c_int;
+    pub fn real_slvs_add_perpendicular_constraint(
+        sys: *mut SolverSystem,
+        id: c_int,
+        line1_id: c_int,
+        line2_id: c_int,
+    ) -> c_int;
+    pub fn real_slvs_add_parallel_constraint(
+        sys: *mut SolverSystem,
+        id: c_int,
+        line1_id: c_int,
+        line2_id: c_int,
+    ) -> c_int;
 
     pub fn real_slvs_solve(sys: *mut SolverSystem) -> c_int;
 
@@ -190,6 +202,38 @@ impl Solver {
                 Ok(())
             } else {
                 Err(format!("Failed to add points coincident constraint {}", id))
+            }
+        }
+    }
+
+    pub fn add_perpendicular_constraint(
+        &mut self,
+        id: i32,
+        line1_id: i32,
+        line2_id: i32,
+    ) -> Result<(), String> {
+        unsafe {
+            let result = real_slvs_add_perpendicular_constraint(self.system, id, line1_id, line2_id);
+            if result == 0 {
+                Ok(())
+            } else {
+                Err(format!("Failed to add perpendicular constraint {}", id))
+            }
+        }
+    }
+
+    pub fn add_parallel_constraint(
+        &mut self,
+        id: i32,
+        line1_id: i32,
+        line2_id: i32,
+    ) -> Result<(), String> {
+        unsafe {
+            let result = real_slvs_add_parallel_constraint(self.system, id, line1_id, line2_id);
+            if result == 0 {
+                Ok(())
+            } else {
+                Err(format!("Failed to add parallel constraint {}", id))
             }
         }
     }

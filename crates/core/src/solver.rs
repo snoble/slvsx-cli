@@ -181,6 +181,24 @@ impl Solver {
                         constraint_id += 1;
                     }
                 }
+                crate::ir::Constraint::Perpendicular { a, b } => {
+                    let line1_id = entity_id_map.get(a).copied().unwrap_or(0);
+                    let line2_id = entity_id_map.get(b).copied().unwrap_or(0);
+                    eprintln!("Adding perpendicular constraint: {} ⊥ {}", a, b);
+                    ffi_solver
+                        .add_perpendicular_constraint(constraint_id, line1_id, line2_id)
+                        .map_err(|e| crate::error::Error::Ffi(e))?;
+                    constraint_id += 1;
+                }
+                crate::ir::Constraint::Parallel { a, b } => {
+                    let line1_id = entity_id_map.get(a).copied().unwrap_or(0);
+                    let line2_id = entity_id_map.get(b).copied().unwrap_or(0);
+                    eprintln!("Adding parallel constraint: {} ∥ {}", a, b);
+                    ffi_solver
+                        .add_parallel_constraint(constraint_id, line1_id, line2_id)
+                        .map_err(|e| crate::error::Error::Ffi(e))?;
+                    constraint_id += 1;
+                }
                 _ => {
                     eprintln!("WARNING: Constraint type not yet implemented: {:?}", constraint);
                 } // Handle other constraint types as needed

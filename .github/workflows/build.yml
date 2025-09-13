@@ -116,6 +116,51 @@ jobs:
           echo '{"schema":"slvs-json/1","entities":[{"type":"point","id":"p1","at":[0,0,0]}],"constraints":[],"units":"mm"}' | "$BINARY_PATH" validate -
           echo '{"schema":"slvs-json/1","entities":[{"type":"point","id":"p1","at":[0,0,0]}],"constraints":[],"units":"mm"}' | "$BINARY_PATH" export -f svg -
         
+      - name: Test constraint solving
+        run: |
+          # Find the binary location  
+          if [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
+            BINARY_PATH="target/x86_64-unknown-linux-gnu/release/slvsx"
+          else
+            BINARY_PATH="target/release/slvsx"
+          fi
+          
+          # Test point_on_line constraint
+          echo "Testing point_on_line constraint..."
+          echo '{
+            "schema": "slvs-json/1",
+            "units": "mm",
+            "entities": [
+              {"type": "point", "id": "p1", "at": [0, 0, 0]},
+              {"type": "point", "id": "p2", "at": [100, 0, 0]},
+              {"type": "point", "id": "p3", "at": [50, 50, 0]},
+              {"type": "line", "id": "line1", "p1": "p1", "p2": "p2"}
+            ],
+            "constraints": [
+              {"type": "fixed", "entity": "p1"},
+              {"type": "fixed", "entity": "p2"},
+              {"type": "point_on_line", "point": "p3", "line": "line1"}
+            ]
+          }' | $BINARY_PATH solve - 2>/dev/null | grep -q '"p3"' && echo "✓ point_on_line constraint test passed" || (echo "✗ point_on_line constraint test failed" && exit 1)
+          
+          # Test coincident constraint
+          echo "Testing coincident constraint..."
+          echo '{
+            "schema": "slvs-json/1",
+            "units": "mm",
+            "entities": [
+              {"type": "point", "id": "p1", "at": [0, 0, 0]},
+              {"type": "point", "id": "p2", "at": [100, 0, 0]},
+              {"type": "point", "id": "p3", "at": [50, 50, 0]},
+              {"type": "line", "id": "line1", "p1": "p1", "p2": "p2"}
+            ],
+            "constraints": [
+              {"type": "fixed", "entity": "p1"},
+              {"type": "fixed", "entity": "p2"},
+              {"type": "coincident", "at": "p3", "of": ["line1"]}
+            ]
+          }' | $BINARY_PATH solve - 2>/dev/null | grep -q '"p3"' && echo "✓ coincident constraint test passed" || (echo "✗ coincident constraint test failed" && exit 1)
+          
       - name: Test examples
         run: |
           chmod +x test-examples.sh
