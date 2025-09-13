@@ -195,6 +195,64 @@ ldd target/release/slvsx 2>/dev/null || echo "Static binary!"
 - SolveSpace upstream: https://github.com/solvespace/solvespace
 - Issue tracker: Use GitHub Issues for problems
 
+## CI/Release Pipeline Reliability Guide
+
+### Recent Fixes (as of 2025-09-13)
+
+1. **Test Parallelism Issues**
+   - Problem: SIGSEGV/SIGABRT when tests run in parallel
+   - Root cause: libslvs is not thread-safe
+   - Fix: Set `RUST_TEST_THREADS=1` in CI workflows
+
+2. **macOS Cross-Compilation**
+   - Problem: Undefined symbols when building x86_64 on ARM64 runners (and vice versa)
+   - Root cause: CMake wasn't building for the correct architecture
+   - Fix: Specify `CMAKE_OSX_ARCHITECTURES` based on target
+
+3. **Constraint Schema Mismatches**
+   - Problem: JSON examples failed to parse with rigid constraint definitions
+   - Root cause: Examples used flexible formats not supported by code
+   - Fix: Created enums like `CoincidentData` to support multiple formats
+
+4. **Release Workflow Robustness**
+   - Added comprehensive error checking with `set -e`
+   - Verify library symbols with `nm` before building
+   - Check library architecture with `lipo` on macOS
+   - Smoke test binaries before creating release
+   - Verify archives are created successfully
+
+### Debugging CI Failures
+
+```bash
+# View recent workflow runs
+gh run list --workflow=build.yml
+gh run list --workflow=release.yml
+
+# Get detailed logs for failed runs
+gh run view <run-id> --log-failed
+
+# Watch a run in progress
+gh run watch <run-id>
+
+# Trigger release manually
+gh workflow run release.yml --ref main -f tag=v0.1.x
+```
+
+### Key CI Environment Variables
+
+- `RUST_TEST_THREADS=1` - Prevent parallel test execution
+- `SLVS_LIB_DIR` - Location of libslvs-combined.a
+- `RUSTFLAGS` - Static linking flags (Linux-specific)
+- `CMAKE_OSX_ARCHITECTURES` - Target architecture for macOS
+
+### Release Workflow Stages
+
+1. **Build** - Compile libslvs and slvsx for each platform
+2. **Smoke Test** - Verify binaries work on their target platforms
+3. **Release** - Upload artifacts to GitHub release
+
+Each stage has comprehensive error checking and diagnostic output.
+
 ---
-*Last updated: 2024-09-09*
+*Last updated: 2025-09-13*
 *This document should be updated whenever significant changes are made to the build system or CI configuration.*

@@ -57,6 +57,7 @@ jobs:
 
       - name: Build libslvs-static
         run: |
+          set -e  # Exit on error
           cd libslvs-static
           mkdir -p build
           cd build
@@ -64,32 +65,74 @@ jobs:
           # Set architecture for cross-compilation on macOS
           if [[ "${{ matrix.os }}" == "macos-latest" ]]; then
             if [[ "${{ matrix.target }}" == "x86_64-apple-darwin" ]]; then
+              echo "Building for macOS x86_64"
               cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES=x86_64
             elif [[ "${{ matrix.target }}" == "aarch64-apple-darwin" ]]; then
+              echo "Building for macOS ARM64"
               cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES=arm64
             fi
           else
+            echo "Building for Linux x86_64"
             cmake .. -DCMAKE_BUILD_TYPE=Release
           fi
           
           make -j$(nproc 2>/dev/null || sysctl -n hw.ncpu)
+          
+          # Verify library was created
+          if [[ ! -f libslvs-combined.a ]]; then
+            echo "ERROR: libslvs-combined.a was not created!"
+            ls -la
+            exit 1
+          fi
+          
           echo "Libraries created:"
           ls -la *.a
+          
+          # Verify library contains expected symbols
+          echo "Checking for Slvs_Solve symbol:"
+          if ! nm libslvs-combined.a | grep -q "Slvs_Solve"; then
+            echo "ERROR: libslvs-combined.a doesn't contain Slvs_Solve!"
+            echo "Library symbols:"
+            nm libslvs-combined.a | head -50
+            exit 1
+          fi
+          echo "✓ Found Slvs_Solve symbol"
           
           # Verify library architecture on macOS
           if [[ "${{ matrix.os }}" == "macos-latest" ]]; then
             echo "Library architecture:"
-            lipo -info libslvs-combined.a || true
-            echo "Library symbols (first 20):"
-            nm libslvs-combined.a | grep "T _Slvs" | head -20 || true
+            lipo -info libslvs-combined.a
+            
+            # Verify correct architecture
+            if [[ "${{ matrix.target }}" == "x86_64-apple-darwin" ]]; then
+              if ! lipo -info libslvs-combined.a | grep -q "x86_64"; then
+                echo "ERROR: Library is not x86_64!"
+                exit 1
+              fi
+              echo "✓ Library is x86_64"
+            elif [[ "${{ matrix.target }}" == "aarch64-apple-darwin" ]]; then
+              if ! lipo -info libslvs-combined.a | grep -q "arm64"; then
+                echo "ERROR: Library is not arm64!"
+                exit 1
+              fi
+              echo "✓ Library is arm64"
+            fi
           fi
           
           cd ../..
 
       - name: Build static binary
         run: |
+          set -e  # Exit on error
           export SLVS_LIB_DIR=$PWD/libslvs-static/build
           export SLVS_STATIC=1
+          
+          # Verify library exists before building
+          if [[ ! -f "$SLVS_LIB_DIR/libslvs-combined.a" ]]; then
+            echo "ERROR: libslvs-combined.a not found in $SLVS_LIB_DIR"
+            ls -la "$SLVS_LIB_DIR"
+            exit 1
+          fi
           
           # For Linux, link statically against libgcc and libstdc++
           # Use explicit target to avoid proc-macro compilation issues with RUSTFLAGS
@@ -97,18 +140,65 @@ jobs:
             export RUSTFLAGS="-C link-arg=-static-libgcc -C link-arg=-static-libstdc++"
           fi
           
+          echo "Building with SLVS_LIB_DIR=$SLVS_LIB_DIR"
+          echo "Target: ${{ matrix.target }}"
+          
           # Build with explicit target for all platforms
           cargo build --release --target ${{ matrix.target }}
+          
+          # Verify binary was created
+          BINARY_PATH="target/${{ matrix.target }}/release/slvsx"
+          if [[ ! -f "$BINARY_PATH" ]]; then
+            echo "ERROR: Binary not found at $BINARY_PATH"
+            ls -la "target/${{ matrix.target }}/release/"
+            exit 1
+          fi
+          echo "✓ Binary created at $BINARY_PATH"
 
-      - name: Create archive
+      - name: Verify and create archive
         run: |
+          set -e  # Exit on error
+          
           # Binary is always in target-specific directory since we use --target
           BINARY_PATH="target/${{ matrix.target }}/release/slvsx"
           
+          # Verify binary exists
+          if [[ ! -f "$BINARY_PATH" ]]; then
+            echo "ERROR: Binary not found at $BINARY_PATH"
+            exit 1
+          fi
+          
+          # Test binary can run (basic smoke test)
+          echo "Testing binary:"
+          if [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
+            # Linux: check it's statically linked
+            if ldd "$BINARY_PATH" 2>&1 | grep -q "not a dynamic executable"; then
+              echo "✓ Binary is statically linked"
+            else
+              echo "⚠ Binary may have dynamic dependencies:"
+              ldd "$BINARY_PATH" || true
+            fi
+          elif [[ "${{ matrix.os }}" == "macos-latest" ]]; then
+            # macOS: check minimal dependencies
+            echo "Binary dependencies:"
+            otool -L "$BINARY_PATH" | head -10
+          fi
+          
+          # Test binary version
+          "$BINARY_PATH" --version || echo "⚠ Could not get version"
+          
           # Create archive with the binary
-          cp $BINARY_PATH slvsx
+          cp "$BINARY_PATH" slvsx
           tar czf ${{ matrix.name }}.tar.gz slvsx
           rm slvsx
+          
+          # Verify archive was created
+          if [[ ! -f "${{ matrix.name }}.tar.gz" ]]; then
+            echo "ERROR: Archive not created!"
+            exit 1
+          fi
+          
+          echo "✓ Archive created: $(ls -lh ${{ matrix.name }}.tar.gz)"
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -116,9 +206,40 @@ jobs:
           name: ${{ matrix.name }}
           path: ${{ matrix.name }}.tar.gz
 
+  smoke-test:
+    name: Smoke Test ${{ matrix.name }}
+    needs: [build]
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            name: slvsx-linux
+          - os: macos-latest
+            name: slvsx-macos-x86_64
+    
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ matrix.name }}
+      
+      - name: Extract and test binary
+        run: |
+          set -e
+          tar xzf ${{ matrix.name }}.tar.gz
+          
+          echo "Testing binary version:"
+          ./slvsx --version
+          
+          echo "Testing basic solve:"
+          echo '{"entities":[{"type":"point","id":"p1","at":[0,0,0]},{"type":"point","id":"p2","at":[10,0,0]}],"constraints":[{"type":"fixed","of":"p1"}],"units":"mm"}' | ./slvsx solve -
+          
+          echo "✓ Smoke test passed for ${{ matrix.name }}"
+
   release:
     name: Create Release
-    needs: [build]
+    needs: [build, smoke-test]
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch' || github.event_name == 'release'
     
