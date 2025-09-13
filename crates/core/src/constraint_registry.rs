@@ -64,13 +64,27 @@ impl ConstraintRegistry {
                 // TODO: Implement angle constraint in FFI
                 Err("Angle constraint not yet implemented in FFI".to_string())
             }
-            Constraint::Coincident { at, of } => {
-                if of.len() == 1 {
-                    let point_id = entity_id_map.get(at).copied().unwrap_or(0);
-                    let line_id = entity_id_map.get(&of[0]).copied().unwrap_or(0);
-                    solver.add_point_on_line_constraint(constraint_id, point_id, line_id)
-                } else {
-                    Err("Coincident constraint currently only supports point-on-line".to_string())
+            Constraint::Coincident { data } => {
+                match data {
+                    crate::ir::CoincidentData::PointOnLine { at, of } => {
+                        if of.len() == 1 {
+                            let point_id = entity_id_map.get(at).copied().unwrap_or(0);
+                            let line_id = entity_id_map.get(&of[0]).copied().unwrap_or(0);
+                            solver.add_point_on_line_constraint(constraint_id, point_id, line_id)
+                        } else {
+                            Err("Coincident point-on-line requires exactly 1 line".to_string())
+                        }
+                    },
+                    crate::ir::CoincidentData::TwoEntities { entities } => {
+                        if entities.len() == 2 {
+                            // For point-to-point coincident, use distance constraint of 0
+                            let id1 = entity_id_map.get(&entities[0]).copied().unwrap_or(0);
+                            let id2 = entity_id_map.get(&entities[1]).copied().unwrap_or(0);
+                            solver.add_distance_constraint(constraint_id, id1, id2, 0.0)
+                        } else {
+                            Err("Coincident constraint requires exactly 2 entities".to_string())
+                        }
+                    }
                 }
             }
             Constraint::Perpendicular { a, b } => {
@@ -78,10 +92,14 @@ impl ConstraintRegistry {
                 let line2_id = entity_id_map.get(b).copied().unwrap_or(0);
                 solver.add_perpendicular_constraint(constraint_id, line1_id, line2_id)
             }
-            Constraint::Parallel { a, b } => {
-                let line1_id = entity_id_map.get(a).copied().unwrap_or(0);
-                let line2_id = entity_id_map.get(b).copied().unwrap_or(0);
-                solver.add_parallel_constraint(constraint_id, line1_id, line2_id)
+            Constraint::Parallel { entities } => {
+                if entities.len() == 2 {
+                    let line1_id = entity_id_map.get(&entities[0]).copied().unwrap_or(0);
+                    let line2_id = entity_id_map.get(&entities[1]).copied().unwrap_or(0);
+                    solver.add_parallel_constraint(constraint_id, line1_id, line2_id)
+                } else {
+                    Err("Parallel constraint requires exactly 2 entities".to_string())
+                }
             }
             Constraint::Horizontal { a } => {
                 // TODO: Implement horizontal constraint in FFI
@@ -91,7 +109,7 @@ impl ConstraintRegistry {
                 // TODO: Implement vertical constraint in FFI
                 Err("Vertical constraint not yet implemented in FFI".to_string())
             }
-            Constraint::EqualLength { a, b } => {
+            Constraint::EqualLength { entities } => {
                 // TODO: Implement equal_length constraint in FFI
                 Err("EqualLength constraint not yet implemented in FFI".to_string())
             }

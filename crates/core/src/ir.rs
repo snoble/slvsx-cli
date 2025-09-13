@@ -97,11 +97,23 @@ impl ExprOrNumber {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, JsonSchema)]
+#[serde(untagged)]
+pub enum CoincidentData {
+    PointOnLine {
+        at: String,
+        of: Vec<String>,
+    },
+    TwoEntities {
+        entities: Vec<String>,
+    },
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, JsonSchema)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum Constraint {
     Coincident {
-        at: String,
-        of: Vec<String>,
+        #[serde(flatten)]
+        data: CoincidentData,
     },
     Distance {
         between: Vec<String>,
@@ -112,22 +124,23 @@ pub enum Constraint {
         value: ExprOrNumber,
     },
     Perpendicular {
+        #[serde(alias = "entities")]
         a: String,
         b: String,
     },
     Parallel {
-        a: String,
-        b: String,
+        entities: Vec<String>,
     },
     Horizontal {
+        #[serde(alias = "entity")]
         a: String,
     },
     Vertical {
+        #[serde(alias = "entity")]
         a: String,
     },
     EqualLength {
-        a: String,
-        b: String,
+        entities: Vec<String>,
     },
     EqualRadius {
         a: String,

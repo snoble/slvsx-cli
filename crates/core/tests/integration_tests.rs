@@ -99,8 +99,10 @@ fn test_coincident_constraint_point_on_line() {
                 entity: "p2".to_string(),
             },
             Constraint::Coincident {
-                at: "p3".to_string(),
-                of: vec!["line1".to_string()],
+                data: slvsx_core::ir::CoincidentData::PointOnLine {
+                    at: "p3".to_string(),
+                    of: vec!["line1".to_string()],
+                }
             },
         ],
     };

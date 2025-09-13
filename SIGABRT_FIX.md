@@ -41,12 +41,28 @@ nix-shell -p cargo rustc --run "cargo build --release"
 
 ## Testing Status
 - [x] libslvs-static rebuilt without mimalloc
-- [ ] Rust binary rebuilt with new libslvs
-- [ ] SIGABRT issue resolved
-- [ ] CI updated and passing
+- [x] Rust binary rebuilt with new libslvs
+- [x] SIGABRT issue resolved in local tests
+- [x] CI updated with RUST_TEST_THREADS=1
 
-## Next Steps
-1. Complete Rust binary rebuild with nix-shell
-2. Test that SIGABRT is fixed
-3. Push changes to GitHub
-4. Verify CI passes with the fix
+## Additional SIGABRT Issues Found
+
+### Test Parallelism Issue
+**Problem**: Tests were getting SIGSEGV when running in parallel because libslvs is not thread-safe.
+**Solution**: Set `RUST_TEST_THREADS=1` in CI to force single-threaded test execution.
+
+### Handle Uniqueness Issue
+**Problem**: "Handle isn't unique" assertion in libslvs when tests run in parallel.
+**Solution**: Single-threaded execution prevents handle collisions between concurrent tests.
+
+## Fixes Applied
+1. Removed mimalloc from libslvs-static (memory allocator conflict)
+2. Added `RUST_TEST_THREADS=1` to CI (thread safety)
+3. Fixed test expecting panic for unimplemented constraints (they're just ignored)
+4. Removed debug eprintln statements from solver.rs
+5. Added version consistency checks in CI
+
+## Current Status
+- Tests pass locally with single-threaded execution
+- CI runs tests with RUST_TEST_THREADS=1
+- Some examples still fail due to missing constraint implementations

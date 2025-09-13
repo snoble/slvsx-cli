@@ -167,8 +167,10 @@ fn test_coincident_constraint() {
                 entity: "p2".to_string(),
             },
             Constraint::Coincident {
-                at: "p3".to_string(),
-                of: vec!["line1".to_string()],
+                data: slvsx_core::ir::CoincidentData::PointOnLine {
+                    at: "p3".to_string(),
+                    of: vec!["line1".to_string()],
+                }
             },
         ],
     );
@@ -283,8 +285,7 @@ fn test_parallel_constraint() {
                 entity: "p3".to_string(),
             },
             Constraint::Parallel {
-                a: "line1".to_string(),
-                b: "line2".to_string(),
+                entities: vec!["line1".to_string(), "line2".to_string()],
             },
         ],
     );

@@ -1,5 +1,5 @@
 use crate::error::{Error, Result};
-use crate::ir::{Constraint, InputDocument};
+use crate::ir::{Constraint, CoincidentData, InputDocument};
 
 /// Translates IR to FFI calls
 pub struct Translator;
@@ -48,19 +48,23 @@ impl Translator {
 
     fn get_constraint_refs(&self, constraint: &Constraint) -> Vec<String> {
         match constraint {
-            Constraint::Coincident { at, of } => {
-                let mut refs = vec![at.clone()];
-                refs.extend(of.clone());
-                refs
+            Constraint::Coincident { data } => {
+                match data {
+                    CoincidentData::PointOnLine { at, of } => {
+                        let mut refs = vec![at.clone()];
+                        refs.extend(of.clone());
+                        refs
+                    },
+                    CoincidentData::TwoEntities { entities } => entities.clone(),
+                }
             }
             Constraint::Distance { between, .. } | Constraint::Angle { between, .. } => {
                 between.clone()
             }
             Constraint::Perpendicular { a, b }
-            | Constraint::Parallel { a, b }
-            | Constraint::EqualLength { a, b }
             | Constraint::EqualRadius { a, b }
             | Constraint::Tangent { a, b } => vec![a.clone(), b.clone()],
+            Constraint::Parallel { entities } | Constraint::EqualLength { entities } => entities.clone(),
             Constraint::Horizontal { a }
             | Constraint::Vertical { a }
             | Constraint::Fixed { entity: a } => vec![a.clone()],
@@ -165,8 +169,10 @@ mod tests {
         );
 
         let constraint = Constraint::Coincident {
-            at: "p1".to_string(),
-            of: vec!["l1".to_string(), "l2".to_string()],
+            data: CoincidentData::PointOnLine {
+                at: "p1".to_string(),
+                of: vec!["l1".to_string(), "l2".to_string()],
+            }
         };
         assert_eq!(
             translator.get_constraint_refs(&constraint),

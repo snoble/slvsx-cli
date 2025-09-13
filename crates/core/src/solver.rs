@@ -157,16 +157,31 @@ impl Solver {
                         .map_err(|e| crate::error::Error::Ffi(e))?;
                     constraint_id += 1;
                 }
-                crate::ir::Constraint::Coincident { at, of } => {
-                    // For now, handle coincident of a point with a line  
-                    // TODO: Handle other coincident cases (point-point, etc.)
-                    if of.len() == 1 {
-                        let point_id = entity_id_map.get(at).copied().unwrap_or(0);
-                        let line_id = entity_id_map.get(&of[0]).copied().unwrap_or(0);
-                        ffi_solver
-                            .add_point_on_line_constraint(constraint_id, point_id, line_id)
-                            .map_err(|e| crate::error::Error::Ffi(e))?;
-                        constraint_id += 1;
+                crate::ir::Constraint::Coincident { data } => {
+                    match data {
+                        crate::ir::CoincidentData::PointOnLine { at, of } => {
+                            // Handle point-on-line coincident
+                            if of.len() == 1 {
+                                let point_id = entity_id_map.get(at).copied().unwrap_or(0);
+                                let line_id = entity_id_map.get(&of[0]).copied().unwrap_or(0);
+                                ffi_solver
+                                    .add_point_on_line_constraint(constraint_id, point_id, line_id)
+                                    .map_err(|e| crate::error::Error::Ffi(e))?;
+                                constraint_id += 1;
+                            }
+                        },
+                        crate::ir::CoincidentData::TwoEntities { entities } => {
+                            // Handle point-to-point coincident
+                            if entities.len() == 2 {
+                                // For point-to-point coincident, we can use a distance constraint of 0
+                                let id1 = entity_id_map.get(&entities[0]).copied().unwrap_or(0);
+                                let id2 = entity_id_map.get(&entities[1]).copied().unwrap_or(0);
+                                ffi_solver
+                                    .add_distance_constraint(constraint_id, id1, id2, 0.0)
+                                    .map_err(|e| crate::error::Error::Ffi(e))?;
+                                constraint_id += 1;
+                            }
+                        }
                     }
                 }
                 crate::ir::Constraint::Perpendicular { a, b } => {
@@ -177,13 +192,15 @@ impl Solver {
                         .map_err(|e| crate::error::Error::Ffi(e))?;
                     constraint_id += 1;
                 }
-                crate::ir::Constraint::Parallel { a, b } => {
-                    let line1_id = entity_id_map.get(a).copied().unwrap_or(0);
-                    let line2_id = entity_id_map.get(b).copied().unwrap_or(0);
-                    ffi_solver
-                        .add_parallel_constraint(constraint_id, line1_id, line2_id)
-                        .map_err(|e| crate::error::Error::Ffi(e))?;
-                    constraint_id += 1;
+                crate::ir::Constraint::Parallel { entities } => {
+                    if entities.len() == 2 {
+                        let line1_id = entity_id_map.get(&entities[0]).copied().unwrap_or(0);
+                        let line2_id = entity_id_map.get(&entities[1]).copied().unwrap_or(0);
+                        ffi_solver
+                            .add_parallel_constraint(constraint_id, line1_id, line2_id)
+                            .map_err(|e| crate::error::Error::Ffi(e))?;
+                        constraint_id += 1;
+                    }
                 }
                 _ => {
                     // Constraint type not yet implemented - will be ignored
