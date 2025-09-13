@@ -88,7 +88,7 @@ mod tests {
     use super::*;
     use serde::Deserialize;
     
-    #[derive(Deserialize)]
+    #[derive(Debug, Deserialize)]
     struct TestStruct {
         name: String,
         value: i32,
