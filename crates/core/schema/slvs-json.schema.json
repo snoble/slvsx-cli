@@ -1,0 +1,537 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "InputDocument",
+  "type": "object",
+  "required": [
+    "constraints",
+    "entities",
+    "schema"
+  ],
+  "properties": {
+    "constraints": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Constraint"
+      }
+    },
+    "entities": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Entity"
+      }
+    },
+    "parameters": {
+      "default": {},
+      "type": "object",
+      "additionalProperties": {
+        "type": "number",
+        "format": "double"
+      }
+    },
+    "schema": {
+      "type": "string",
+      "pattern": "^slvs-json/1$"
+    },
+    "units": {
+      "default": "mm",
+      "type": "string"
+    }
+  },
+  "definitions": {
+    "Constraint": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "at",
+            "of",
+            "type"
+          ],
+          "properties": {
+            "at": {
+              "type": "string"
+            },
+            "of": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "coincident"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "between",
+            "type",
+            "value"
+          ],
+          "properties": {
+            "between": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "distance"
+              ]
+            },
+            "value": {
+              "$ref": "#/definitions/ExprOrNumber"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "between",
+            "type",
+            "value"
+          ],
+          "properties": {
+            "between": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "angle"
+              ]
+            },
+            "value": {
+              "$ref": "#/definitions/ExprOrNumber"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "a",
+            "b",
+            "type"
+          ],
+          "properties": {
+            "a": {
+              "type": "string"
+            },
+            "b": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "perpendicular"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "a",
+            "b",
+            "type"
+          ],
+          "properties": {
+            "a": {
+              "type": "string"
+            },
+            "b": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "parallel"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "a",
+            "type"
+          ],
+          "properties": {
+            "a": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "horizontal"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "a",
+            "type"
+          ],
+          "properties": {
+            "a": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "vertical"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "a",
+            "b",
+            "type"
+          ],
+          "properties": {
+            "a": {
+              "type": "string"
+            },
+            "b": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "equal_length"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "a",
+            "b",
+            "type"
+          ],
+          "properties": {
+            "a": {
+              "type": "string"
+            },
+            "b": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "equal_radius"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "a",
+            "b",
+            "type"
+          ],
+          "properties": {
+            "a": {
+              "type": "string"
+            },
+            "b": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "tangent"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "line",
+            "point",
+            "type"
+          ],
+          "properties": {
+            "line": {
+              "type": "string"
+            },
+            "point": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "point_on_line"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "circle",
+            "point",
+            "type"
+          ],
+          "properties": {
+            "circle": {
+              "type": "string"
+            },
+            "point": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "point_on_circle"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "entity",
+            "type"
+          ],
+          "properties": {
+            "entity": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "fixed"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "a",
+            "about",
+            "b",
+            "type"
+          ],
+          "properties": {
+            "a": {
+              "type": "string"
+            },
+            "about": {
+              "type": "string"
+            },
+            "b": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "symmetric"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "of",
+            "point",
+            "type"
+          ],
+          "properties": {
+            "of": {
+              "type": "string"
+            },
+            "point": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "midpoint"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "Entity": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "at",
+            "id",
+            "type"
+          ],
+          "properties": {
+            "at": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ExprOrNumber"
+              }
+            },
+            "id": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "point"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "id",
+            "p1",
+            "p2",
+            "type"
+          ],
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "p1": {
+              "type": "string"
+            },
+            "p2": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "line"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "center",
+            "diameter",
+            "id",
+            "type"
+          ],
+          "properties": {
+            "center": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ExprOrNumber"
+              }
+            },
+            "diameter": {
+              "$ref": "#/definitions/ExprOrNumber"
+            },
+            "id": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "circle"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "center",
+            "end",
+            "id",
+            "start",
+            "type"
+          ],
+          "properties": {
+            "center": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ExprOrNumber"
+              }
+            },
+            "end": {
+              "type": "string"
+            },
+            "id": {
+              "type": "string"
+            },
+            "start": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "arc"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "id",
+            "normal",
+            "origin",
+            "type"
+          ],
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "normal": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ExprOrNumber"
+              }
+            },
+            "origin": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ExprOrNumber"
+              }
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "plane"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "ExprOrNumber": {
+      "anyOf": [
+        {
+          "type": "number",
+          "format": "double"
+        },
+        {
+          "type": "string"
+        }
+      ]
+    }
+  }
+}

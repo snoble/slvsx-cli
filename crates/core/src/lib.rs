@@ -7,6 +7,7 @@ pub mod translator;
 pub mod validator;
 
 pub mod ffi;
+pub mod constraint_registry;
 
 #[cfg(feature = "wasm")]
 pub mod wasm;
