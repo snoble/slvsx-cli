@@ -79,7 +79,8 @@ jobs:
           export SLVS_LIB_DIR=$PWD/libslvs-static/build
           # Run tests single-threaded because libslvs is not thread-safe
           # This prevents SIGSEGV errors when tests try to use the solver concurrently
-          cargo test -- --test-threads=1
+          export RUST_TEST_THREADS=1
+          cargo test
           
       - name: Build slvsx (static release)
         run: |
