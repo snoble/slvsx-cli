@@ -60,10 +60,30 @@ jobs:
           cd libslvs-static
           mkdir -p build
           cd build
-          cmake .. -DCMAKE_BUILD_TYPE=Release
+          
+          # Set architecture for cross-compilation on macOS
+          if [[ "${{ matrix.os }}" == "macos-latest" ]]; then
+            if [[ "${{ matrix.target }}" == "x86_64-apple-darwin" ]]; then
+              cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES=x86_64
+            elif [[ "${{ matrix.target }}" == "aarch64-apple-darwin" ]]; then
+              cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES=arm64
+            fi
+          else
+            cmake .. -DCMAKE_BUILD_TYPE=Release
+          fi
+          
           make -j$(nproc 2>/dev/null || sysctl -n hw.ncpu)
           echo "Libraries created:"
           ls -la *.a
+          
+          # Verify library architecture on macOS
+          if [[ "${{ matrix.os }}" == "macos-latest" ]]; then
+            echo "Library architecture:"
+            lipo -info libslvs-combined.a || true
+            echo "Library symbols (first 20):"
+            nm libslvs-combined.a | grep "T _Slvs" | head -20 || true
+          fi
+          
           cd ../..
 
       - name: Build static binary
