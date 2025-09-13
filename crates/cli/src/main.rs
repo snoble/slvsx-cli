@@ -154,9 +154,10 @@ fn main() -> Result<()> {
             Ok(())
         }
         Commands::Capabilities => {
+            let version = env!("CARGO_PKG_VERSION");
             println!(
                 r#"{{
-  "version": "0.1.0",
+  "version": "{}",
   "entities": ["point", "line", "circle", "arc", "plane"],
   "constraints": [
     "coincident", "distance", "angle", "perpendicular", "parallel",
@@ -165,7 +166,8 @@ fn main() -> Result<()> {
   ],
   "export_formats": ["svg", "dxf", "slvs", "stl"],
   "units": ["mm", "cm", "m", "in", "ft"]
-}}"#
+}}"#,
+                version
             );
             Ok(())
         }
