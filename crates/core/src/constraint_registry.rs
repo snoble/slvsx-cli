@@ -162,7 +162,7 @@ mod tests {
         // This test will fail to compile if any constraint variant is missing
         // from the process_constraint match statement
         let test_constraint = |c: Constraint| {
-            let mut solver = FfiSolver::new().unwrap();
+            let mut solver = FfiSolver::new();
             let entity_map = std::collections::HashMap::new();
             let _ = ConstraintRegistry::process_constraint(&c, &mut solver, 1, &entity_map);
         };
