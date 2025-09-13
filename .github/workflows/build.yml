@@ -82,6 +82,14 @@ jobs:
           export RUST_TEST_THREADS=1
           cargo test
           
+      - name: Build and verify documentation
+        run: |
+          export SLVS_LIB_DIR=$PWD/libslvs-static/build
+          # Build docs and ensure there are no broken links or warnings
+          cargo doc --no-deps --all-features
+          # Check that docs build without errors
+          cargo doc --no-deps --document-private-items
+          
       - name: Build slvsx (static release)
         run: |
           export SLVS_LIB_DIR=$PWD/libslvs-static/build

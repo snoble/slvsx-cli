@@ -7,6 +7,9 @@ use slvsx_core::{
 use std::fs;
 use std::io::{self, Read, Write};
 
+mod json_error;
+use json_error::parse_json_with_context;
+
 #[derive(Parser)]
 #[command(name = "slvsx")]
 #[command(version, about, long_about = None)]
@@ -76,7 +79,7 @@ fn main() -> Result<()> {
     match cli.command {
         Commands::Validate { file } => {
             let input = read_input(&file)?;
-            let doc: InputDocument = serde_json::from_str(&input)?;
+            let doc: InputDocument = parse_json_with_context(&input, &file)?;
 
             // Validate the document
             let validator = slvsx_core::validator::Validator::new();
@@ -87,7 +90,7 @@ fn main() -> Result<()> {
         }
         Commands::Solve { file } => {
             let input = read_input(&file)?;
-            let doc: InputDocument = serde_json::from_str(&input)?;
+            let doc: InputDocument = parse_json_with_context(&input, &file)?;
 
             // Mock solve for now
             let solver = Solver::new(SolverConfig::default());
@@ -105,7 +108,7 @@ fn main() -> Result<()> {
             output,
         } => {
             let input = read_input(&file)?;
-            let doc: InputDocument = serde_json::from_str(&input)?;
+            let doc: InputDocument = parse_json_with_context(&input, &file)?;
 
             // First solve the constraints
             let solver = Solver::new(SolverConfig::default());
