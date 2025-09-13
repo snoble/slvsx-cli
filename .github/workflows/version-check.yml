@@ -1,0 +1,78 @@
+name: Version Check
+
+on:
+  push:
+    tags:
+      - 'v*'
+  pull_request:
+    paths:
+      - 'Cargo.toml'
+      - 'crates/*/Cargo.toml'
+  workflow_dispatch:
+
+jobs:
+  check-version:
+    name: Check Version Consistency
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history for tags
+      
+      - name: Check version consistency
+        run: |
+          # Get version from workspace Cargo.toml
+          CARGO_VERSION=$(grep -E '^version = "' Cargo.toml | head -1 | sed 's/version = "\(.*\)"/\1/')
+          echo "Cargo.toml version: $CARGO_VERSION"
+          
+          # If this is a tag push, verify it matches
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            TAG_VERSION="${GITHUB_REF#refs/tags/v}"
+            echo "Git tag version: $TAG_VERSION"
+            
+            if [[ "$CARGO_VERSION" != "$TAG_VERSION" ]]; then
+              echo "❌ ERROR: Version mismatch!"
+              echo "   Cargo.toml version: $CARGO_VERSION"
+              echo "   Git tag version: $TAG_VERSION"
+              echo ""
+              echo "To fix this:"
+              echo "1. Update version in Cargo.toml to match the tag"
+              echo "2. Commit and push the change"
+              echo "3. Re-create the tag on the new commit"
+              exit 1
+            fi
+            
+            echo "✅ Version check passed: $CARGO_VERSION matches tag v$TAG_VERSION"
+          else
+            echo "ℹ️ Not a tag push, skipping tag comparison"
+            echo "✅ Cargo.toml version is: $CARGO_VERSION"
+          fi
+          
+      - name: Check for unreleased changes
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          # Get the latest tag before this one
+          CURRENT_TAG="${GITHUB_REF#refs/tags/}"
+          PREVIOUS_TAG=$(git tag --sort=-version:refname | grep -v "$CURRENT_TAG" | head -1)
+          
+          if [[ -n "$PREVIOUS_TAG" ]]; then
+            echo "Checking changes since $PREVIOUS_TAG..."
+            
+            # Check if there are any changes to the code since the last tag
+            CHANGES=$(git diff --name-only "$PREVIOUS_TAG"..HEAD -- '*.rs' '*.toml' 'Cargo.lock' || true)
+            
+            if [[ -z "$CHANGES" ]]; then
+              echo "⚠️ WARNING: No code changes detected since $PREVIOUS_TAG"
+              echo "   Consider whether a new release is necessary."
+            else
+              echo "✅ Found changes since $PREVIOUS_TAG:"
+              echo "$CHANGES" | head -10
+              if [[ $(echo "$CHANGES" | wc -l) -gt 10 ]]; then
+                echo "   ... and $(($(echo "$CHANGES" | wc -l) - 10)) more files"
+              fi
+            fi
+          else
+            echo "ℹ️ No previous tag found, this appears to be the first release"
+          fi

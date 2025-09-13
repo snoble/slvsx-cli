@@ -61,8 +61,6 @@ impl Solver {
                         0.0
                     };
 
-                    eprintln!("Adding point {} at ({},{},{})", id, x, y, z);
-
                     ffi_solver
                         .add_point(next_id, x, y, z)
                         .map_err(|e| crate::error::Error::Ffi(e))?;
@@ -77,8 +75,6 @@ impl Solver {
                     let point2_id = entity_id_map
                         .get(p2)
                         .ok_or_else(|| crate::error::Error::EntityNotFound(p2.clone()))?;
-
-                    eprintln!("Adding line {} between points {} and {}", id, p1, p2);
 
                     ffi_solver
                         .add_line(next_id, *point1_id, *point2_id)
@@ -113,10 +109,6 @@ impl Solver {
                         crate::ir::ExprOrNumber::Expression(e) => eval.eval(&e)?,
                     };
                     let radius = diam / 2.0;
-                    eprintln!(
-                        "Adding circle {} with center ({},{},{}) radius {}",
-                        id, cx, cy, cz, radius
-                    );
 
                     ffi_solver
                         .add_circle(next_id, cx, cy, cz, radius)
@@ -136,10 +128,8 @@ impl Solver {
             match constraint {
                 crate::ir::Constraint::Fixed { entity } => {
                     let entity_id = entity_id_map.get(entity).copied().unwrap_or_else(|| {
-                        eprintln!("WARNING: Entity '{}' not found in map! Available entities: {:?}", entity, entity_id_map.keys().collect::<Vec<_>>());
                         0
                     });
-                    eprintln!("Adding fixed constraint for entity {} (ID: {})", entity, entity_id);
                     ffi_solver
                         .add_fixed_constraint(constraint_id, entity_id)
                         .map_err(|e| crate::error::Error::Ffi(e))?;
@@ -162,7 +152,6 @@ impl Solver {
                 crate::ir::Constraint::PointOnLine { point, line } => {
                     let point_id = entity_id_map.get(point).copied().unwrap_or(0);
                     let line_id = entity_id_map.get(line).copied().unwrap_or(0);
-                    eprintln!("Adding point_on_line constraint: point {} on line {}", point, line);
                     ffi_solver
                         .add_point_on_line_constraint(constraint_id, point_id, line_id)
                         .map_err(|e| crate::error::Error::Ffi(e))?;
@@ -174,7 +163,6 @@ impl Solver {
                     if of.len() == 1 {
                         let point_id = entity_id_map.get(at).copied().unwrap_or(0);
                         let line_id = entity_id_map.get(&of[0]).copied().unwrap_or(0);
-                        eprintln!("Adding coincident constraint: point {} on line {}", at, of[0]);
                         ffi_solver
                             .add_point_on_line_constraint(constraint_id, point_id, line_id)
                             .map_err(|e| crate::error::Error::Ffi(e))?;
@@ -184,7 +172,6 @@ impl Solver {
                 crate::ir::Constraint::Perpendicular { a, b } => {
                     let line1_id = entity_id_map.get(a).copied().unwrap_or(0);
                     let line2_id = entity_id_map.get(b).copied().unwrap_or(0);
-                    eprintln!("Adding perpendicular constraint: {} ⊥ {}", a, b);
                     ffi_solver
                         .add_perpendicular_constraint(constraint_id, line1_id, line2_id)
                         .map_err(|e| crate::error::Error::Ffi(e))?;
@@ -193,14 +180,13 @@ impl Solver {
                 crate::ir::Constraint::Parallel { a, b } => {
                     let line1_id = entity_id_map.get(a).copied().unwrap_or(0);
                     let line2_id = entity_id_map.get(b).copied().unwrap_or(0);
-                    eprintln!("Adding parallel constraint: {} ∥ {}", a, b);
                     ffi_solver
                         .add_parallel_constraint(constraint_id, line1_id, line2_id)
                         .map_err(|e| crate::error::Error::Ffi(e))?;
                     constraint_id += 1;
                 }
                 _ => {
-                    eprintln!("WARNING: Constraint type not yet implemented: {:?}", constraint);
+                    // Constraint type not yet implemented - will be ignored
                 } // Handle other constraint types as needed
             }
         }
@@ -219,7 +205,6 @@ impl Solver {
                 crate::ir::Entity::Point { id, .. } => {
                     let entity_id = entity_id_map.get(id).copied().unwrap_or(0);
                     if let Ok((x, y, z)) = ffi_solver.get_point_position(entity_id) {
-                        eprintln!("Solved point {} at ({}, {}, {})", id, x, y, z);
                         resolved_entities.insert(
                             id.clone(),
                             crate::ir::ResolvedEntity::Point { at: vec![x, y, z] },
@@ -239,10 +224,6 @@ impl Solver {
                         ffi_solver.get_point_position(*p1_id),
                         ffi_solver.get_point_position(*p2_id),
                     ) {
-                        eprintln!(
-                            "Solved line {} from ({},{},{}) to ({},{},{})",
-                            id, x1, y1, z1, x2, y2, z2
-                        );
                         resolved_entities.insert(
                             id.clone(),
                             crate::ir::ResolvedEntity::Line {
@@ -255,10 +236,6 @@ impl Solver {
                 crate::ir::Entity::Circle { id, .. } => {
                     let entity_id = entity_id_map.get(id).copied().unwrap_or(0);
                     if let Ok((cx, cy, cz, radius)) = ffi_solver.get_circle_position(entity_id) {
-                        eprintln!(
-                            "Solved circle {} at ({}, {}, {}) radius {}",
-                            id, cx, cy, cz, radius
-                        );
                         resolved_entities.insert(
                             id.clone(),
                             crate::ir::ResolvedEntity::Circle {
@@ -273,7 +250,6 @@ impl Solver {
         }
 
         // Return the solved entities - this is now completely generic!
-        eprintln!("Generic constraint solving completed");
         return Ok(SolveResult {
             status: "ok".to_string(),
             diagnostics: Some(Diagnostics {

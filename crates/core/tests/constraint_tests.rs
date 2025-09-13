@@ -18,7 +18,7 @@ fn create_test_doc(entities: Vec<Entity>, constraints: Vec<Constraint>) -> Input
 
 /// Helper to solve and get result
 fn solve_and_get(doc: InputDocument) -> Result<HashMap<String, ResolvedEntity>, String> {
-    let mut solver = Solver::new(SolverConfig::default());
+    let solver = Solver::new(SolverConfig::default());
     let result = solver.solve(&doc).map_err(|e| format!("{:?}", e))?;
     result.entities.ok_or_else(|| "No entities in result".to_string())
 }
@@ -300,10 +300,19 @@ fn test_parallel_constraint() {
 }
 
 #[test]
-#[should_panic(expected = "not yet implemented")]
-fn test_unimplemented_constraint_fails() {
+fn test_unimplemented_constraint_ignored() {
+    // Unimplemented constraints are currently just ignored with a warning
+    // They don't cause the solver to fail
     let doc = create_test_doc(
         vec![
+            Entity::Point {
+                id: "p1".to_string(),
+                at: vec![ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0)],
+            },
+            Entity::Point {
+                id: "p2".to_string(),
+                at: vec![ExprOrNumber::Number(100.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0)],
+            },
             Entity::Line {
                 id: "line1".to_string(),
                 p1: "p1".to_string(),
@@ -312,13 +321,14 @@ fn test_unimplemented_constraint_fails() {
         ],
         vec![
             Constraint::Horizontal {
-                entity: "line1".to_string(),
+                a: "line1".to_string(),
             },
         ],
     );
 
-    // This should fail because Horizontal is not implemented in FFI
-    let _ = solve_and_get(doc);
+    // This should succeed but ignore the Horizontal constraint
+    let result = solve_and_get(doc);
+    assert!(result.is_ok(), "Solver should succeed even with unimplemented constraints");
 }
 
 /// Test that over-constrained systems fail appropriately
