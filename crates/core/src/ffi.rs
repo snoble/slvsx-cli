@@ -45,6 +45,18 @@ extern "C" {
         entity2: c_int,
         distance: c_double,
     ) -> c_int;
+    pub fn real_slvs_add_point_on_line_constraint(
+        sys: *mut SolverSystem,
+        id: c_int,
+        point_id: c_int,
+        line_id: c_int,
+    ) -> c_int;
+    pub fn real_slvs_add_points_coincident_constraint(
+        sys: *mut SolverSystem,
+        id: c_int,
+        point1_id: c_int,
+        point2_id: c_int,
+    ) -> c_int;
 
     pub fn real_slvs_solve(sys: *mut SolverSystem) -> c_int;
 
@@ -146,6 +158,38 @@ impl Solver {
                 Ok(())
             } else {
                 Err(format!("Failed to add distance constraint {}", id))
+            }
+        }
+    }
+
+    pub fn add_point_on_line_constraint(
+        &mut self,
+        id: i32,
+        point_id: i32,
+        line_id: i32,
+    ) -> Result<(), String> {
+        unsafe {
+            let result = real_slvs_add_point_on_line_constraint(self.system, id, point_id, line_id);
+            if result == 0 {
+                Ok(())
+            } else {
+                Err(format!("Failed to add point on line constraint {}", id))
+            }
+        }
+    }
+
+    pub fn add_points_coincident_constraint(
+        &mut self,
+        id: i32,
+        point1_id: i32,
+        point2_id: i32,
+    ) -> Result<(), String> {
+        unsafe {
+            let result = real_slvs_add_points_coincident_constraint(self.system, id, point1_id, point2_id);
+            if result == 0 {
+                Ok(())
+            } else {
+                Err(format!("Failed to add points coincident constraint {}", id))
             }
         }
     }

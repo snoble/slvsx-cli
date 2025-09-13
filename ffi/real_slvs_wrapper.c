@@ -221,6 +221,42 @@ int real_slvs_add_angle_constraint(RealSlvsSystem* s, int id, int line1_id, int 
     return 0;
 }
 
+// Add point on line constraint
+int real_slvs_add_point_on_line_constraint(RealSlvsSystem* s, int id, int point_id, int line_id) {
+    if (!s) return -1;
+    
+    Slvs_hGroup g = 1;
+    
+    // Use proper ID mapping for constraint and entities
+    Slvs_hConstraint constraint_id = 10000 + id;
+    Slvs_hEntity point = 1000 + point_id;
+    Slvs_hEntity line = 1000 + line_id;
+    
+    s->sys.constraint[s->sys.constraints++] = Slvs_MakeConstraint(
+        constraint_id, g, SLVS_C_PT_ON_LINE, SLVS_FREE_IN_3D,
+        0, point, 0, line, 0);
+    
+    return 0;
+}
+
+// Add points coincident constraint
+int real_slvs_add_points_coincident_constraint(RealSlvsSystem* s, int id, int point1_id, int point2_id) {
+    if (!s) return -1;
+    
+    Slvs_hGroup g = 1;
+    
+    // Use proper ID mapping for constraint and entities
+    Slvs_hConstraint constraint_id = 10000 + id;
+    Slvs_hEntity point1 = 1000 + point1_id;
+    Slvs_hEntity point2 = 1000 + point2_id;
+    
+    s->sys.constraint[s->sys.constraints++] = Slvs_MakeConstraint(
+        constraint_id, g, SLVS_C_POINTS_COINCIDENT, SLVS_FREE_IN_3D,
+        0, point1, point2, 0, 0);
+    
+    return 0;
+}
+
 // Solve the system
 int real_slvs_solve(RealSlvsSystem* s) {
     if (!s) return -1;

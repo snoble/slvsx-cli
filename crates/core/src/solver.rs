@@ -159,7 +159,31 @@ impl Solver {
                         constraint_id += 1;
                     }
                 }
-                _ => {} // Handle other constraint types as needed
+                crate::ir::Constraint::PointOnLine { point, line } => {
+                    let point_id = entity_id_map.get(point).copied().unwrap_or(0);
+                    let line_id = entity_id_map.get(line).copied().unwrap_or(0);
+                    eprintln!("Adding point_on_line constraint: point {} on line {}", point, line);
+                    ffi_solver
+                        .add_point_on_line_constraint(constraint_id, point_id, line_id)
+                        .map_err(|e| crate::error::Error::Ffi(e))?;
+                    constraint_id += 1;
+                }
+                crate::ir::Constraint::Coincident { at, of } => {
+                    // For now, handle coincident of a point with a line  
+                    // TODO: Handle other coincident cases (point-point, etc.)
+                    if of.len() == 1 {
+                        let point_id = entity_id_map.get(at).copied().unwrap_or(0);
+                        let line_id = entity_id_map.get(&of[0]).copied().unwrap_or(0);
+                        eprintln!("Adding coincident constraint: point {} on line {}", at, of[0]);
+                        ffi_solver
+                            .add_point_on_line_constraint(constraint_id, point_id, line_id)
+                            .map_err(|e| crate::error::Error::Ffi(e))?;
+                        constraint_id += 1;
+                    }
+                }
+                _ => {
+                    eprintln!("WARNING: Constraint type not yet implemented: {:?}", constraint);
+                } // Handle other constraint types as needed
             }
         }
 
