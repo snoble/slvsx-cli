@@ -233,7 +233,7 @@ jobs:
           ./slvsx --version
           
           echo "Testing basic solve:"
-          echo '{"entities":[{"type":"point","id":"p1","at":[0,0,0]},{"type":"point","id":"p2","at":[10,0,0]}],"constraints":[{"type":"fixed","entity":"p1"}],"units":"mm"}' | ./slvsx solve -
+          echo '{"schema":"slvs","entities":[{"type":"point","id":"p1","at":[0,0,0]},{"type":"point","id":"p2","at":[10,0,0]}],"constraints":[{"type":"fixed","entity":"p1"}],"units":"mm"}' | ./slvsx solve -
           
           echo "✓ Smoke test passed for ${{ matrix.name }}"
 
