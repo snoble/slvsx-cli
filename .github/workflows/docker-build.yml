@@ -26,21 +26,14 @@ jobs:
           # Create container and copy binary out
           docker create --name temp-container slvsx-builder
           
-          # First check what's in the container
-          echo "Checking container contents:"
-          docker run --rm slvsx-builder ls -la /app/target/release/ | head -10
-          
-          # Copy the binary (ensure we're not copying to existing directory)
+          # Clean up any existing files to avoid directory creation issue
           rm -rf ./slvsx-linux ./slvsx-docker-binary 2>/dev/null || true
+          
+          # Copy the binary
           docker cp temp-container:/app/target/release/slvsx ./slvsx-docker-binary
           
           # Clean up container
           docker rm temp-container
-          
-          # Check what we got
-          echo "Extracted file info:"
-          ls -la ./slvsx-docker-binary
-          file ./slvsx-docker-binary
           
           # Rename to expected name
           mv ./slvsx-docker-binary ./slvsx-linux
