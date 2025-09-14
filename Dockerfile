@@ -1,5 +1,6 @@
 # Use official Rust image based on Debian
-FROM rust:1.75-bookworm
+# Using latest stable Rust for lock file v4 compatibility
+FROM rust:1.81-bookworm
 
 # Install build dependencies
 RUN apt-get update && apt-get install -y \
