@@ -29,6 +29,9 @@ ENV SLVS_STATIC=1
 
 # Build and test the project
 RUN cargo build --release
+
+# Run tests single-threaded (libslvs is not thread-safe)
+ENV RUST_TEST_THREADS=1
 RUN cargo test
 
 # The binary will be at /app/target/release/slvsx
