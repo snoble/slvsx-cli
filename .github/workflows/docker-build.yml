@@ -25,8 +25,11 @@ jobs:
         run: |
           # Create container and copy binary out
           docker create --name temp-container slvsx-builder
-          docker cp temp-container:/app/target/release/slvsx ./slvsx-linux
+          # Use explicit file name to avoid directory creation
+          docker cp temp-container:/app/target/release/slvsx ./slvsx-docker-binary
           docker rm temp-container
+          # Rename to expected name
+          mv ./slvsx-docker-binary ./slvsx-linux
           
       - name: Test extracted binary
         run: |
