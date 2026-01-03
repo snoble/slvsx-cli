@@ -1,6 +1,7 @@
 # SLVSX - SolveSpace Constraint Solver CLI
 
 [![CI Status](https://github.com/snoble/slvsx-cli/actions/workflows/build.yml/badge.svg)](https://github.com/snoble/slvsx-cli/actions)
+[![codecov](https://codecov.io/gh/snoble/slvsx-cli/graph/badge.svg)](https://codecov.io/gh/snoble/slvsx-cli)
 
 A command-line tool that makes the SolveSpace geometric constraint solver accessible to AI agents and developers through a simple JSON interface.
 

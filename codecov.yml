@@ -1,0 +1,29 @@
+codecov:
+  require_ci_to_pass: yes
+
+coverage:
+  precision: 2
+  round: down
+  status:
+    project:
+      default:
+        target: 100%
+        threshold: 0%
+        # PRs that decrease coverage below 100% will fail
+    patch:
+      default:
+        target: 100%
+        # All new/changed code must be covered
+
+comment:
+  layout: "reach,diff,flags,files"
+  behavior: default
+  require_changes: true
+
+# Files excluded from coverage requirements
+# See COVERAGE.md for policy details
+ignore:
+  - "ffi/**/*"              # FFI wrapper code
+  - "**/generated/**"       # Any generated directories
+  - "schema/**/*"           # Schema definition files
+  - "**/build.rs"           # Build scripts
