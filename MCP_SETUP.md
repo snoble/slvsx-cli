@@ -30,13 +30,17 @@ cargo build --release
 
 Check the latest release for pre-built binaries:
 ```bash
-# Linux
-wget https://github.com/snoble/slvsx-cli/releases/latest/download/slvsx-linux
-chmod +x slvsx-linux
+# Linux (x86_64)
+curl -L https://github.com/snoble/slvsx-cli/releases/latest/download/slvsx-linux.tar.gz | tar xz
+sudo mv slvsx /usr/local/bin/
 
-# macOS
-wget https://github.com/snoble/slvsx-cli/releases/latest/download/slvsx-macos
-chmod +x slvsx-macos
+# macOS (Apple Silicon)
+curl -L https://github.com/snoble/slvsx-cli/releases/latest/download/slvsx-macos-arm64.tar.gz | tar xz
+sudo mv slvsx /usr/local/bin/
+
+# macOS (Intel)
+curl -L https://github.com/snoble/slvsx-cli/releases/latest/download/slvsx-macos-x86_64.tar.gz | tar xz
+sudo mv slvsx /usr/local/bin/
 ```
 
 ### 3. Use as MCP Server

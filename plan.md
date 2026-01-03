@@ -162,56 +162,92 @@ Actual releases are:
 
 ---
 
-## Session 4: MCP Documentation Cleanup
+## Session 4: Implement MCP Server Mode
 
-**Goal**: MCP docs focus on local CLI usage, remove references to unimplemented features.
+**Goal**: Make `slvsx mcp-server` command work as documented.
 
 ### Context
-User requirement: MCP should be "easy to download and run locally" - it's just a convenient way to run the CLI locally, not a hosted server.
+The docs describe MCP server functionality that doesn't exist yet. Rather than remove the docs, we implement the feature.
 
 ### Tasks
 
-1. **Consolidate MCP docs**
-   - Currently have: MCP_SERVER.md, MCP_SETUP.md, docs/MCP_INTEGRATION.md
-   - Consider merging into single clear document
+1. **Implement `slvsx mcp-server` command**
+   - Add MCP server subcommand to CLI
+   - Use stdio transport (standard for local MCP servers)
+   - Implement MCP protocol handshake
 
-2. **Remove references to unimplemented features**
-   - `slvsx mcp-server` command (not implemented)
-   - `crates/cli/src/mcp.rs` (doesn't exist)
-   - `mcp_server/slvsx_mcp.py` (doesn't exist)
-   - NPM package (doesn't exist)
+2. **Implement MCP tools**
+   - `solve_constraints` - Solve a constraint system (returns JSON)
+   - `validate_constraints` - Check validity without solving
+   - `render_solution` - Return SVG/PNG image inline (agent can see it!)
+   - `export_solution` - Export to SVG/DXF/STL formats (returns file content)
+   - `get_capabilities` - List supported constraint types
 
-3. **Focus on what works today**
-   - Subprocess-based integration
-   - Python/Node.js examples calling CLI
-   - JSON in, JSON out
+3. **Implement MCP resources (searchable docs)**
+   - Expose documentation as MCP resources
+   - Include: constraint types, JSON schema, examples
+   - Enable AI to search/read docs through MCP protocol
 
-4. **Update MCP_SERVER.md**
-   - Change title to something like "Using SLVSX with AI Agents"
-   - Remove MCP server mode claims
-   - Keep subprocess examples
-   - Mark future MCP server as "Planned"
+4. **Create crates/cli/src/mcp.rs**
+   - MCP protocol handler
+   - JSON-RPC message handling
+   - Tool dispatch
+   - Resource serving
 
-5. **Update MCP_SETUP.md**
-   - Remove Python wrapper reference
-   - Focus on CLI usage
+5. **Test with Claude Desktop**
+   - Add to Claude Desktop config
+   - Verify tools appear
+   - Test constraint solving through MCP
+   - Verify docs are searchable
 
-6. **Update docs/MCP_INTEGRATION.md**
-   - Remove mcp.rs reference
-   - Update status section to be accurate
-
-7. **Decide fate of mcp-server.js**
-   - It exists as a prototype
-   - Either document it properly or remove it
+6. **Update mcp-server.js prototype**
+   - Either remove (replaced by Rust implementation)
+   - Or keep as reference/alternative
 
 ### Verification
-- [ ] No docs claim features that don't exist
-- [ ] All code examples in MCP docs work
-- [ ] Clear distinction between "works today" and "planned"
+- [ ] `slvsx mcp-server` starts and responds to MCP protocol
+- [ ] Tools work in Claude Desktop
+- [ ] Docs are searchable through MCP resources
+- [ ] All MCP docs are accurate
 
 ---
 
-## Session 5: Cleanup Obsolete Documentation
+## Session 5: Distribution Packages
+
+**Goal**: Implement the distribution methods documented in README-EASY.md.
+
+### Tasks
+
+1. **NPM Package**
+   - Create package.json with bin entry
+   - Bundle static binaries for each platform
+   - Publish to npm as `slvsx`
+   - Test `npx slvsx solve`
+
+2. **Homebrew Tap**
+   - Create `homebrew-slvsx` repo
+   - Add formula pointing to GitHub releases
+   - Test `brew install snoble/slvsx/slvsx`
+
+3. **Docker Image**
+   - Create optimized Dockerfile
+   - Publish to ghcr.io/snoble/slvsx
+   - Test `docker run ghcr.io/snoble/slvsx`
+
+4. **Update install.sh**
+   - Auto-detect platform
+   - Download correct binary
+   - Install to ~/.local/bin
+
+### Verification
+- [ ] `npx slvsx --version` works
+- [ ] `brew install snoble/slvsx/slvsx` works
+- [ ] `docker run ghcr.io/snoble/slvsx --version` works
+- [ ] `curl ... | bash` installer works
+
+---
+
+## Session 6: Cleanup Obsolete Documentation (Optional)
 
 **Goal**: Remove or archive docs that are no longer needed.
 
@@ -279,30 +315,35 @@ User requirement: MCP should be "easy to download and run locally" - it's just a
 
 ## Quick Reference: File Changes by Session
 
-| Session | Files Created | Files Modified |
-|---------|--------------|----------------|
-| 1 | codecov.yml, COVERAGE.md | build.yml, README.md |
-| 2 | - | README.md, QUICKSTART.md, README-EASY.md, MCP_*.md |
-| 3 | docs/DEVELOPMENT.md, build.sh | README.md |
-| 4 | - | MCP_SERVER.md, MCP_SETUP.md, docs/MCP_INTEGRATION.md |
-| 5 | - | Delete/archive 7 files |
-| 6 | - | Any remaining fixes |
+| Session | Focus | Files Created/Modified |
+|---------|-------|----------------------|
+| 1 | Branch Protection + Codecov | codecov.yml, COVERAGE.md, build.yml, README.md |
+| 2 | Fix Download URLs | README.md, QUICKSTART.md, MCP_*.md |
+| 3 | Fix Internal Links | docs/DEVELOPMENT.md, build.sh, README.md |
+| 4 | Implement MCP Server | crates/cli/src/mcp.rs, CLI changes |
+| 5 | Distribution Packages | package.json, Dockerfile, homebrew formula |
+| 6 | Cleanup Old Docs | Archive/delete 7 obsolete files |
+| 7 | Final Verification | Testing all flows |
 
 ---
 
 ## Dependencies Between Sessions
 
 ```
-Session 1 (Branch Protection + Codecov)
+Session 1 (Branch Protection + Codecov) ✅ DONE
     ↓
 Session 2 (Download URLs) ←→ Session 3 (Internal Links)
     ↓                            ↓
-Session 4 (MCP Cleanup) ←→ Session 5 (Obsolete Docs)
-    ↓
-Session 6 (Final Verification)
+    └──────────┬─────────────────┘
+               ↓
+Session 4 (MCP Server) ←→ Session 5 (Distribution)
+               ↓
+Session 6 (Cleanup Old Docs) - Optional
+               ↓
+Session 7 (Final Verification)
 ```
 
-Sessions 2-5 can be done in parallel or any order. Session 1 should be first, Session 6 should be last.
+Sessions 2-3 can be done together. Sessions 4-5 are independent features.
 
 ---
 
@@ -310,11 +351,12 @@ Sessions 2-5 can be done in parallel or any order. Session 1 should be first, Se
 
 | Session | Complexity | Notes |
 |---------|------------|-------|
-| 1 | Medium | Requires GitHub admin access |
-| 2 | Low | Simple find/replace |
-| 3 | Low-Medium | May need to create docs/DEVELOPMENT.md |
-| 4 | Medium | Requires careful rewriting |
-| 5 | Low | Mostly deletion |
-| 6 | Low | Testing and verification |
+| 1 | Medium | ✅ DONE - Branch protection + Codecov |
+| 2 | Low | Simple URL fixes |
+| 3 | Low-Medium | Create docs/DEVELOPMENT.md, build.sh |
+| 4 | High | Implement MCP server in Rust |
+| 5 | Medium | NPM/Homebrew/Docker packaging |
+| 6 | Low | Optional - archive old debugging docs |
+| 7 | Low | Testing and verification |
 
-Total: ~6 focused sessions, can be spread across multiple days.
+Total: ~7 sessions. Sessions 4-5 are substantial feature work.
