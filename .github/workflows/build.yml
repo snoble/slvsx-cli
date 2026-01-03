@@ -55,7 +55,10 @@ jobs:
         with:
           toolchain: stable
           override: true
-          
+
+      - name: Install cargo-llvm-cov
+        uses: taiki-e/install-action@cargo-llvm-cov
+
       - name: Build libslvs-static
         run: |
           # Build our forked libslvs-static (includes mimalloc)
@@ -74,14 +77,22 @@ jobs:
           
           # The combined library uses standard memory allocation
           
-      - name: Run tests
+      - name: Run tests with coverage
         run: |
           export SLVS_LIB_DIR=$PWD/libslvs-static/build
           # Run tests single-threaded because libslvs is not thread-safe
           # This prevents SIGSEGV errors when tests try to use the solver concurrently
           export RUST_TEST_THREADS=1
-          cargo test
-          
+          cargo llvm-cov --all-features --workspace --lcov --output-path lcov.info
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: lcov.info
+          fail_ci_if_error: false
+          verbose: true
+
       - name: Build and verify documentation
         run: |
           export SLVS_LIB_DIR=$PWD/libslvs-static/build
