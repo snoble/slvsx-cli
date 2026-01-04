@@ -258,7 +258,7 @@ impl Solver {
         let mut resolved_entities = HashMap::new();
 
         // Retrieve solved positions for all entities
-        for (entity_idx, entity) in doc.entities.iter().enumerate() {
+        for entity in &doc.entities {
             match entity {
                 crate::ir::Entity::Point { id, .. } => {
                     let entity_id = entity_id_map.get(id).copied().unwrap_or(0);
