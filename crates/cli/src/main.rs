@@ -8,7 +8,6 @@ use std::fs;
 use std::io::{self, Read, Write};
 
 mod json_error;
-mod mcp;
 use json_error::parse_json_with_context;
 
 #[derive(Parser)]
@@ -62,8 +61,6 @@ enum Commands {
     },
     /// Show capabilities
     Capabilities,
-    /// Run MCP server mode (for AI agent integration)
-    McpServer,
 }
 
 fn read_input(path: &str) -> Result<String> {
@@ -174,9 +171,6 @@ fn main() -> Result<()> {
             );
             Ok(())
         }
-        Commands::McpServer => {
-            mcp::run_mcp_server()
-        }
     }
 }
 
@@ -253,11 +247,6 @@ mod tests {
         }
     }
 
-    #[test]
-    fn test_cli_parse_mcp_server() {
-        let cli = Cli::parse_from(["slvsx", "mcp-server"]);
-        matches!(cli.command, Commands::McpServer);
-    }
 
     #[test]
     fn test_read_input_stdin() {
