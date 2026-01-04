@@ -1,0 +1,88 @@
+{
+  "schema": "slvs-json/1",
+  "units": "mm",
+  "parameters": {
+    "crank_length": 70.0,
+    "coupler_length": 100.0,
+    "rocker_length": 90.0,
+    "ground_length": 120.0,
+    "input_angle": 45.0
+  },
+  "entities": [
+    {
+      "type": "point",
+      "id": "ground_pivot1",
+      "at": [0, 0, 0]
+    },
+    {
+      "type": "point",
+      "id": "ground_pivot2",
+      "at": [120, 0, 0]
+    },
+    {
+      "type": "point",
+      "id": "crank_joint",
+      "at": [50, 60, 0]
+    },
+    {
+      "type": "point",
+      "id": "coupler_joint",
+      "at": [150, 80, 0]
+    },
+    {
+      "type": "line",
+      "id": "crank",
+      "p1": "ground_pivot1",
+      "p2": "crank_joint"
+    },
+    {
+      "type": "line",
+      "id": "coupler",
+      "p1": "crank_joint",
+      "p2": "coupler_joint"
+    },
+    {
+      "type": "line",
+      "id": "rocker",
+      "p1": "coupler_joint",
+      "p2": "ground_pivot2"
+    },
+    {
+      "type": "line",
+      "id": "ground",
+      "p1": "ground_pivot1",
+      "p2": "ground_pivot2"
+    }
+  ],
+  "constraints": [
+    {
+      "type": "fixed",
+      "entity": "ground_pivot1"
+    },
+    {
+      "type": "fixed",
+      "entity": "ground_pivot2"
+    },
+    {
+      "type": "distance",
+      "between": ["ground_pivot1", "ground_pivot2"],
+      "value": "$ground_length"
+    },
+    {
+      "type": "distance",
+      "between": ["ground_pivot1", "crank_joint"],
+      "value": "$crank_length"
+    },
+    {
+      "type": "distance",
+      "between": ["crank_joint", "coupler_joint"],
+      "value": "$coupler_length"
+    },
+    {
+      "type": "distance",
+      "between": ["coupler_joint", "ground_pivot2"],
+      "value": "$rocker_length"
+    }
+  ]
+}
+

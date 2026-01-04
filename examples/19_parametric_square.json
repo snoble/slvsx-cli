@@ -1,6 +1,9 @@
 {
   "schema": "slvs-json/1",
   "units": "mm",
+  "parameters": {
+    "side_length": 80.0
+  },
   "entities": [
     {
       "type": "point",
@@ -10,17 +13,17 @@
     {
       "type": "point",
       "id": "B",
-      "at": [100, 0, 0]
+      "at": [80, 0, 0]
     },
     {
       "type": "point",
       "id": "C",
-      "at": [100, 50, 0]
+      "at": [80, 80, 0]
     },
     {
       "type": "point",
       "id": "D",
-      "at": [0, 50, 0]
+      "at": [0, 80, 0]
     },
     {
       "type": "line",
@@ -53,38 +56,30 @@
       "entity": "A"
     },
     {
-      "type": "fixed",
-      "entity": "B"
+      "type": "distance",
+      "between": ["A", "B"],
+      "value": "$side_length"
     },
     {
-      "type": "parallel",
-      "a": "AB",
-      "b": "CD"
+      "type": "distance",
+      "between": ["B", "C"],
+      "value": "$side_length"
     },
     {
-      "type": "parallel",
-      "a": "BC",
-      "b": "DA"
+      "type": "distance",
+      "between": ["C", "D"],
+      "value": "$side_length"
+    },
+    {
+      "type": "distance",
+      "between": ["D", "A"],
+      "value": "$side_length"
     },
     {
       "type": "perpendicular",
       "a": "AB",
       "b": "BC"
-    },
-    {
-      "type": "perpendicular",
-      "a": "BC",
-      "b": "CD"
-    },
-    {
-      "type": "distance",
-      "between": ["A", "B"],
-      "value": 100
-    },
-    {
-      "type": "distance",
-      "between": ["A", "D"],
-      "value": 50
     }
   ]
 }
+

@@ -36,7 +36,11 @@ These examples are designed to be read in order, building from simple concepts t
 14. **[Horizontal & Vertical](13_horizontal_vertical.md)** - Axis alignment shortcuts
 15. **[Point on Circle](14_point_on_circle.md)** - Circular motion paths
 16. **[Equal Radius](15_equal_radius.md)** - Matching circle sizes
-16. **[Complex Mechanisms](16_complex_mechanisms.md)** - Putting it all together
+17. **[Complex Mechanisms](16_complex_mechanisms.md)** - Putting it all together
+18. **[Four-Bar Linkage](17_four_bar_linkage.md)** - Classic kinematic mechanism (requires Angle constraint)
+19. **[Simple Rectangle](18_simple_rectangle.md)** - Basic parametric rectangle (requires Horizontal/Vertical)
+20. **[Parametric Square](19_parametric_square.md)** - Equal length constraints (requires EqualLength)
+21. **[Slider-Crank Mechanism](20_slider_crank.md)** - Engine-like mechanism (requires Horizontal/Angle)
 
 
 ## 📐 Parameter Studies

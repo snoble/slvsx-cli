@@ -379,3 +379,62 @@ Sessions 2-3 can be done together. Sessions 4-5 are independent features.
 | 7 | Low | 🚧 IN PROGRESS - Tests added (PR #8), validation (PR #9) |
 
 Total: ~7 sessions. Sessions 4-5 are substantial feature work.
+
+---
+
+## Session 8: Implement Missing Constraints for Tutorial Examples
+
+**Goal**: Implement constraints needed for classic SolveSpace tutorial examples.
+
+### Missing Constraints Identified
+
+While implementing SolveSpace tutorial examples, the following constraints were found to be missing:
+
+1. **Angle** - Constrain angle between two lines/entities
+2. **Horizontal** - Constrain line to be horizontal
+3. **Vertical** - Constrain line to be vertical
+4. **EqualLength** - Constrain multiple lines to have equal length
+5. **EqualRadius** - Constrain circles to have equal radius
+6. **Tangent** - Constrain line/circle to be tangent to circle/arc
+7. **PointOnCircle** - Constrain point to lie on circle
+8. **Symmetric** - Constrain entities to be symmetric about a line/point
+9. **Midpoint** - Constrain point to be midpoint of line
+
+### Tasks
+
+1. **Implement Angle constraint**
+   - Add FFI mapping in `constraint_registry.rs`
+   - Support angle between two lines
+   - Support angle value in degrees or radians
+   - Add tests
+
+2. **Implement Horizontal/Vertical constraints**
+   - Add FFI mapping for horizontal line constraint
+   - Add FFI mapping for vertical line constraint
+   - Add tests
+
+3. **Implement EqualLength constraint**
+   - Add FFI mapping for multiple lines
+   - Support 2+ lines in constraint
+   - Add tests
+
+4. **Implement remaining constraints** (as needed for examples)
+   - EqualRadius
+   - Tangent
+   - PointOnCircle
+   - Symmetric
+   - Midpoint
+
+### Tutorial Examples Created
+
+- `17_four_bar_linkage.json` - Requires Angle constraint
+- `18_simple_rectangle.json` - Requires Horizontal/Vertical constraints
+- `19_parametric_square.json` - Requires Horizontal/Vertical/EqualLength constraints
+- `20_slider_crank.json` - Requires Horizontal/Angle constraints
+
+### Verification
+
+- [ ] All tutorial examples solve successfully
+- [ ] Constraints are properly validated
+- [ ] Tests cover all constraint types
+- [ ] Documentation updated with new constraints
