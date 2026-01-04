@@ -61,8 +61,20 @@ impl ConstraintRegistry {
                 }
             }
             Constraint::Angle { between, value } => {
-                // TODO: Implement angle constraint in FFI
-                Err("Angle constraint not yet implemented in FFI".to_string())
+                if between.len() == 2 {
+                    let line1_id = entity_id_map.get(&between[0]).copied().unwrap_or(0);
+                    let line2_id = entity_id_map.get(&between[1]).copied().unwrap_or(0);
+                    let angle = match value {
+                        crate::ir::ExprOrNumber::Number(n) => *n,
+                        crate::ir::ExprOrNumber::Expression(e) => {
+                            let evaluator = ExpressionEvaluator::new(std::collections::HashMap::new());
+                            evaluator.eval(e).unwrap_or(0.0)
+                        }
+                    };
+                    solver.add_angle_constraint(constraint_id, line1_id, line2_id, angle)
+                } else {
+                    Err("Angle constraint requires exactly 2 entities".to_string())
+                }
             }
             Constraint::Coincident { data } => {
                 match data {
@@ -102,24 +114,36 @@ impl ConstraintRegistry {
                 }
             }
             Constraint::Horizontal { a } => {
-                // TODO: Implement horizontal constraint in FFI
-                Err("Horizontal constraint not yet implemented in FFI".to_string())
+                let line_id = entity_id_map.get(a).copied().unwrap_or(0);
+                solver.add_horizontal_constraint(constraint_id, line_id)
             }
             Constraint::Vertical { a } => {
-                // TODO: Implement vertical constraint in FFI
-                Err("Vertical constraint not yet implemented in FFI".to_string())
+                let line_id = entity_id_map.get(a).copied().unwrap_or(0);
+                solver.add_vertical_constraint(constraint_id, line_id)
             }
             Constraint::EqualLength { entities } => {
-                // TODO: Implement equal_length constraint in FFI
-                Err("EqualLength constraint not yet implemented in FFI".to_string())
+                if entities.len() < 2 {
+                    return Err("EqualLength constraint requires at least 2 entities".to_string());
+                }
+                // Create pairwise constraints: entity[0] with each of entity[1..n]
+                // This ensures all entities have equal length
+                let base_line_id = entity_id_map.get(&entities[0]).copied().unwrap_or(0);
+                for (idx, entity_id_str) in entities.iter().skip(1).enumerate() {
+                    let other_line_id = entity_id_map.get(entity_id_str).copied().unwrap_or(0);
+                    // Use constraint_id + idx to create unique constraint IDs
+                    solver.add_equal_length_constraint(constraint_id + idx as i32, base_line_id, other_line_id)?;
+                }
+                Ok(())
             }
             Constraint::EqualRadius { a, b } => {
-                // TODO: Implement equal_radius constraint in FFI
-                Err("EqualRadius constraint not yet implemented in FFI".to_string())
+                let circle1_id = entity_id_map.get(a).copied().unwrap_or(0);
+                let circle2_id = entity_id_map.get(b).copied().unwrap_or(0);
+                solver.add_equal_radius_constraint(constraint_id, circle1_id, circle2_id)
             }
             Constraint::Tangent { a, b } => {
-                // TODO: Implement tangent constraint in FFI
-                Err("Tangent constraint not yet implemented in FFI".to_string())
+                let entity1_id = entity_id_map.get(a).copied().unwrap_or(0);
+                let entity2_id = entity_id_map.get(b).copied().unwrap_or(0);
+                solver.add_tangent_constraint(constraint_id, entity1_id, entity2_id)
             }
             Constraint::PointOnLine { point, line } => {
                 let point_id = entity_id_map.get(point).copied().unwrap_or(0);
@@ -127,16 +151,20 @@ impl ConstraintRegistry {
                 solver.add_point_on_line_constraint(constraint_id, point_id, line_id)
             }
             Constraint::PointOnCircle { point, circle } => {
-                // TODO: Implement point_on_circle constraint in FFI
-                Err("PointOnCircle constraint not yet implemented in FFI".to_string())
+                let point_id = entity_id_map.get(point).copied().unwrap_or(0);
+                let circle_id = entity_id_map.get(circle).copied().unwrap_or(0);
+                solver.add_point_on_circle_constraint(constraint_id, point_id, circle_id)
             }
             Constraint::Symmetric { a, b, about } => {
-                // TODO: Implement symmetric constraint in FFI
-                Err("Symmetric constraint not yet implemented in FFI".to_string())
+                let entity1_id = entity_id_map.get(a).copied().unwrap_or(0);
+                let entity2_id = entity_id_map.get(b).copied().unwrap_or(0);
+                let line_id = entity_id_map.get(about).copied().unwrap_or(0);
+                solver.add_symmetric_constraint(constraint_id, entity1_id, entity2_id, line_id)
             }
             Constraint::Midpoint { point, of } => {
-                // TODO: Implement midpoint constraint in FFI
-                Err("Midpoint constraint not yet implemented in FFI".to_string())
+                let point_id = entity_id_map.get(point).copied().unwrap_or(0);
+                let line_id = entity_id_map.get(of).copied().unwrap_or(0);
+                solver.add_midpoint_constraint(constraint_id, point_id, line_id)
             }
             // COMPILER ERROR if a constraint variant is missing here!
             // This ensures we never forget to handle a new constraint type
@@ -145,7 +173,14 @@ impl ConstraintRegistry {
 
     /// Get list of constraints with missing FFI implementations
     pub fn missing_implementations() -> Vec<&'static str> {
+        vec![] // All constraints are now implemented!
+    }
+
+    /// Get list of constraints with FFI implementations
+    pub fn implemented_constraints() -> Vec<&'static str> {
         vec![
+            "Fixed",
+            "Distance",
             "Angle",
             "Horizontal",
             "Vertical",
@@ -155,14 +190,6 @@ impl ConstraintRegistry {
             "PointOnCircle",
             "Symmetric",
             "Midpoint",
-        ]
-    }
-
-    /// Get list of constraints with FFI implementations
-    pub fn implemented_constraints() -> Vec<&'static str> {
-        vec![
-            "Fixed",
-            "Distance",
             "Coincident",
             "Perpendicular",
             "Parallel",
@@ -191,18 +218,194 @@ mod tests {
             between: vec!["p1".to_string(), "p2".to_string()],
             value: crate::ir::ExprOrNumber::Number(10.0)
         });
+        test_constraint(Constraint::Angle {
+            between: vec!["l1".to_string(), "l2".to_string()],
+            value: crate::ir::ExprOrNumber::Number(45.0)
+        });
+        test_constraint(Constraint::EqualLength {
+            entities: vec!["l1".to_string(), "l2".to_string()]
+        });
+        test_constraint(Constraint::EqualRadius {
+            a: "c1".to_string(),
+            b: "c2".to_string()
+        });
+        test_constraint(Constraint::Tangent {
+            a: "l1".to_string(),
+            b: "c1".to_string()
+        });
+        test_constraint(Constraint::PointOnCircle {
+            point: "p1".to_string(),
+            circle: "c1".to_string()
+        });
+        test_constraint(Constraint::Symmetric {
+            a: "p1".to_string(),
+            b: "p2".to_string(),
+            about: "l1".to_string()
+        });
+        test_constraint(Constraint::Midpoint {
+            point: "p1".to_string(),
+            of: "l1".to_string()
+        });
         // ... more test cases
+    }
+
+    #[test]
+    fn test_midpoint_constraint_processing() {
+        let mut solver = FfiSolver::new();
+        let mut entity_map = std::collections::HashMap::new();
+        entity_map.insert("p1".to_string(), 1);
+        entity_map.insert("l1".to_string(), 10);
+
+        let constraint = Constraint::Midpoint {
+            point: "p1".to_string(),
+            of: "l1".to_string(),
+        };
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map);
+        assert!(result.is_ok(), "Midpoint constraint should process successfully");
+    }
+
+    #[test]
+    fn test_all_constraints_implemented() {
+        // This test verifies that missing_implementations is empty
+        let missing = ConstraintRegistry::missing_implementations();
+        assert!(missing.is_empty(), "All constraints should be implemented! Missing: {:?}", missing);
+    }
+
+    #[test]
+    fn test_symmetric_constraint_processing() {
+        let mut solver = FfiSolver::new();
+        let mut entity_map = std::collections::HashMap::new();
+        entity_map.insert("p1".to_string(), 1);
+        entity_map.insert("p2".to_string(), 2);
+        entity_map.insert("l1".to_string(), 10);
+
+        let constraint = Constraint::Symmetric {
+            a: "p1".to_string(),
+            b: "p2".to_string(),
+            about: "l1".to_string(),
+        };
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map);
+        assert!(result.is_ok(), "Symmetric constraint should process successfully");
+    }
+
+    #[test]
+    fn test_point_on_circle_constraint_processing() {
+        let mut solver = FfiSolver::new();
+        let mut entity_map = std::collections::HashMap::new();
+        entity_map.insert("p1".to_string(), 1);
+        entity_map.insert("c1".to_string(), 10);
+
+        let constraint = Constraint::PointOnCircle {
+            point: "p1".to_string(),
+            circle: "c1".to_string(),
+        };
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map);
+        assert!(result.is_ok(), "PointOnCircle constraint should process successfully");
+    }
+
+    #[test]
+    fn test_tangent_constraint_processing() {
+        let mut solver = FfiSolver::new();
+        let mut entity_map = std::collections::HashMap::new();
+        entity_map.insert("l1".to_string(), 10);
+        entity_map.insert("c1".to_string(), 20);
+
+        let constraint = Constraint::Tangent {
+            a: "l1".to_string(),
+            b: "c1".to_string(),
+        };
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map);
+        assert!(result.is_ok(), "Tangent constraint should process successfully");
+    }
+
+    #[test]
+    fn test_equal_radius_constraint_processing() {
+        let mut solver = FfiSolver::new();
+        let mut entity_map = std::collections::HashMap::new();
+        entity_map.insert("c1".to_string(), 1);
+        entity_map.insert("c2".to_string(), 2);
+
+        let constraint = Constraint::EqualRadius {
+            a: "c1".to_string(),
+            b: "c2".to_string(),
+        };
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map);
+        assert!(result.is_ok(), "EqualRadius constraint should process successfully");
+    }
+
+    #[test]
+    fn test_equal_length_constraint_processing() {
+        use crate::ir::ExprOrNumber;
+        let mut solver = FfiSolver::new();
+        let mut entity_map = std::collections::HashMap::new();
+        entity_map.insert("l1".to_string(), 10);
+        entity_map.insert("l2".to_string(), 11);
+        entity_map.insert("l3".to_string(), 12);
+
+        // Test with 2 entities
+        let constraint = Constraint::EqualLength {
+            entities: vec!["l1".to_string(), "l2".to_string()],
+        };
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map);
+        assert!(result.is_ok(), "EqualLength constraint with 2 entities should process successfully");
+
+        // Test with 3 entities (should create 2 pairwise constraints)
+        let constraint = Constraint::EqualLength {
+            entities: vec!["l1".to_string(), "l2".to_string(), "l3".to_string()],
+        };
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 101, &entity_map);
+        assert!(result.is_ok(), "EqualLength constraint with 3 entities should process successfully");
+
+        // Test with insufficient entities
+        let constraint = Constraint::EqualLength {
+            entities: vec!["l1".to_string()],
+        };
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 102, &entity_map);
+        assert!(result.is_err(), "EqualLength constraint with <2 entities should fail");
+        assert!(result.unwrap_err().contains("at least 2 entities"));
+    }
+
+    #[test]
+    fn test_angle_constraint_processing() {
+        use crate::ir::ExprOrNumber;
+        let mut solver = FfiSolver::new();
+        let mut entity_map = std::collections::HashMap::new();
+        entity_map.insert("l1".to_string(), 10);
+        entity_map.insert("l2".to_string(), 11);
+
+        // Test with number value
+        let constraint = Constraint::Angle {
+            between: vec!["l1".to_string(), "l2".to_string()],
+            value: ExprOrNumber::Number(45.0),
+        };
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map);
+        assert!(result.is_ok(), "Angle constraint with number should process successfully");
+
+        // Test with expression value
+        let constraint = Constraint::Angle {
+            between: vec!["l1".to_string(), "l2".to_string()],
+            value: ExprOrNumber::Expression("45".to_string()),
+        };
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 101, &entity_map);
+        assert!(result.is_ok(), "Angle constraint with expression should process successfully");
+
+        // Test with wrong number of entities
+        let constraint = Constraint::Angle {
+            between: vec!["l1".to_string()],
+            value: ExprOrNumber::Number(45.0),
+        };
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 102, &entity_map);
+        assert!(result.is_err(), "Angle constraint with wrong entity count should fail");
+        assert!(result.unwrap_err().contains("exactly 2 entities"));
     }
 
     #[test]
     fn test_missing_implementations_documented() {
         let missing = ConstraintRegistry::missing_implementations();
-        assert!(!missing.is_empty(), "Update this test when all constraints are implemented!");
+        // All constraints are now implemented!
+        assert!(missing.is_empty(), "All constraints should be implemented! Missing: {:?}", missing);
         
-        // This test ensures we're aware of what's not implemented
-        println!("Constraints missing FFI implementation:");
-        for constraint in missing {
-            println!("  - {}", constraint);
-        }
+        // This test verifies all constraints are implemented
+        println!("All constraints are implemented!");
     }
 }

@@ -221,6 +221,152 @@ int real_slvs_add_angle_constraint(RealSlvsSystem* s, int id, int line1_id, int 
     return 0;
 }
 
+// Add horizontal constraint
+int real_slvs_add_horizontal_constraint(RealSlvsSystem* s, int id, int line_id) {
+    if (!s) return -1;
+    
+    Slvs_hGroup g = 1;
+    
+    // Use proper ID mapping for constraint and entity
+    Slvs_hConstraint constraint_id = 10000 + id;
+    Slvs_hEntity line = 1000 + line_id;
+    
+    s->sys.constraint[s->sys.constraints++] = Slvs_MakeConstraint(
+        constraint_id, g, SLVS_C_HORIZONTAL, SLVS_FREE_IN_3D,
+        0, 0, 0, line, 0);
+    
+    return 0;
+}
+
+// Add vertical constraint
+int real_slvs_add_vertical_constraint(RealSlvsSystem* s, int id, int line_id) {
+    if (!s) return -1;
+    
+    Slvs_hGroup g = 1;
+    
+    // Use proper ID mapping for constraint and entity
+    Slvs_hConstraint constraint_id = 10000 + id;
+    Slvs_hEntity line = 1000 + line_id;
+    
+    s->sys.constraint[s->sys.constraints++] = Slvs_MakeConstraint(
+        constraint_id, g, SLVS_C_VERTICAL, SLVS_FREE_IN_3D,
+        0, 0, 0, line, 0);
+    
+    return 0;
+}
+
+// Add equal length constraint (between two lines)
+int real_slvs_add_equal_length_constraint(RealSlvsSystem* s, int id, int line1_id, int line2_id) {
+    if (!s) return -1;
+    
+    Slvs_hGroup g = 1;
+    
+    // Use proper ID mapping for constraint and entities
+    Slvs_hConstraint constraint_id = 10000 + id;
+    Slvs_hEntity line1 = 1000 + line1_id;
+    Slvs_hEntity line2 = 1000 + line2_id;
+    
+    s->sys.constraint[s->sys.constraints++] = Slvs_MakeConstraint(
+        constraint_id, g, SLVS_C_EQUAL_LENGTH_LINES, SLVS_FREE_IN_3D,
+        0, 0, 0, line1, line2);
+    
+    return 0;
+}
+
+// Add equal radius constraint (between two circles/arcs)
+int real_slvs_add_equal_radius_constraint(RealSlvsSystem* s, int id, int circle1_id, int circle2_id) {
+    if (!s) return -1;
+    
+    Slvs_hGroup g = 1;
+    
+    // Use proper ID mapping for constraint and entities
+    Slvs_hConstraint constraint_id = 10000 + id;
+    Slvs_hEntity circle1 = 1000 + circle1_id;
+    Slvs_hEntity circle2 = 1000 + circle2_id;
+    
+    s->sys.constraint[s->sys.constraints++] = Slvs_MakeConstraint(
+        constraint_id, g, SLVS_C_EQUAL_RADIUS, SLVS_FREE_IN_3D,
+        0, 0, 0, circle1, circle2);
+    
+    return 0;
+}
+
+// Add tangent constraint (between two curves: line/circle/arc)
+int real_slvs_add_tangent_constraint(RealSlvsSystem* s, int id, int entity1_id, int entity2_id) {
+    if (!s) return -1;
+    
+    Slvs_hGroup g = 1;
+    
+    // Use proper ID mapping for constraint and entities
+    Slvs_hConstraint constraint_id = 10000 + id;
+    Slvs_hEntity entity1 = 1000 + entity1_id;
+    Slvs_hEntity entity2 = 1000 + entity2_id;
+    
+    // Use CURVE_CURVE_TANGENT for general curve-to-curve tangency
+    // This works for line-circle, circle-circle, arc-line, etc.
+    s->sys.constraint[s->sys.constraints++] = Slvs_MakeConstraint(
+        constraint_id, g, SLVS_C_CURVE_CURVE_TANGENT, SLVS_FREE_IN_3D,
+        0, 0, 0, entity1, entity2);
+    
+    return 0;
+}
+
+// Add point on circle constraint
+int real_slvs_add_point_on_circle_constraint(RealSlvsSystem* s, int id, int point_id, int circle_id) {
+    if (!s) return -1;
+    
+    Slvs_hGroup g = 1;
+    
+    // Use proper ID mapping for constraint and entities
+    Slvs_hConstraint constraint_id = 10000 + id;
+    Slvs_hEntity point = 1000 + point_id;
+    Slvs_hEntity circle = 1000 + circle_id;
+    
+    s->sys.constraint[s->sys.constraints++] = Slvs_MakeConstraint(
+        constraint_id, g, SLVS_C_PT_ON_CIRCLE, SLVS_FREE_IN_3D,
+        0, point, 0, circle, 0);
+    
+    return 0;
+}
+
+// Add symmetric constraint (two entities symmetric about a line)
+int real_slvs_add_symmetric_constraint(RealSlvsSystem* s, int id, int entity1_id, int entity2_id, int line_id) {
+    if (!s) return -1;
+    
+    Slvs_hGroup g = 1;
+    
+    // Use proper ID mapping for constraint and entities
+    Slvs_hConstraint constraint_id = 10000 + id;
+    Slvs_hEntity entity1 = 1000 + entity1_id;
+    Slvs_hEntity entity2 = 1000 + entity2_id;
+    Slvs_hEntity line = 1000 + line_id;
+    
+    // Use SYMMETRIC_LINE for symmetric about a line
+    s->sys.constraint[s->sys.constraints++] = Slvs_MakeConstraint(
+        constraint_id, g, SLVS_C_SYMMETRIC_LINE, SLVS_FREE_IN_3D,
+        0, entity1, entity2, line, 0);
+    
+    return 0;
+}
+
+// Add midpoint constraint (point at midpoint of line)
+int real_slvs_add_midpoint_constraint(RealSlvsSystem* s, int id, int point_id, int line_id) {
+    if (!s) return -1;
+    
+    Slvs_hGroup g = 1;
+    
+    // Use proper ID mapping for constraint and entities
+    Slvs_hConstraint constraint_id = 10000 + id;
+    Slvs_hEntity point = 1000 + point_id;
+    Slvs_hEntity line = 1000 + line_id;
+    
+    s->sys.constraint[s->sys.constraints++] = Slvs_MakeConstraint(
+        constraint_id, g, SLVS_C_AT_MIDPOINT, SLVS_FREE_IN_3D,
+        0, point, 0, line, 0);
+    
+    return 0;
+}
+
 // Add point on line constraint
 int real_slvs_add_point_on_line_constraint(RealSlvsSystem* s, int id, int point_id, int line_id) {
     if (!s) return -1;

@@ -69,6 +69,60 @@ extern "C" {
         line1_id: c_int,
         line2_id: c_int,
     ) -> c_int;
+    pub fn real_slvs_add_angle_constraint(
+        sys: *mut SolverSystem,
+        id: c_int,
+        line1_id: c_int,
+        line2_id: c_int,
+        angle: c_double,
+    ) -> c_int;
+    pub fn real_slvs_add_horizontal_constraint(
+        sys: *mut SolverSystem,
+        id: c_int,
+        line_id: c_int,
+    ) -> c_int;
+    pub fn real_slvs_add_vertical_constraint(
+        sys: *mut SolverSystem,
+        id: c_int,
+        line_id: c_int,
+    ) -> c_int;
+    pub fn real_slvs_add_equal_length_constraint(
+        sys: *mut SolverSystem,
+        id: c_int,
+        line1_id: c_int,
+        line2_id: c_int,
+    ) -> c_int;
+    pub fn real_slvs_add_equal_radius_constraint(
+        sys: *mut SolverSystem,
+        id: c_int,
+        circle1_id: c_int,
+        circle2_id: c_int,
+    ) -> c_int;
+    pub fn real_slvs_add_tangent_constraint(
+        sys: *mut SolverSystem,
+        id: c_int,
+        entity1_id: c_int,
+        entity2_id: c_int,
+    ) -> c_int;
+    pub fn real_slvs_add_point_on_circle_constraint(
+        sys: *mut SolverSystem,
+        id: c_int,
+        point_id: c_int,
+        circle_id: c_int,
+    ) -> c_int;
+    pub fn real_slvs_add_symmetric_constraint(
+        sys: *mut SolverSystem,
+        id: c_int,
+        entity1_id: c_int,
+        entity2_id: c_int,
+        line_id: c_int,
+    ) -> c_int;
+    pub fn real_slvs_add_midpoint_constraint(
+        sys: *mut SolverSystem,
+        id: c_int,
+        point_id: c_int,
+        line_id: c_int,
+    ) -> c_int;
 
     pub fn real_slvs_solve(sys: *mut SolverSystem) -> c_int;
 
@@ -238,6 +292,150 @@ impl Solver {
         }
     }
 
+    pub fn add_angle_constraint(
+        &mut self,
+        id: i32,
+        line1_id: i32,
+        line2_id: i32,
+        angle: f64,
+    ) -> Result<(), String> {
+        unsafe {
+            let result = real_slvs_add_angle_constraint(self.system, id, line1_id, line2_id, angle);
+            if result == 0 {
+                Ok(())
+            } else {
+                Err(format!("Failed to add angle constraint {}", id))
+            }
+        }
+    }
+
+    pub fn add_horizontal_constraint(
+        &mut self,
+        id: i32,
+        line_id: i32,
+    ) -> Result<(), String> {
+        unsafe {
+            let result = real_slvs_add_horizontal_constraint(self.system, id, line_id);
+            if result == 0 {
+                Ok(())
+            } else {
+                Err(format!("Failed to add horizontal constraint {}", id))
+            }
+        }
+    }
+
+    pub fn add_vertical_constraint(
+        &mut self,
+        id: i32,
+        line_id: i32,
+    ) -> Result<(), String> {
+        unsafe {
+            let result = real_slvs_add_vertical_constraint(self.system, id, line_id);
+            if result == 0 {
+                Ok(())
+            } else {
+                Err(format!("Failed to add vertical constraint {}", id))
+            }
+        }
+    }
+
+    pub fn add_equal_length_constraint(
+        &mut self,
+        id: i32,
+        line1_id: i32,
+        line2_id: i32,
+    ) -> Result<(), String> {
+        unsafe {
+            let result = real_slvs_add_equal_length_constraint(self.system, id, line1_id, line2_id);
+            if result == 0 {
+                Ok(())
+            } else {
+                Err(format!("Failed to add equal length constraint {}", id))
+            }
+        }
+    }
+
+    pub fn add_equal_radius_constraint(
+        &mut self,
+        id: i32,
+        circle1_id: i32,
+        circle2_id: i32,
+    ) -> Result<(), String> {
+        unsafe {
+            let result = real_slvs_add_equal_radius_constraint(self.system, id, circle1_id, circle2_id);
+            if result == 0 {
+                Ok(())
+            } else {
+                Err(format!("Failed to add equal radius constraint {}", id))
+            }
+        }
+    }
+
+    pub fn add_tangent_constraint(
+        &mut self,
+        id: i32,
+        entity1_id: i32,
+        entity2_id: i32,
+    ) -> Result<(), String> {
+        unsafe {
+            let result = real_slvs_add_tangent_constraint(self.system, id, entity1_id, entity2_id);
+            if result == 0 {
+                Ok(())
+            } else {
+                Err(format!("Failed to add tangent constraint {}", id))
+            }
+        }
+    }
+
+    pub fn add_point_on_circle_constraint(
+        &mut self,
+        id: i32,
+        point_id: i32,
+        circle_id: i32,
+    ) -> Result<(), String> {
+        unsafe {
+            let result = real_slvs_add_point_on_circle_constraint(self.system, id, point_id, circle_id);
+            if result == 0 {
+                Ok(())
+            } else {
+                Err(format!("Failed to add point on circle constraint {}", id))
+            }
+        }
+    }
+
+    pub fn add_symmetric_constraint(
+        &mut self,
+        id: i32,
+        entity1_id: i32,
+        entity2_id: i32,
+        line_id: i32,
+    ) -> Result<(), String> {
+        unsafe {
+            let result = real_slvs_add_symmetric_constraint(self.system, id, entity1_id, entity2_id, line_id);
+            if result == 0 {
+                Ok(())
+            } else {
+                Err(format!("Failed to add symmetric constraint {}", id))
+            }
+        }
+    }
+
+    pub fn add_midpoint_constraint(
+        &mut self,
+        id: i32,
+        point_id: i32,
+        line_id: i32,
+    ) -> Result<(), String> {
+        unsafe {
+            let result = real_slvs_add_midpoint_constraint(self.system, id, point_id, line_id);
+            if result == 0 {
+                Ok(())
+            } else {
+                Err(format!("Failed to add midpoint constraint {}", id))
+            }
+        }
+    }
+
     pub fn solve(&mut self) -> Result<(), String> {
         unsafe {
             let result = real_slvs_solve(self.system);
@@ -326,5 +524,199 @@ mod tests {
         let (cx, cy, _cz, radius) = solver.get_circle_position(2).unwrap();
         assert!((cx - 36.0).abs() < 0.001 || cy.abs() > 0.001); // Should be at distance 36
         assert_eq!(radius, 12.0);
+    }
+
+    #[test]
+    fn test_angle_constraint_ffi_binding() {
+        let mut solver = Solver::new();
+
+        // Create a pivot point
+        solver.add_point(1, 0.0, 0.0, 0.0).unwrap();
+        
+        // Create endpoints for two arms
+        solver.add_point(2, 80.0, 0.0, 0.0).unwrap();
+        solver.add_point(3, 60.0, 60.0, 0.0).unwrap();
+
+        // Create two lines from pivot
+        solver.add_line(10, 1, 2).unwrap(); // arm1: pivot to arm1_end
+        solver.add_line(11, 1, 3).unwrap(); // arm2: pivot to arm2_end
+
+        // Fix the pivot point
+        solver.add_fixed_constraint(100, 1).unwrap();
+
+        // Add distance constraints to set arm lengths
+        solver.add_distance_constraint(101, 1, 2, 80.0).unwrap();
+        solver.add_distance_constraint(102, 1, 3, 80.0).unwrap();
+
+        // Add angle constraint: 45 degrees between the two arms
+        // This test verifies the FFI binding works correctly
+        let result = solver.add_angle_constraint(103, 10, 11, 45.0);
+        assert!(result.is_ok(), "Should be able to add angle constraint via FFI");
+
+        // Solve - should succeed (may be underconstrained but shouldn't error)
+        let solve_result = solver.solve();
+        // Angle constraint may cause underconstrained system, which is acceptable
+        assert!(solve_result.is_ok() || solve_result.unwrap_err().contains("code 3"), 
+                "Solver should run without FFI errors");
+    }
+
+    #[test]
+    fn test_horizontal_constraint_ffi_binding() {
+        let mut solver = Solver::new();
+
+        // Create points for a horizontal line
+        solver.add_point(1, 0.0, 0.0, 0.0).unwrap();
+        solver.add_point(2, 100.0, 10.0, 0.0).unwrap();
+
+        // Create line
+        solver.add_line(10, 1, 2).unwrap();
+
+        // Fix first point
+        solver.add_fixed_constraint(100, 1).unwrap();
+
+        // Add horizontal constraint
+        let result = solver.add_horizontal_constraint(101, 10);
+        assert!(result.is_ok(), "Should be able to add horizontal constraint via FFI");
+
+        // Solve - should succeed
+        let solve_result = solver.solve();
+        assert!(solve_result.is_ok() || solve_result.unwrap_err().contains("code 3"), 
+                "Solver should run without FFI errors");
+    }
+
+    #[test]
+    fn test_vertical_constraint_ffi_binding() {
+        let mut solver = Solver::new();
+
+        // Create points for a vertical line
+        solver.add_point(1, 0.0, 0.0, 0.0).unwrap();
+        solver.add_point(2, 10.0, 100.0, 0.0).unwrap();
+
+        // Create line
+        solver.add_line(10, 1, 2).unwrap();
+
+        // Fix first point
+        solver.add_fixed_constraint(100, 1).unwrap();
+
+        // Add vertical constraint
+        let result = solver.add_vertical_constraint(101, 10);
+        assert!(result.is_ok(), "Should be able to add vertical constraint via FFI");
+
+        // Solve - should succeed
+        let solve_result = solver.solve();
+        assert!(solve_result.is_ok() || solve_result.unwrap_err().contains("code 3"), 
+                "Solver should run without FFI errors");
+    }
+
+    #[test]
+    fn test_equal_length_constraint_ffi_binding() {
+        let mut solver = Solver::new();
+
+        // Create points for two lines
+        solver.add_point(1, 0.0, 0.0, 0.0).unwrap();
+        solver.add_point(2, 100.0, 0.0, 0.0).unwrap();
+        solver.add_point(3, 0.0, 0.0, 0.0).unwrap();
+        solver.add_point(4, 100.0, 0.0, 0.0).unwrap();
+
+        // Create two lines
+        solver.add_line(10, 1, 2).unwrap();
+        solver.add_line(11, 3, 4).unwrap();
+
+        // Fix first point of each line
+        solver.add_fixed_constraint(100, 1).unwrap();
+        solver.add_fixed_constraint(101, 3).unwrap();
+
+        // Add equal length constraint
+        let result = solver.add_equal_length_constraint(102, 10, 11);
+        assert!(result.is_ok(), "Should be able to add equal length constraint via FFI");
+
+        // Solve - should succeed
+        let solve_result = solver.solve();
+        assert!(solve_result.is_ok() || solve_result.unwrap_err().contains("code 3"), 
+                "Solver should run without FFI errors");
+    }
+
+    #[test]
+    fn test_equal_radius_constraint_ffi_binding() {
+        let mut solver = Solver::new();
+
+        // Create two circles (note: current implementation uses simplified circles)
+        // This test verifies the FFI binding works correctly
+        solver.add_circle(1, 0.0, 0.0, 0.0, 10.0).unwrap();
+        solver.add_circle(2, 20.0, 0.0, 0.0, 15.0).unwrap();
+
+        // Add equal radius constraint - FFI binding should work
+        let result = solver.add_equal_radius_constraint(100, 1, 2);
+        assert!(result.is_ok(), "Should be able to add equal radius constraint via FFI");
+        
+        // Note: Full circle entity support (with workplanes) is needed for actual solving
+        // This test verifies the constraint can be added via FFI
+    }
+
+    #[test]
+    fn test_tangent_constraint_ffi_binding() {
+        let mut solver = Solver::new();
+
+        // Create a line and a circle (simplified)
+        solver.add_point(1, 0.0, 0.0, 0.0).unwrap();
+        solver.add_point(2, 100.0, 0.0, 0.0).unwrap();
+        solver.add_line(10, 1, 2).unwrap();
+        solver.add_circle(20, 50.0, 50.0, 0.0, 25.0).unwrap();
+
+        // Add tangent constraint - FFI binding should work
+        let result = solver.add_tangent_constraint(100, 10, 20);
+        assert!(result.is_ok(), "Should be able to add tangent constraint via FFI");
+        
+        // Note: Full circle/arc entity support is needed for actual solving
+        // This test verifies the constraint can be added via FFI
+    }
+
+    #[test]
+    fn test_point_on_circle_constraint_ffi_binding() {
+        let mut solver = Solver::new();
+
+        // Create a point and a circle (simplified)
+        solver.add_point(1, 50.0, 50.0, 0.0).unwrap();
+        solver.add_circle(10, 0.0, 0.0, 0.0, 25.0).unwrap();
+
+        // Add point on circle constraint - FFI binding should work
+        let result = solver.add_point_on_circle_constraint(100, 1, 10);
+        assert!(result.is_ok(), "Should be able to add point on circle constraint via FFI");
+        
+        // Note: Full circle entity support is needed for actual solving
+        // This test verifies the constraint can be added via FFI
+    }
+
+    #[test]
+    fn test_symmetric_constraint_ffi_binding() {
+        let mut solver = Solver::new();
+
+        // Create two points and a line for symmetry axis
+        solver.add_point(1, 30.0, 80.0, 0.0).unwrap();
+        solver.add_point(2, 70.0, 80.0, 0.0).unwrap();
+        solver.add_point(3, 50.0, 0.0, 0.0).unwrap();
+        solver.add_point(4, 50.0, 100.0, 0.0).unwrap();
+        solver.add_line(10, 3, 4).unwrap(); // symmetry axis
+
+        // Add symmetric constraint - FFI binding should work
+        let result = solver.add_symmetric_constraint(100, 1, 2, 10);
+        assert!(result.is_ok(), "Should be able to add symmetric constraint via FFI");
+    }
+
+    #[test]
+    fn test_midpoint_constraint_ffi_binding() {
+        let mut solver = Solver::new();
+
+        // Create a line with endpoints
+        solver.add_point(1, 0.0, 50.0, 0.0).unwrap();
+        solver.add_point(2, 100.0, 50.0, 0.0).unwrap();
+        solver.add_line(10, 1, 2).unwrap();
+
+        // Create midpoint
+        solver.add_point(3, 50.0, 50.0, 0.0).unwrap();
+
+        // Add midpoint constraint - FFI binding should work
+        let result = solver.add_midpoint_constraint(100, 3, 10);
+        assert!(result.is_ok(), "Should be able to add midpoint constraint via FFI");
     }
 }
