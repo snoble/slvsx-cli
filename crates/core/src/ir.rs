@@ -420,6 +420,81 @@ mod tests {
             preserve: false,
         };
         assert!(!normal_point.should_preserve());
+
+        let preserved_2d_point = Entity::Point2D {
+            id: "p3".into(),
+            at: vec![ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0)],
+            workplane: "wp1".into(),
+            construction: false,
+            preserve: true,
+        };
+        assert!(preserved_2d_point.should_preserve());
+
+        let preserved_line = Entity::Line {
+            id: "l1".into(),
+            p1: "p1".into(),
+            p2: "p2".into(),
+            construction: false,
+            preserve: true,
+        };
+        assert!(preserved_line.should_preserve());
+
+        let preserved_circle = Entity::Circle {
+            id: "c1".into(),
+            center: vec![ExprOrNumber::Number(0.0)],
+            diameter: ExprOrNumber::Number(10.0),
+            construction: false,
+            preserve: true,
+        };
+        assert!(preserved_circle.should_preserve());
+
+        let preserved_arc = Entity::Arc {
+            id: "a1".into(),
+            center: "center".into(),
+            start: "start".into(),
+            end: "end".into(),
+            normal: vec![ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(1.0)],
+            workplane: None,
+            construction: false,
+            preserve: true,
+        };
+        assert!(preserved_arc.should_preserve());
+
+        let preserved_cubic = Entity::Cubic {
+            id: "cubic1".into(),
+            control_points: vec!["p0".into(), "p1".into(), "p2".into(), "p3".into()],
+            workplane: None,
+            construction: false,
+            preserve: true,
+        };
+        assert!(preserved_cubic.should_preserve());
+
+        // Plane doesn't have preserve flag
+        let plane = Entity::Plane {
+            id: "wp1".into(),
+            origin: vec![ExprOrNumber::Number(0.0)],
+            normal: vec![ExprOrNumber::Number(0.0)],
+        };
+        assert!(!plane.should_preserve());
+    }
+
+    #[test]
+    fn test_preserve_flag_serialization() {
+        // Test that preserve flag defaults to false when not specified
+        let json = r#"{"type":"point","id":"p1","at":[0.0,0.0,0.0]}"#;
+        let entity: Entity = serde_json::from_str(json).unwrap();
+        match entity {
+            Entity::Point { preserve, .. } => assert!(!preserve, "Preserve should default to false"),
+            _ => panic!("Wrong entity type"),
+        }
+
+        // Test that preserve flag can be set to true
+        let json = r#"{"type":"point","id":"p1","at":[0.0,0.0,0.0],"preserve":true}"#;
+        let entity: Entity = serde_json::from_str(json).unwrap();
+        match entity {
+            Entity::Point { preserve, .. } => assert!(preserve, "Preserve should be true"),
+            _ => panic!("Wrong entity type"),
+        }
     }
 
     #[test]
