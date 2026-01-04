@@ -122,51 +122,98 @@ impl Validator {
         use crate::ir::Entity;
         // Build set incrementally to prevent forward references
         // This matches how the solver processes entities sequentially
+        // Only track Point entities since Line.p1/p2 and Arc.start/end must reference Points
+        let mut seen_point_ids = HashSet::new();
+        // Track all entity IDs to provide better error messages
         let mut seen_entity_ids = HashSet::new();
 
         for (idx, entity) in doc.entities.iter().enumerate() {
             match entity {
                 Entity::Line { p1, p2, .. } => {
-                    if !seen_entity_ids.contains(p1.as_str()) {
-                        return Err(Error::InvalidInput {
-                            message: format!(
-                                "Line entity #{} references point '{}' that is not yet defined. Entities must be defined before they are referenced.",
-                                idx + 1, p1
-                            ),
-                            pointer: Some(format!("/entities/{}/p1", idx)),
-                        });
+                    if !seen_point_ids.contains(p1.as_str()) {
+                        if !seen_entity_ids.contains(p1.as_str()) {
+                            return Err(Error::InvalidInput {
+                                message: format!(
+                                    "Line entity #{} references point '{}' that is not yet defined. Entities must be defined before they are referenced.",
+                                    idx + 1, p1
+                                ),
+                                pointer: Some(format!("/entities/{}/p1", idx)),
+                            });
+                        } else {
+                            return Err(Error::InvalidInput {
+                                message: format!(
+                                    "Line entity #{} references '{}' which is not a Point entity. Line endpoints must reference Point entities.",
+                                    idx + 1, p1
+                                ),
+                                pointer: Some(format!("/entities/{}/p1", idx)),
+                            });
+                        }
                     }
-                    if !seen_entity_ids.contains(p2.as_str()) {
-                        return Err(Error::InvalidInput {
-                            message: format!(
-                                "Line entity #{} references point '{}' that is not yet defined. Entities must be defined before they are referenced.",
-                                idx + 1, p2
-                            ),
-                            pointer: Some(format!("/entities/{}/p2", idx)),
-                        });
+                    if !seen_point_ids.contains(p2.as_str()) {
+                        if !seen_entity_ids.contains(p2.as_str()) {
+                            return Err(Error::InvalidInput {
+                                message: format!(
+                                    "Line entity #{} references point '{}' that is not yet defined. Entities must be defined before they are referenced.",
+                                    idx + 1, p2
+                                ),
+                                pointer: Some(format!("/entities/{}/p2", idx)),
+                            });
+                        } else {
+                            return Err(Error::InvalidInput {
+                                message: format!(
+                                    "Line entity #{} references '{}' which is not a Point entity. Line endpoints must reference Point entities.",
+                                    idx + 1, p2
+                                ),
+                                pointer: Some(format!("/entities/{}/p2", idx)),
+                            });
+                        }
                     }
                 }
                 Entity::Arc { start, end, .. } => {
-                    if !seen_entity_ids.contains(start.as_str()) {
-                        return Err(Error::InvalidInput {
-                            message: format!(
-                                "Arc entity #{} references point '{}' that is not yet defined. Entities must be defined before they are referenced.",
-                                idx + 1, start
-                            ),
-                            pointer: Some(format!("/entities/{}/start", idx)),
-                        });
+                    if !seen_point_ids.contains(start.as_str()) {
+                        if !seen_entity_ids.contains(start.as_str()) {
+                            return Err(Error::InvalidInput {
+                                message: format!(
+                                    "Arc entity #{} references point '{}' that is not yet defined. Entities must be defined before they are referenced.",
+                                    idx + 1, start
+                                ),
+                                pointer: Some(format!("/entities/{}/start", idx)),
+                            });
+                        } else {
+                            return Err(Error::InvalidInput {
+                                message: format!(
+                                    "Arc entity #{} references '{}' which is not a Point entity. Arc start/end points must reference Point entities.",
+                                    idx + 1, start
+                                ),
+                                pointer: Some(format!("/entities/{}/start", idx)),
+                            });
+                        }
                     }
-                    if !seen_entity_ids.contains(end.as_str()) {
-                        return Err(Error::InvalidInput {
-                            message: format!(
-                                "Arc entity #{} references point '{}' that is not yet defined. Entities must be defined before they are referenced.",
-                                idx + 1, end
-                            ),
-                            pointer: Some(format!("/entities/{}/end", idx)),
-                        });
+                    if !seen_point_ids.contains(end.as_str()) {
+                        if !seen_entity_ids.contains(end.as_str()) {
+                            return Err(Error::InvalidInput {
+                                message: format!(
+                                    "Arc entity #{} references point '{}' that is not yet defined. Entities must be defined before they are referenced.",
+                                    idx + 1, end
+                                ),
+                                pointer: Some(format!("/entities/{}/end", idx)),
+                            });
+                        } else {
+                            return Err(Error::InvalidInput {
+                                message: format!(
+                                    "Arc entity #{} references '{}' which is not a Point entity. Arc start/end points must reference Point entities.",
+                                    idx + 1, end
+                                ),
+                                pointer: Some(format!("/entities/{}/end", idx)),
+                            });
+                        }
                     }
                 }
-                _ => {} // Points, circles, planes don't reference other entities
+                Entity::Point { .. } => {
+                    // Track Point entities separately
+                    seen_point_ids.insert(entity.id());
+                }
+                _ => {} // Circles, planes don't reference other entities
             }
             // Add this entity's ID to the set after checking its references
             seen_entity_ids.insert(entity.id());
@@ -573,6 +620,127 @@ mod tests {
                 assert!(message.contains("not yet defined"));
                 assert!(message.contains("p2"));
                 assert_eq!(pointer, Some("/entities/1/p2".to_string()));
+            }
+            _ => panic!("Wrong error type"),
+        }
+    }
+
+    #[test]
+    fn test_validate_entity_references_line_references_circle() {
+        use crate::ir::Entity;
+        let validator = Validator::new();
+        // Test that Line cannot reference a Circle entity
+        let doc = InputDocument {
+            schema: "slvs-json/1".to_string(),
+            units: "mm".to_string(),
+            parameters: HashMap::new(),
+            entities: vec![
+                Entity::Point {
+                    id: "p1".to_string(),
+                    at: vec![ExprOrNumber::Number(0.0)],
+                },
+                Entity::Circle {
+                    id: "c1".to_string(),
+                    center: vec![ExprOrNumber::Number(0.0)],
+                    diameter: ExprOrNumber::Number(10.0),
+                },
+                Entity::Line {
+                    id: "l1".to_string(),
+                    p1: "p1".to_string(),
+                    p2: "c1".to_string(), // c1 is a Circle, not a Point!
+                },
+            ],
+            constraints: vec![],
+        };
+        let result = validator.validate_entity_references(&doc);
+        assert!(result.is_err(), "Line should not be able to reference Circle");
+        match result.unwrap_err() {
+            Error::InvalidInput { message, pointer } => {
+                assert!(message.contains("not a Point entity"));
+                assert!(message.contains("c1"));
+                assert!(message.contains("Line endpoints must reference Point entities"));
+                assert_eq!(pointer, Some("/entities/2/p2".to_string()));
+            }
+            _ => panic!("Wrong error type"),
+        }
+    }
+
+    #[test]
+    fn test_validate_entity_references_arc_references_circle() {
+        use crate::ir::Entity;
+        let validator = Validator::new();
+        // Test that Arc cannot reference a Circle entity
+        let doc = InputDocument {
+            schema: "slvs-json/1".to_string(),
+            units: "mm".to_string(),
+            parameters: HashMap::new(),
+            entities: vec![
+                Entity::Point {
+                    id: "p1".to_string(),
+                    at: vec![ExprOrNumber::Number(0.0)],
+                },
+                Entity::Circle {
+                    id: "c1".to_string(),
+                    center: vec![ExprOrNumber::Number(0.0)],
+                    diameter: ExprOrNumber::Number(10.0),
+                },
+                Entity::Arc {
+                    id: "a1".to_string(),
+                    center: vec![ExprOrNumber::Number(0.0)],
+                    start: "p1".to_string(),
+                    end: "c1".to_string(), // c1 is a Circle, not a Point!
+                },
+            ],
+            constraints: vec![],
+        };
+        let result = validator.validate_entity_references(&doc);
+        assert!(result.is_err(), "Arc should not be able to reference Circle");
+        match result.unwrap_err() {
+            Error::InvalidInput { message, pointer } => {
+                assert!(message.contains("not a Point entity"));
+                assert!(message.contains("c1"));
+                assert!(message.contains("Arc start/end points must reference Point entities"));
+                assert_eq!(pointer, Some("/entities/2/end".to_string()));
+            }
+            _ => panic!("Wrong error type"),
+        }
+    }
+
+    #[test]
+    fn test_validate_entity_references_line_references_line() {
+        use crate::ir::Entity;
+        let validator = Validator::new();
+        // Test that Line cannot reference another Line entity
+        let doc = InputDocument {
+            schema: "slvs-json/1".to_string(),
+            units: "mm".to_string(),
+            parameters: HashMap::new(),
+            entities: vec![
+                Entity::Point {
+                    id: "p1".to_string(),
+                    at: vec![ExprOrNumber::Number(0.0)],
+                },
+                Entity::Line {
+                    id: "l1".to_string(),
+                    p1: "p1".to_string(),
+                    p2: "p1".to_string(), // Self-reference is valid
+                },
+                Entity::Line {
+                    id: "l2".to_string(),
+                    p1: "p1".to_string(),
+                    p2: "l1".to_string(), // l1 is a Line, not a Point!
+                },
+            ],
+            constraints: vec![],
+        };
+        let result = validator.validate_entity_references(&doc);
+        assert!(result.is_err(), "Line should not be able to reference Line");
+        match result.unwrap_err() {
+            Error::InvalidInput { message, pointer } => {
+                assert!(message.contains("not a Point entity"));
+                assert!(message.contains("l1"));
+                assert!(message.contains("Line endpoints must reference Point entities"));
+                assert_eq!(pointer, Some("/entities/2/p2".to_string()));
             }
             _ => panic!("Wrong error type"),
         }
