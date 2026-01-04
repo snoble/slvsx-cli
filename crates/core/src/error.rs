@@ -61,39 +61,6 @@ mod tests {
 
     #[test]
     fn test_exit_codes() {
-        // Test all error types have appropriate exit codes
-        assert_eq!(Error::InvalidInput { message: "test".to_string(), pointer: None }.exit_code(), 2);
-        assert_eq!(Error::SchemaValidation("test".to_string()).exit_code(), 2);
-        assert_eq!(Error::SolverConvergence { iterations: 100 }.exit_code(), 3);
-        assert_eq!(Error::Overconstrained.exit_code(), 4);
-        assert_eq!(Error::Underconstrained { dof: 2 }.exit_code(), 5);
-        assert_eq!(Error::Ffi("test".to_string()).exit_code(), 6);
-        assert_eq!(Error::EntityNotFound("test".to_string()).exit_code(), 1);
-        assert_eq!(Error::ExpressionEval("test".to_string()).exit_code(), 1);
-    }
-
-    #[test]
-    fn test_error_display() {
-        // Test that all error types can be displayed
-        let errors = vec![
-            Error::InvalidInput { message: "test".to_string(), pointer: None },
-            Error::SchemaValidation("test".to_string()),
-            Error::SolverConvergence { iterations: 100 },
-            Error::Overconstrained,
-            Error::Underconstrained { dof: 2 },
-            Error::EntityNotFound("test".to_string()),
-            Error::Ffi("test".to_string()),
-            Error::ExpressionEval("test".to_string()),
-        ];
-
-        for error in errors {
-            let display = format!("{}", error);
-            assert!(!display.is_empty(), "Error should have display representation");
-        }
-    }
-
-    #[test]
-    fn test_exit_codes() {
         assert_eq!(
             Error::InvalidInput {
                 message: "test".into(),
