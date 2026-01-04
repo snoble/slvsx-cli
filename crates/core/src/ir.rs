@@ -219,6 +219,54 @@ pub enum Constraint {
         b: String,
         value: ExprOrNumber,
     },
+    PointOnFace {
+        point: String,
+        face: String,
+    },
+    PointFaceDistance {
+        point: String,
+        face: String,
+        value: ExprOrNumber,
+    },
+    EqualLineArcLength {
+        line: String,
+        arc: String,
+    },
+    EqualLengthPointLineDistance {
+        line: String,
+        point: String,
+        reference_line: String,
+    },
+    EqualPointLineDistances {
+        point1: String,
+        line1: String,
+        point2: String,
+        line2: String,
+    },
+    CubicLineTangent {
+        cubic: String,
+        line: String,
+    },
+    ArcArcLengthRatio {
+        a: String,
+        b: String,
+        value: ExprOrNumber,
+    },
+    ArcLineLengthRatio {
+        arc: String,
+        line: String,
+        value: ExprOrNumber,
+    },
+    ArcArcLengthDifference {
+        a: String,
+        b: String,
+        value: ExprOrNumber,
+    },
+    ArcLineLengthDifference {
+        arc: String,
+        line: String,
+        value: ExprOrNumber,
+    },
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, JsonSchema)]

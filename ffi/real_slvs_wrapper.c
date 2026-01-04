@@ -792,3 +792,195 @@ int real_slvs_add_length_difference_constraint(RealSlvsSystem* s, int id,
     
     return 0;
 }
+
+// Add point-on-face constraint (requires face entity)
+int real_slvs_add_point_on_face_constraint(RealSlvsSystem* s, int id,
+                                            int point_id, int face_id) {
+    if (!s) return -1;
+    
+    Slvs_hGroup g = 1;
+    Slvs_hConstraint constraint_id = 10000 + id;
+    
+    Slvs_hEntity point = 1000 + point_id;
+    Slvs_hEntity face = 1000 + face_id;
+    
+    s->sys.constraint[s->sys.constraints++] = Slvs_MakeConstraint(
+        constraint_id, g, SLVS_C_PT_ON_FACE, SLVS_FREE_IN_3D,
+        0, point, 0, face, 0);
+    
+    return 0;
+}
+
+// Add point-to-face distance constraint (requires face entity)
+int real_slvs_add_point_face_distance_constraint(RealSlvsSystem* s, int id,
+                                                  int point_id, int face_id,
+                                                  double distance) {
+    if (!s) return -1;
+    
+    Slvs_hGroup g = 1;
+    Slvs_hConstraint constraint_id = 10000 + id;
+    
+    Slvs_hEntity point = 1000 + point_id;
+    Slvs_hEntity face = 1000 + face_id;
+    
+    s->sys.constraint[s->sys.constraints++] = Slvs_MakeConstraint(
+        constraint_id, g, SLVS_C_PT_FACE_DISTANCE, SLVS_FREE_IN_3D,
+        distance, point, 0, face, 0);
+    
+    return 0;
+}
+
+// Add equal line-arc length constraint
+int real_slvs_add_equal_line_arc_length_constraint(RealSlvsSystem* s, int id,
+                                                     int line_id, int arc_id) {
+    if (!s) return -1;
+    
+    Slvs_hGroup g = 1;
+    Slvs_hConstraint constraint_id = 10000 + id;
+    
+    Slvs_hEntity line = 1000 + line_id;
+    Slvs_hEntity arc = 1000 + arc_id;
+    
+    s->sys.constraint[s->sys.constraints++] = Slvs_MakeConstraint(
+        constraint_id, g, SLVS_C_EQUAL_LINE_ARC_LEN, SLVS_FREE_IN_3D,
+        0, 0, 0, line, arc);
+    
+    return 0;
+}
+
+// Add equal length and point-line distance constraint
+int real_slvs_add_equal_length_point_line_distance_constraint(RealSlvsSystem* s, int id,
+                                                                int line_id, int point_id,
+                                                                int reference_line_id) {
+    if (!s) return -1;
+    
+    Slvs_hGroup g = 1;
+    Slvs_hConstraint constraint_id = 10000 + id;
+    
+    Slvs_hEntity line = 1000 + line_id;
+    Slvs_hEntity point = 1000 + point_id;
+    Slvs_hEntity ref_line = 1000 + reference_line_id;
+    
+    Slvs_Constraint c = Slvs_MakeConstraint(
+        constraint_id, g, SLVS_C_EQ_LEN_PT_LINE_D, SLVS_FREE_IN_3D,
+        0, point, 0, line, ref_line);
+    s->sys.constraint[s->sys.constraints++] = c;
+    
+    return 0;
+}
+
+// Add equal point-line distances constraint
+int real_slvs_add_equal_point_line_distances_constraint(RealSlvsSystem* s, int id,
+                                                          int point1_id, int line1_id,
+                                                          int point2_id, int line2_id) {
+    if (!s) return -1;
+    
+    Slvs_hGroup g = 1;
+    Slvs_hConstraint constraint_id = 10000 + id;
+    
+    Slvs_hEntity point1 = 1000 + point1_id;
+    Slvs_hEntity line1 = 1000 + line1_id;
+    Slvs_hEntity point2 = 1000 + point2_id;
+    Slvs_hEntity line2 = 1000 + line2_id;
+    
+    Slvs_Constraint c = Slvs_MakeConstraint(
+        constraint_id, g, SLVS_C_EQ_PT_LN_DISTANCES, SLVS_FREE_IN_3D,
+        0, point1, point2, line1, line2);
+    s->sys.constraint[s->sys.constraints++] = c;
+    
+    return 0;
+}
+
+// Add cubic-line tangent constraint (requires cubic entity)
+int real_slvs_add_cubic_line_tangent_constraint(RealSlvsSystem* s, int id,
+                                                  int cubic_id, int line_id) {
+    if (!s) return -1;
+    
+    Slvs_hGroup g = 1;
+    Slvs_hConstraint constraint_id = 10000 + id;
+    
+    Slvs_hEntity cubic = 1000 + cubic_id;
+    Slvs_hEntity line = 1000 + line_id;
+    
+    s->sys.constraint[s->sys.constraints++] = Slvs_MakeConstraint(
+        constraint_id, g, SLVS_C_CUBIC_LINE_TANGENT, SLVS_FREE_IN_3D,
+        0, 0, 0, cubic, line);
+    
+    return 0;
+}
+
+// Add arc-arc length ratio constraint
+int real_slvs_add_arc_arc_length_ratio_constraint(RealSlvsSystem* s, int id,
+                                                   int arc1_id, int arc2_id,
+                                                   double ratio) {
+    if (!s) return -1;
+    
+    Slvs_hGroup g = 1;
+    Slvs_hConstraint constraint_id = 10000 + id;
+    
+    Slvs_hEntity arc1 = 1000 + arc1_id;
+    Slvs_hEntity arc2 = 1000 + arc2_id;
+    
+    s->sys.constraint[s->sys.constraints++] = Slvs_MakeConstraint(
+        constraint_id, g, SLVS_C_ARC_ARC_LEN_RATIO, SLVS_FREE_IN_3D,
+        ratio, 0, 0, arc1, arc2);
+    
+    return 0;
+}
+
+// Add arc-line length ratio constraint
+int real_slvs_add_arc_line_length_ratio_constraint(RealSlvsSystem* s, int id,
+                                                     int arc_id, int line_id,
+                                                     double ratio) {
+    if (!s) return -1;
+    
+    Slvs_hGroup g = 1;
+    Slvs_hConstraint constraint_id = 10000 + id;
+    
+    Slvs_hEntity arc = 1000 + arc_id;
+    Slvs_hEntity line = 1000 + line_id;
+    
+    s->sys.constraint[s->sys.constraints++] = Slvs_MakeConstraint(
+        constraint_id, g, SLVS_C_ARC_LINE_LEN_RATIO, SLVS_FREE_IN_3D,
+        ratio, 0, 0, arc, line);
+    
+    return 0;
+}
+
+// Add arc-arc length difference constraint
+int real_slvs_add_arc_arc_length_difference_constraint(RealSlvsSystem* s, int id,
+                                                         int arc1_id, int arc2_id,
+                                                         double difference) {
+    if (!s) return -1;
+    
+    Slvs_hGroup g = 1;
+    Slvs_hConstraint constraint_id = 10000 + id;
+    
+    Slvs_hEntity arc1 = 1000 + arc1_id;
+    Slvs_hEntity arc2 = 1000 + arc2_id;
+    
+    s->sys.constraint[s->sys.constraints++] = Slvs_MakeConstraint(
+        constraint_id, g, SLVS_C_ARC_ARC_DIFFERENCE, SLVS_FREE_IN_3D,
+        difference, 0, 0, arc1, arc2);
+    
+    return 0;
+}
+
+// Add arc-line length difference constraint
+int real_slvs_add_arc_line_length_difference_constraint(RealSlvsSystem* s, int id,
+                                                          int arc_id, int line_id,
+                                                          double difference) {
+    if (!s) return -1;
+    
+    Slvs_hGroup g = 1;
+    Slvs_hConstraint constraint_id = 10000 + id;
+    
+    Slvs_hEntity arc = 1000 + arc_id;
+    Slvs_hEntity line = 1000 + line_id;
+    
+    s->sys.constraint[s->sys.constraints++] = Slvs_MakeConstraint(
+        constraint_id, g, SLVS_C_ARC_LINE_DIFFERENCE, SLVS_FREE_IN_3D,
+        difference, 0, 0, arc, line);
+    
+    return 0;
+}

@@ -467,6 +467,139 @@ impl Solver {
                         })?;
                     constraint_id += 1;
                 }
+                crate::ir::Constraint::PointOnFace { point, face } => {
+                    let point_id = entity_id_map.get(point).copied().unwrap_or(0);
+                    let face_id = entity_id_map.get(face).copied().unwrap_or(0);
+                    ffi_solver
+                        .add_point_on_face_constraint(constraint_id, point_id, face_id)
+                        .map_err(|e| crate::error::Error::InvalidInput {
+                            message: format!("Failed to add point-on-face constraint: point '{}' on face '{}': {}", point, face, e),
+                            pointer: Some(format!("/constraints/{}", constraint_idx)),
+                        })?;
+                    constraint_id += 1;
+                }
+                crate::ir::Constraint::PointFaceDistance { point, face, value } => {
+                    let point_id = entity_id_map.get(point).copied().unwrap_or(0);
+                    let face_id = entity_id_map.get(face).copied().unwrap_or(0);
+                    let distance = match value {
+                        crate::ir::ExprOrNumber::Number(n) => *n,
+                        crate::ir::ExprOrNumber::Expression(e) => eval.eval(&e)?,
+                    };
+                    ffi_solver
+                        .add_point_face_distance_constraint(constraint_id, point_id, face_id, distance)
+                        .map_err(|e| crate::error::Error::InvalidInput {
+                            message: format!("Failed to add point-face-distance constraint: point '{}' to face '{}': {}", point, face, e),
+                            pointer: Some(format!("/constraints/{}", constraint_idx)),
+                        })?;
+                    constraint_id += 1;
+                }
+                crate::ir::Constraint::EqualLineArcLength { line, arc } => {
+                    let line_id = entity_id_map.get(line).copied().unwrap_or(0);
+                    let arc_id = entity_id_map.get(arc).copied().unwrap_or(0);
+                    ffi_solver
+                        .add_equal_line_arc_length_constraint(constraint_id, line_id, arc_id)
+                        .map_err(|e| crate::error::Error::InvalidInput {
+                            message: format!("Failed to add equal line-arc length constraint between '{}' and '{}': {}", line, arc, e),
+                            pointer: Some(format!("/constraints/{}", constraint_idx)),
+                        })?;
+                    constraint_id += 1;
+                }
+                crate::ir::Constraint::EqualLengthPointLineDistance { line, point, reference_line } => {
+                    let line_id = entity_id_map.get(line).copied().unwrap_or(0);
+                    let point_id = entity_id_map.get(point).copied().unwrap_or(0);
+                    let ref_line_id = entity_id_map.get(reference_line).copied().unwrap_or(0);
+                    ffi_solver
+                        .add_equal_length_point_line_distance_constraint(constraint_id, line_id, point_id, ref_line_id)
+                        .map_err(|e| crate::error::Error::InvalidInput {
+                            message: format!("Failed to add equal length point-line distance constraint: {}", e),
+                            pointer: Some(format!("/constraints/{}", constraint_idx)),
+                        })?;
+                    constraint_id += 1;
+                }
+                crate::ir::Constraint::EqualPointLineDistances { point1, line1, point2, line2 } => {
+                    let point1_id = entity_id_map.get(point1).copied().unwrap_or(0);
+                    let line1_id = entity_id_map.get(line1).copied().unwrap_or(0);
+                    let point2_id = entity_id_map.get(point2).copied().unwrap_or(0);
+                    let line2_id = entity_id_map.get(line2).copied().unwrap_or(0);
+                    ffi_solver
+                        .add_equal_point_line_distances_constraint(constraint_id, point1_id, line1_id, point2_id, line2_id)
+                        .map_err(|e| crate::error::Error::InvalidInput {
+                            message: format!("Failed to add equal point-line distances constraint: {}", e),
+                            pointer: Some(format!("/constraints/{}", constraint_idx)),
+                        })?;
+                    constraint_id += 1;
+                }
+                crate::ir::Constraint::CubicLineTangent { cubic, line } => {
+                    let cubic_id = entity_id_map.get(cubic).copied().unwrap_or(0);
+                    let line_id = entity_id_map.get(line).copied().unwrap_or(0);
+                    ffi_solver
+                        .add_cubic_line_tangent_constraint(constraint_id, cubic_id, line_id)
+                        .map_err(|e| crate::error::Error::InvalidInput {
+                            message: format!("Failed to add cubic-line tangent constraint between '{}' and '{}': {}", cubic, line, e),
+                            pointer: Some(format!("/constraints/{}", constraint_idx)),
+                        })?;
+                    constraint_id += 1;
+                }
+                crate::ir::Constraint::ArcArcLengthRatio { a, b, value } => {
+                    let arc1_id = entity_id_map.get(a).copied().unwrap_or(0);
+                    let arc2_id = entity_id_map.get(b).copied().unwrap_or(0);
+                    let ratio = match value {
+                        crate::ir::ExprOrNumber::Number(n) => *n,
+                        crate::ir::ExprOrNumber::Expression(e) => eval.eval(&e)?,
+                    };
+                    ffi_solver
+                        .add_arc_arc_length_ratio_constraint(constraint_id, arc1_id, arc2_id, ratio)
+                        .map_err(|e| crate::error::Error::InvalidInput {
+                            message: format!("Failed to add arc-arc length ratio constraint between '{}' and '{}': {}", a, b, e),
+                            pointer: Some(format!("/constraints/{}", constraint_idx)),
+                        })?;
+                    constraint_id += 1;
+                }
+                crate::ir::Constraint::ArcLineLengthRatio { arc, line, value } => {
+                    let arc_id = entity_id_map.get(arc).copied().unwrap_or(0);
+                    let line_id = entity_id_map.get(line).copied().unwrap_or(0);
+                    let ratio = match value {
+                        crate::ir::ExprOrNumber::Number(n) => *n,
+                        crate::ir::ExprOrNumber::Expression(e) => eval.eval(&e)?,
+                    };
+                    ffi_solver
+                        .add_arc_line_length_ratio_constraint(constraint_id, arc_id, line_id, ratio)
+                        .map_err(|e| crate::error::Error::InvalidInput {
+                            message: format!("Failed to add arc-line length ratio constraint between '{}' and '{}': {}", arc, line, e),
+                            pointer: Some(format!("/constraints/{}", constraint_idx)),
+                        })?;
+                    constraint_id += 1;
+                }
+                crate::ir::Constraint::ArcArcLengthDifference { a, b, value } => {
+                    let arc1_id = entity_id_map.get(a).copied().unwrap_or(0);
+                    let arc2_id = entity_id_map.get(b).copied().unwrap_or(0);
+                    let difference = match value {
+                        crate::ir::ExprOrNumber::Number(n) => *n,
+                        crate::ir::ExprOrNumber::Expression(e) => eval.eval(&e)?,
+                    };
+                    ffi_solver
+                        .add_arc_arc_length_difference_constraint(constraint_id, arc1_id, arc2_id, difference)
+                        .map_err(|e| crate::error::Error::InvalidInput {
+                            message: format!("Failed to add arc-arc length difference constraint between '{}' and '{}': {}", a, b, e),
+                            pointer: Some(format!("/constraints/{}", constraint_idx)),
+                        })?;
+                    constraint_id += 1;
+                }
+                crate::ir::Constraint::ArcLineLengthDifference { arc, line, value } => {
+                    let arc_id = entity_id_map.get(arc).copied().unwrap_or(0);
+                    let line_id = entity_id_map.get(line).copied().unwrap_or(0);
+                    let difference = match value {
+                        crate::ir::ExprOrNumber::Number(n) => *n,
+                        crate::ir::ExprOrNumber::Expression(e) => eval.eval(&e)?,
+                    };
+                    ffi_solver
+                        .add_arc_line_length_difference_constraint(constraint_id, arc_id, line_id, difference)
+                        .map_err(|e| crate::error::Error::InvalidInput {
+                            message: format!("Failed to add arc-line length difference constraint between '{}' and '{}': {}", arc, line, e),
+                            pointer: Some(format!("/constraints/{}", constraint_idx)),
+                        })?;
+                    constraint_id += 1;
+                }
                 _ => {
                     // Constraint type not yet implemented - will be ignored
                 } // Handle other constraint types as needed
