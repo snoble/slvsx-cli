@@ -13,6 +13,35 @@ This gallery showcases SLVSX's capabilities through rendered visualizations. Eac
 
 ## 🎨 3D Geometry
 
+### Birdhouse (3D Structure)
+
+A complete 3D birdhouse with base, walls, roof, and entrance hole, shown from multiple angles:
+
+**XY View (Top-Down)**
+![Birdhouse XY View](../examples/outputs/birdhouse_xy.svg)
+
+**XZ View (Front)**
+![Birdhouse XZ View](../examples/outputs/birdhouse_xz.svg)
+
+**YZ View (Side)**
+![Birdhouse YZ View](../examples/outputs/birdhouse_yz.svg)
+
+**Isometric View (45° 3D)**
+![Birdhouse Isometric View](../examples/outputs/birdhouse_isometric.svg)
+
+**What it demonstrates**:
+- Complex 3D structure with multiple components
+- Parametric design (width, depth, height, roof height)
+- Vertical walls and sloped roof
+- Circular entrance hole
+- Multiple viewing angles including isometric
+
+**Try it**:
+```bash
+slvsx solve examples/21_birdhouse.json
+slvsx export -f svg -v isometric examples/21_birdhouse.json -o birdhouse.svg
+```
+
 ### Tetrahedron (Multiple Views) {#tetrahedron-multiple-views}
 
 A perfect tetrahedron with all edges equal length, shown from different viewing angles:
