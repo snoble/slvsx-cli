@@ -90,8 +90,14 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: lcov.info
-          fail_ci_if_error: false
+          fail_ci_if_error: true
           verbose: true
+          flags: ${{ matrix.os }}
+          name: slvsx-${{ matrix.os }}
+          # Enable PR comments with coverage diff
+          comment: always
+          # Fail if coverage drops below threshold (configured in codecov.yml)
+          fail_ci_if_error: true
 
       - name: Build and verify documentation
         run: |

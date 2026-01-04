@@ -1,5 +1,6 @@
 codecov:
   require_ci_to_pass: yes
+  # Token is provided via GitHub Actions workflow (secrets.CODECOV_TOKEN)
 
 coverage:
   precision: 2
@@ -14,11 +15,16 @@ coverage:
       default:
         target: 100%
         # All new/changed code must be covered
+    changes:
+      default:
+        target: 100%
+        # Coverage changes must maintain 100%
 
 comment:
   layout: "reach,diff,flags,files"
-  behavior: default
+  behavior: always
   require_changes: true
+  # Always comment on PRs with coverage information
 
 # Files excluded from coverage requirements
 # See COVERAGE.md for policy details
