@@ -45,6 +45,9 @@ A 3D coordinate system showing X, Y, and Z axes with a point in space:
 **XZ View**
 ![3D Basics XZ View](examples/outputs/3d_basics_xz.svg)
 
+**Isometric View (45° 3D)**
+![3D Basics Isometric View](examples/outputs/3d_basics_isometric.svg)
+
 **What it demonstrates**:
 - 3D point positioning
 - Distance constraints in 3D space

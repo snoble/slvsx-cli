@@ -66,12 +66,13 @@ if [ -f "$PROJECT_ROOT/examples/04_3d_tetrahedron.json" ]; then
     echo "  Generated tetrahedron views (XY, XZ, YZ, Isometric)"
 fi
 
-# 3D basics - multiple views
+# 3D basics - multiple views including isometric
 if [ -f "$PROJECT_ROOT/examples/12_3d_basics.json" ]; then
     "$BINARY" solve "$PROJECT_ROOT/examples/12_3d_basics.json" > /dev/null 2>&1
     "$BINARY" export -f svg -v xy "$PROJECT_ROOT/examples/12_3d_basics.json" -o "$OUTPUT_DIR/3d_basics_xy.svg" 2>&1
     "$BINARY" export -f svg -v xz "$PROJECT_ROOT/examples/12_3d_basics.json" -o "$OUTPUT_DIR/3d_basics_xz.svg" 2>&1
-    echo "  Generated 3D basics views"
+    "$BINARY" export -f svg -v isometric "$PROJECT_ROOT/examples/12_3d_basics.json" -o "$OUTPUT_DIR/3d_basics_isometric.svg" 2>&1
+    echo "  Generated 3D basics views (XY, XZ, Isometric)"
 fi
 
 echo ""

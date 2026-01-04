@@ -262,12 +262,13 @@ jobs:
             echo "  Generated tetrahedron views (XY, XZ, YZ, Isometric)"
           fi
           
-          # 3D basics - multiple views
+          # 3D basics - multiple views including isometric
           if [ -f "examples/12_3d_basics.json" ]; then
             "$BINARY_PATH" solve "examples/12_3d_basics.json" > /dev/null 2>&1
             "$BINARY_PATH" export -f svg -v xy "examples/12_3d_basics.json" -o "examples/outputs/3d_basics_xy.svg" 2>&1
             "$BINARY_PATH" export -f svg -v xz "examples/12_3d_basics.json" -o "examples/outputs/3d_basics_xz.svg" 2>&1
-            echo "  Generated 3D basics views"
+            "$BINARY_PATH" export -f svg -v isometric "examples/12_3d_basics.json" -o "examples/outputs/3d_basics_isometric.svg" 2>&1
+            echo "  Generated 3D basics views (XY, XZ, Isometric)"
           fi
           
           echo ""
