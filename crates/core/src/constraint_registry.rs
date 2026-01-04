@@ -393,6 +393,41 @@ mod tests {
             line: "l1".to_string(),
             value: crate::ir::ExprOrNumber::Number(5.0)
         });
+        test_constraint(Constraint::LengthRatio {
+            a: "l1".to_string(),
+            b: "l2".to_string(),
+            value: crate::ir::ExprOrNumber::Number(2.0)
+        });
+        test_constraint(Constraint::EqualAngle {
+            lines: vec!["l1".to_string(), "l2".to_string(), "l3".to_string(), "l4".to_string()]
+        });
+        test_constraint(Constraint::SymmetricHorizontal {
+            a: "p1".to_string(),
+            b: "p2".to_string()
+        });
+        test_constraint(Constraint::SymmetricVertical {
+            a: "p1".to_string(),
+            b: "p2".to_string()
+        });
+        test_constraint(Constraint::Diameter {
+            circle: "c1".to_string(),
+            value: crate::ir::ExprOrNumber::Number(50.0)
+        });
+        test_constraint(Constraint::SameOrientation {
+            a: "l1".to_string(),
+            b: "l2".to_string()
+        });
+        test_constraint(Constraint::ProjectedPointDistance {
+            a: "p1".to_string(),
+            b: "p2".to_string(),
+            plane: "wp1".to_string(),
+            value: crate::ir::ExprOrNumber::Number(10.0)
+        });
+        test_constraint(Constraint::LengthDifference {
+            a: "l1".to_string(),
+            b: "l2".to_string(),
+            value: crate::ir::ExprOrNumber::Number(20.0)
+        });
         // ... more test cases
     }
 
@@ -593,6 +628,184 @@ mod tests {
         };
         let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map);
         assert!(result.is_ok(), "PointLineDistance constraint should process successfully");
+    }
+
+    #[test]
+    fn test_length_ratio_constraint_processing() {
+        use crate::ir::ExprOrNumber;
+        let mut solver = FfiSolver::new();
+        let mut entity_map = std::collections::HashMap::new();
+        entity_map.insert("l1".to_string(), 10);
+        entity_map.insert("l2".to_string(), 11);
+
+        // Test with number value
+        let constraint = Constraint::LengthRatio {
+            a: "l1".to_string(),
+            b: "l2".to_string(),
+            value: ExprOrNumber::Number(2.0),
+        };
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map);
+        assert!(result.is_ok(), "LengthRatio constraint with number should process successfully");
+
+        // Test with expression value
+        let constraint = Constraint::LengthRatio {
+            a: "l1".to_string(),
+            b: "l2".to_string(),
+            value: ExprOrNumber::Expression("2.0".to_string()),
+        };
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 101, &entity_map);
+        assert!(result.is_ok(), "LengthRatio constraint with expression should process successfully");
+    }
+
+    #[test]
+    fn test_equal_angle_constraint_processing() {
+        let mut solver = FfiSolver::new();
+        let mut entity_map = std::collections::HashMap::new();
+        entity_map.insert("l1".to_string(), 10);
+        entity_map.insert("l2".to_string(), 11);
+        entity_map.insert("l3".to_string(), 12);
+        entity_map.insert("l4".to_string(), 13);
+
+        // Test with correct number of lines
+        let constraint = Constraint::EqualAngle {
+            lines: vec!["l1".to_string(), "l2".to_string(), "l3".to_string(), "l4".to_string()],
+        };
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map);
+        assert!(result.is_ok(), "EqualAngle constraint with 4 lines should process successfully");
+
+        // Test with wrong number of lines
+        let constraint = Constraint::EqualAngle {
+            lines: vec!["l1".to_string(), "l2".to_string(), "l3".to_string()],
+        };
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 101, &entity_map);
+        assert!(result.is_err(), "EqualAngle constraint with wrong line count should fail");
+        assert!(result.unwrap_err().contains("exactly 4 lines"));
+    }
+
+    #[test]
+    fn test_symmetric_horizontal_constraint_processing() {
+        let mut solver = FfiSolver::new();
+        let mut entity_map = std::collections::HashMap::new();
+        entity_map.insert("p1".to_string(), 1);
+        entity_map.insert("p2".to_string(), 2);
+
+        let constraint = Constraint::SymmetricHorizontal {
+            a: "p1".to_string(),
+            b: "p2".to_string(),
+        };
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map);
+        assert!(result.is_ok(), "SymmetricHorizontal constraint should process successfully");
+    }
+
+    #[test]
+    fn test_symmetric_vertical_constraint_processing() {
+        let mut solver = FfiSolver::new();
+        let mut entity_map = std::collections::HashMap::new();
+        entity_map.insert("p1".to_string(), 1);
+        entity_map.insert("p2".to_string(), 2);
+
+        let constraint = Constraint::SymmetricVertical {
+            a: "p1".to_string(),
+            b: "p2".to_string(),
+        };
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map);
+        assert!(result.is_ok(), "SymmetricVertical constraint should process successfully");
+    }
+
+    #[test]
+    fn test_diameter_constraint_processing() {
+        use crate::ir::ExprOrNumber;
+        let mut solver = FfiSolver::new();
+        let mut entity_map = std::collections::HashMap::new();
+        entity_map.insert("c1".to_string(), 10);
+
+        // Test with number value
+        let constraint = Constraint::Diameter {
+            circle: "c1".to_string(),
+            value: ExprOrNumber::Number(50.0),
+        };
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map);
+        assert!(result.is_ok(), "Diameter constraint with number should process successfully");
+
+        // Test with expression value
+        let constraint = Constraint::Diameter {
+            circle: "c1".to_string(),
+            value: ExprOrNumber::Expression("50.0".to_string()),
+        };
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 101, &entity_map);
+        assert!(result.is_ok(), "Diameter constraint with expression should process successfully");
+    }
+
+    #[test]
+    fn test_same_orientation_constraint_processing() {
+        let mut solver = FfiSolver::new();
+        let mut entity_map = std::collections::HashMap::new();
+        entity_map.insert("l1".to_string(), 10);
+        entity_map.insert("l2".to_string(), 11);
+
+        let constraint = Constraint::SameOrientation {
+            a: "l1".to_string(),
+            b: "l2".to_string(),
+        };
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map);
+        assert!(result.is_ok(), "SameOrientation constraint should process successfully");
+    }
+
+    #[test]
+    fn test_projected_point_distance_constraint_processing() {
+        use crate::ir::ExprOrNumber;
+        let mut solver = FfiSolver::new();
+        let mut entity_map = std::collections::HashMap::new();
+        entity_map.insert("p1".to_string(), 1);
+        entity_map.insert("p2".to_string(), 2);
+        entity_map.insert("wp1".to_string(), 10);
+
+        // Test with number value
+        let constraint = Constraint::ProjectedPointDistance {
+            a: "p1".to_string(),
+            b: "p2".to_string(),
+            plane: "wp1".to_string(),
+            value: ExprOrNumber::Number(10.0),
+        };
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map);
+        assert!(result.is_ok(), "ProjectedPointDistance constraint with number should process successfully");
+
+        // Test with expression value
+        let constraint = Constraint::ProjectedPointDistance {
+            a: "p1".to_string(),
+            b: "p2".to_string(),
+            plane: "wp1".to_string(),
+            value: ExprOrNumber::Expression("10.0".to_string()),
+        };
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 101, &entity_map);
+        assert!(result.is_ok(), "ProjectedPointDistance constraint with expression should process successfully");
+    }
+
+    #[test]
+    fn test_length_difference_constraint_processing() {
+        use crate::ir::ExprOrNumber;
+        let mut solver = FfiSolver::new();
+        let mut entity_map = std::collections::HashMap::new();
+        entity_map.insert("l1".to_string(), 10);
+        entity_map.insert("l2".to_string(), 11);
+
+        // Test with number value
+        let constraint = Constraint::LengthDifference {
+            a: "l1".to_string(),
+            b: "l2".to_string(),
+            value: ExprOrNumber::Number(20.0),
+        };
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map);
+        assert!(result.is_ok(), "LengthDifference constraint with number should process successfully");
+
+        // Test with expression value
+        let constraint = Constraint::LengthDifference {
+            a: "l1".to_string(),
+            b: "l2".to_string(),
+            value: ExprOrNumber::Expression("20.0".to_string()),
+        };
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 101, &entity_map);
+        assert!(result.is_ok(), "LengthDifference constraint with expression should process successfully");
     }
 
     #[test]

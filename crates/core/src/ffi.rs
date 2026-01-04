@@ -1164,4 +1164,129 @@ mod tests {
         let result = solver.add_point_line_distance_constraint(100, 3, 10, 5.0);
         assert!(result.is_ok(), "Should be able to add point line distance constraint via FFI");
     }
+
+    #[test]
+    fn test_length_ratio_constraint_ffi_binding() {
+        let mut solver = Solver::new();
+
+        // Create two lines
+        solver.add_point(1, 0.0, 0.0, 0.0).unwrap();
+        solver.add_point(2, 100.0, 0.0, 0.0).unwrap();
+        solver.add_point(3, 0.0, 0.0, 0.0).unwrap();
+        solver.add_point(4, 50.0, 0.0, 0.0).unwrap();
+        solver.add_line(10, 1, 2).unwrap();
+        solver.add_line(11, 3, 4).unwrap();
+
+        // Add length ratio constraint - FFI binding should work
+        let result = solver.add_length_ratio_constraint(100, 10, 11, 2.0);
+        assert!(result.is_ok(), "Should be able to add length ratio constraint via FFI");
+    }
+
+    #[test]
+    fn test_equal_angle_constraint_ffi_binding() {
+        let mut solver = Solver::new();
+
+        // Create 4 lines for equal angle constraint
+        solver.add_point(1, 0.0, 0.0, 0.0).unwrap();
+        solver.add_point(2, 100.0, 0.0, 0.0).unwrap();
+        solver.add_point(3, 0.0, 100.0, 0.0).unwrap();
+        solver.add_point(4, 0.0, 0.0, 0.0).unwrap();
+        solver.add_point(5, 100.0, 0.0, 0.0).unwrap();
+        solver.add_point(6, 0.0, 100.0, 0.0).unwrap();
+        solver.add_line(10, 1, 2).unwrap(); // First pair: line 1
+        solver.add_line(11, 1, 3).unwrap(); // First pair: line 2
+        solver.add_line(12, 4, 5).unwrap(); // Second pair: line 1
+        solver.add_line(13, 4, 6).unwrap(); // Second pair: line 2
+
+        // Add equal angle constraint - FFI binding should work
+        let result = solver.add_equal_angle_constraint(100, 10, 11, 12, 13);
+        assert!(result.is_ok(), "Should be able to add equal angle constraint via FFI");
+    }
+
+    #[test]
+    fn test_symmetric_horizontal_constraint_ffi_binding() {
+        let mut solver = Solver::new();
+
+        // Create two points for horizontal symmetry
+        solver.add_point(1, 30.0, 50.0, 0.0).unwrap();
+        solver.add_point(2, 70.0, 50.0, 0.0).unwrap();
+
+        // Add symmetric horizontal constraint - FFI binding should work
+        let result = solver.add_symmetric_horizontal_constraint(100, 1, 2);
+        assert!(result.is_ok(), "Should be able to add symmetric horizontal constraint via FFI");
+    }
+
+    #[test]
+    fn test_symmetric_vertical_constraint_ffi_binding() {
+        let mut solver = Solver::new();
+
+        // Create two points for vertical symmetry
+        solver.add_point(1, 50.0, 30.0, 0.0).unwrap();
+        solver.add_point(2, 50.0, 70.0, 0.0).unwrap();
+
+        // Add symmetric vertical constraint - FFI binding should work
+        let result = solver.add_symmetric_vertical_constraint(100, 1, 2);
+        assert!(result.is_ok(), "Should be able to add symmetric vertical constraint via FFI");
+    }
+
+    #[test]
+    fn test_diameter_constraint_ffi_binding() {
+        let mut solver = Solver::new();
+
+        // Create a circle
+        solver.add_circle(10, 0.0, 0.0, 0.0, 25.0).unwrap();
+
+        // Add diameter constraint - FFI binding should work
+        let result = solver.add_diameter_constraint(100, 10, 50.0);
+        assert!(result.is_ok(), "Should be able to add diameter constraint via FFI");
+    }
+
+    #[test]
+    fn test_same_orientation_constraint_ffi_binding() {
+        let mut solver = Solver::new();
+
+        // Create two lines for same orientation
+        solver.add_point(1, 0.0, 0.0, 0.0).unwrap();
+        solver.add_point(2, 100.0, 0.0, 0.0).unwrap();
+        solver.add_point(3, 0.0, 0.0, 0.0).unwrap();
+        solver.add_point(4, 100.0, 0.0, 0.0).unwrap();
+        solver.add_line(10, 1, 2).unwrap();
+        solver.add_line(11, 3, 4).unwrap();
+
+        // Add same orientation constraint - FFI binding should work
+        let result = solver.add_same_orientation_constraint(100, 10, 11);
+        assert!(result.is_ok(), "Should be able to add same orientation constraint via FFI");
+    }
+
+    #[test]
+    fn test_projected_point_distance_constraint_ffi_binding() {
+        let mut solver = Solver::new();
+
+        // Create points and workplane
+        solver.add_point(1, 0.0, 0.0, 0.0).unwrap();
+        solver.add_point(2, 10.0, 10.0, 0.0).unwrap();
+        solver.add_point(3, 5.0, 5.0, 0.0).unwrap();
+        solver.add_workplane(10, 1, 0.0, 0.0, 1.0).unwrap();
+
+        // Add projected point distance constraint - FFI binding should work
+        let result = solver.add_projected_point_distance_constraint(100, 2, 3, 10, 5.0);
+        assert!(result.is_ok(), "Should be able to add projected point distance constraint via FFI");
+    }
+
+    #[test]
+    fn test_length_difference_constraint_ffi_binding() {
+        let mut solver = Solver::new();
+
+        // Create two lines
+        solver.add_point(1, 0.0, 0.0, 0.0).unwrap();
+        solver.add_point(2, 100.0, 0.0, 0.0).unwrap();
+        solver.add_point(3, 0.0, 0.0, 0.0).unwrap();
+        solver.add_point(4, 50.0, 0.0, 0.0).unwrap();
+        solver.add_line(10, 1, 2).unwrap();
+        solver.add_line(11, 3, 4).unwrap();
+
+        // Add length difference constraint - FFI binding should work
+        let result = solver.add_length_difference_constraint(100, 10, 11, 50.0);
+        assert!(result.is_ok(), "Should be able to add length difference constraint via FFI");
+    }
 }
