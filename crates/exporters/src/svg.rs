@@ -90,7 +90,11 @@ impl SvgExporter {
         );
         svg.push('\n');
 
-        for (id, entity) in entities {
+        // Sort entities by ID for deterministic output order
+        let mut sorted_entities: Vec<_> = entities.iter().collect();
+        sorted_entities.sort_by_key(|(id, _)| *id);
+        
+        for (id, entity) in sorted_entities {
             match entity {
                 ResolvedEntity::Point { at } => {
                     let (x, y) = self.project_point(at);
