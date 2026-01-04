@@ -123,7 +123,7 @@
     {
       "type": "point",
       "id": "roof_peak",
-      "at": [75, 60, 250]
+      "at": [75, 0, 250]
     },
     {
       "type": "line",
@@ -226,18 +226,17 @@
       "value": "$roof_height"
     },
     {
-      "type": "distance",
-      "between": ["top_back_left", "roof_peak"],
-      "value": "$roof_height"
-    },
-    {
-      "type": "distance",
-      "between": ["top_back_right", "roof_peak"],
-      "value": "$roof_height"
+      "type": "equal_length",
+      "entities": ["roof_front_left", "roof_back_left"]
     },
     {
       "type": "equal_length",
-      "entities": ["roof_front_left", "roof_front_right", "roof_back_left", "roof_back_right"]
+      "entities": ["roof_front_right", "roof_back_right"]
+    },
+    {
+      "type": "coincident",
+      "at": "roof_peak",
+      "of": ["top_front"]
     }
   ]
 }
