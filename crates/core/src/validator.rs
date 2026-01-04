@@ -65,19 +65,62 @@ impl Validator {
                 Constraint::Fixed { entity } => vec![entity.as_str()],
                 Constraint::Distance { between, .. } => between.iter().map(|s| s.as_str()).collect(),
                 Constraint::Angle { between, .. } => between.iter().map(|s| s.as_str()).collect(),
-                Constraint::Perpendicular { a, b } | Constraint::EqualRadius { a, b } | Constraint::Tangent { a, b } => {
+                Constraint::Perpendicular { a, b } | Constraint::EqualRadius { a, b } | Constraint::Tangent { a, b } | 
+                Constraint::SameOrientation { a, b } | Constraint::CubicLineTangent { cubic: a, line: b } => {
                     vec![a.as_str(), b.as_str()]
                 }
                 Constraint::Parallel { entities } | Constraint::EqualLength { entities } => {
                     entities.iter().map(|s| s.as_str()).collect()
                 }
-                Constraint::Horizontal { a } | Constraint::Vertical { a } => vec![a.as_str()],
-                Constraint::PointOnLine { point, line } => vec![point.as_str(), line.as_str()],
+                Constraint::EqualAngle { lines } => {
+                    lines.iter().map(|s| s.as_str()).collect()
+                }
+                Constraint::Horizontal { a } | Constraint::Vertical { a } | Constraint::Diameter { circle: a, .. } => {
+                    vec![a.as_str()]
+                }
+                Constraint::PointOnLine { point, line } | Constraint::PointLineDistance { point, line, .. } | 
+                Constraint::EqualLengthPointLineDistance { point, line, .. } => {
+                    vec![point.as_str(), line.as_str()]
+                }
                 Constraint::PointOnCircle { point, circle } => vec![point.as_str(), circle.as_str()],
                 Constraint::Symmetric { a, b, about } => vec![a.as_str(), b.as_str(), about.as_str()],
+                Constraint::SymmetricHorizontal { a, b } | Constraint::SymmetricVertical { a, b } => {
+                    vec![a.as_str(), b.as_str()]
+                }
                 Constraint::Midpoint { point, of } => {
                     let mut refs = vec![point.as_str()];
                     refs.push(of.as_str());
+                    refs
+                }
+                Constraint::PointInPlane { point, plane } | Constraint::PointPlaneDistance { point, plane, .. } => {
+                    vec![point.as_str(), plane.as_str()]
+                }
+                Constraint::LengthRatio { a, b, .. } | Constraint::LengthDifference { a, b, .. } => {
+                    vec![a.as_str(), b.as_str()]
+                }
+                Constraint::ProjectedPointDistance { a, b, plane, .. } => {
+                    vec![a.as_str(), b.as_str(), plane.as_str()]
+                }
+                Constraint::PointOnFace { point, face } | Constraint::PointFaceDistance { point, face, .. } => {
+                    vec![point.as_str(), face.as_str()]
+                }
+                Constraint::EqualLineArcLength { line, arc } => {
+                    vec![line.as_str(), arc.as_str()]
+                }
+                Constraint::EqualPointLineDistances { point1, line1, point2, line2 } => {
+                    vec![point1.as_str(), line1.as_str(), point2.as_str(), line2.as_str()]
+                }
+                Constraint::ArcArcLengthRatio { a, b, .. } | Constraint::ArcArcLengthDifference { a, b, .. } => {
+                    vec![a.as_str(), b.as_str()]
+                }
+                Constraint::ArcLineLengthRatio { arc, line, .. } | Constraint::ArcLineLengthDifference { arc, line, .. } => {
+                    vec![arc.as_str(), line.as_str()]
+                }
+                Constraint::Dragged { point, workplane } => {
+                    let mut refs = vec![point.as_str()];
+                    if let Some(wp) = workplane {
+                        refs.push(wp.as_str());
+                    }
                     refs
                 }
                 Constraint::Coincident { data } => {
@@ -290,8 +333,10 @@ impl Validator {
                             pointer: Some(format!("/entities/{}/workplane", idx)),
                         });
                     }
+                    // Track Point2D as a Point for reference validation
+                    seen_point_ids.insert(entity.id());
                 }
-                Entity::Point { .. } | Entity::Point2D { .. } => {
+                Entity::Point { .. } => {
                     // Track Point entities separately
                     seen_point_ids.insert(entity.id());
                 }

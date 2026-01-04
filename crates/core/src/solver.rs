@@ -761,7 +761,7 @@ impl Solver {
                         );
                     }
                 }
-                crate::ir::Entity::Line { id, p1, p2 } => {
+                crate::ir::Entity::Line { id, p1, p2, .. } => {
                     // Lines are defined by their endpoints, get the actual coordinates
                     let p1_id = entity_id_map
                         .get(p1)

@@ -63,18 +63,58 @@ impl Translator {
             }
             Constraint::Perpendicular { a, b }
             | Constraint::EqualRadius { a, b }
-            | Constraint::Tangent { a, b } => vec![a.clone(), b.clone()],
+            | Constraint::Tangent { a, b }
+            | Constraint::SameOrientation { a, b }
+            | Constraint::CubicLineTangent { cubic: a, line: b } => vec![a.clone(), b.clone()],
             Constraint::Parallel { entities } | Constraint::EqualLength { entities } => entities.clone(),
+            Constraint::EqualAngle { lines } => lines.clone(),
             Constraint::Horizontal { a }
             | Constraint::Vertical { a }
-            | Constraint::Fixed { entity: a } => vec![a.clone()],
+            | Constraint::Fixed { entity: a }
+            | Constraint::Diameter { circle: a, .. } => vec![a.clone()],
             Constraint::PointOnLine { point, line }
+            | Constraint::PointLineDistance { point, line, .. }
+            | Constraint::EqualLengthPointLineDistance { point, line, .. }
             | Constraint::PointOnCircle {
                 point,
                 circle: line,
             } => vec![point.clone(), line.clone()],
             Constraint::Symmetric { a, b, about } => vec![a.clone(), b.clone(), about.clone()],
+            Constraint::SymmetricHorizontal { a, b } | Constraint::SymmetricVertical { a, b } => {
+                vec![a.clone(), b.clone()]
+            }
             Constraint::Midpoint { point, of } => vec![point.clone(), of.clone()],
+            Constraint::PointInPlane { point, plane } | Constraint::PointPlaneDistance { point, plane, .. } => {
+                vec![point.clone(), plane.clone()]
+            }
+            Constraint::LengthRatio { a, b, .. } | Constraint::LengthDifference { a, b, .. } => {
+                vec![a.clone(), b.clone()]
+            }
+            Constraint::ProjectedPointDistance { a, b, plane, .. } => {
+                vec![a.clone(), b.clone(), plane.clone()]
+            }
+            Constraint::PointOnFace { point, face } | Constraint::PointFaceDistance { point, face, .. } => {
+                vec![point.clone(), face.clone()]
+            }
+            Constraint::EqualLineArcLength { line, arc } => {
+                vec![line.clone(), arc.clone()]
+            }
+            Constraint::EqualPointLineDistances { point1, line1, point2, line2 } => {
+                vec![point1.clone(), line1.clone(), point2.clone(), line2.clone()]
+            }
+            Constraint::ArcArcLengthRatio { a, b, .. } | Constraint::ArcArcLengthDifference { a, b, .. } => {
+                vec![a.clone(), b.clone()]
+            }
+            Constraint::ArcLineLengthRatio { arc, line, .. } | Constraint::ArcLineLengthDifference { arc, line, .. } => {
+                vec![arc.clone(), line.clone()]
+            }
+            Constraint::Dragged { point, workplane } => {
+                let mut refs = vec![point.clone()];
+                if let Some(wp) = workplane {
+                    refs.push(wp.clone());
+                }
+                refs
+            }
         }
     }
 }
