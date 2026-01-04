@@ -106,24 +106,22 @@ fn test_mcp_server_unknown_method() {
         }
     });
     
-    if let Some(mut stdin) = child.stdin.take() {
-        writeln!(stdin, "{}", init_request).unwrap();
-        stdin.flush().unwrap();
-    }
+    // Get stdin handle once and reuse it for both messages
+    let mut stdin_handle = child.stdin.take().expect("Failed to get stdin handle");
+    writeln!(stdin_handle, "{}", init_request).unwrap();
+    stdin_handle.flush().unwrap();
     
     std::thread::sleep(std::time::Duration::from_millis(100));
     
-    // Send unknown method
+    // Send unknown method using the same stdin handle
     let unknown = json!({
         "jsonrpc": "2.0",
         "id": 2,
         "method": "unknown/method"
     });
     
-    if let Some(mut stdin) = child.stdin.take() {
-        writeln!(stdin, "{}", unknown).unwrap();
-        stdin.flush().unwrap();
-    }
+    writeln!(stdin_handle, "{}", unknown).unwrap();
+    stdin_handle.flush().unwrap();
     
     std::thread::sleep(std::time::Duration::from_millis(200));
     
