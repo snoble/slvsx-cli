@@ -1274,11 +1274,11 @@ mod tests {
         let mut solver = Solver::new();
 
         // Create a pivot point
-        solver.add_point(1, 0.0, 0.0, 0.0).unwrap();
+        solver.add_point(1, 0.0, 0.0, 0.0, false).unwrap();
         
         // Create endpoints for two arms
-        solver.add_point(2, 80.0, 0.0, 0.0).unwrap();
-        solver.add_point(3, 60.0, 60.0, 0.0).unwrap();
+        solver.add_point(2, 80.0, 0.0, 0.0, false).unwrap();
+        solver.add_point(3, 60.0, 60.0, 0.0, false).unwrap();
 
         // Create two lines from pivot
         solver.add_line(10, 1, 2).unwrap(); // arm1: pivot to arm1_end
@@ -1308,8 +1308,8 @@ mod tests {
         let mut solver = Solver::new();
 
         // Create points for a horizontal line
-        solver.add_point(1, 0.0, 0.0, 0.0).unwrap();
-        solver.add_point(2, 100.0, 10.0, 0.0).unwrap();
+        solver.add_point(1, 0.0, 0.0, 0.0, false).unwrap();
+        solver.add_point(2, 100.0, 10.0, 0.0, false).unwrap();
 
         // Create line
         solver.add_line(10, 1, 2).unwrap();
@@ -1332,8 +1332,8 @@ mod tests {
         let mut solver = Solver::new();
 
         // Create points for a vertical line
-        solver.add_point(1, 0.0, 0.0, 0.0).unwrap();
-        solver.add_point(2, 10.0, 100.0, 0.0).unwrap();
+        solver.add_point(1, 0.0, 0.0, 0.0, false).unwrap();
+        solver.add_point(2, 10.0, 100.0, 0.0, false).unwrap();
 
         // Create line
         solver.add_line(10, 1, 2).unwrap();
@@ -1356,10 +1356,10 @@ mod tests {
         let mut solver = Solver::new();
 
         // Create points for two lines
-        solver.add_point(1, 0.0, 0.0, 0.0).unwrap();
-        solver.add_point(2, 100.0, 0.0, 0.0).unwrap();
-        solver.add_point(3, 0.0, 0.0, 0.0).unwrap();
-        solver.add_point(4, 100.0, 0.0, 0.0).unwrap();
+        solver.add_point(1, 0.0, 0.0, 0.0, false).unwrap();
+        solver.add_point(2, 100.0, 0.0, 0.0, false).unwrap();
+        solver.add_point(3, 0.0, 0.0, 0.0, false).unwrap();
+        solver.add_point(4, 100.0, 0.0, 0.0, false).unwrap();
 
         // Create two lines
         solver.add_line(10, 1, 2).unwrap();
@@ -1401,8 +1401,8 @@ mod tests {
         let mut solver = Solver::new();
 
         // Create a line and a circle (simplified)
-        solver.add_point(1, 0.0, 0.0, 0.0).unwrap();
-        solver.add_point(2, 100.0, 0.0, 0.0).unwrap();
+        solver.add_point(1, 0.0, 0.0, 0.0, false).unwrap();
+        solver.add_point(2, 100.0, 0.0, 0.0, false).unwrap();
         solver.add_line(10, 1, 2).unwrap();
         solver.add_circle(20, 50.0, 50.0, 0.0, 25.0).unwrap();
 
@@ -1419,7 +1419,7 @@ mod tests {
         let mut solver = Solver::new();
 
         // Create a point and a circle (simplified)
-        solver.add_point(1, 50.0, 50.0, 0.0).unwrap();
+        solver.add_point(1, 50.0, 50.0, 0.0, false).unwrap();
         solver.add_circle(10, 0.0, 0.0, 0.0, 25.0).unwrap();
 
         // Add point on circle constraint - FFI binding should work
@@ -1435,10 +1435,10 @@ mod tests {
         let mut solver = Solver::new();
 
         // Create two points and a line for symmetry axis
-        solver.add_point(1, 30.0, 80.0, 0.0).unwrap();
-        solver.add_point(2, 70.0, 80.0, 0.0).unwrap();
-        solver.add_point(3, 50.0, 0.0, 0.0).unwrap();
-        solver.add_point(4, 50.0, 100.0, 0.0).unwrap();
+        solver.add_point(1, 30.0, 80.0, 0.0, false).unwrap();
+        solver.add_point(2, 70.0, 80.0, 0.0, false).unwrap();
+        solver.add_point(3, 50.0, 0.0, 0.0, false).unwrap();
+        solver.add_point(4, 50.0, 100.0, 0.0, false).unwrap();
         solver.add_line(10, 3, 4).unwrap(); // symmetry axis
 
         // Add symmetric constraint - FFI binding should work
@@ -1500,7 +1500,7 @@ mod tests {
         let mut solver = Solver::new();
 
         // Create origin point
-        solver.add_point(1, 0.0, 0.0, 0.0).unwrap();
+        solver.add_point(1, 0.0, 0.0, 0.0, false).unwrap();
 
         // Create workplane with normal pointing in Z direction
         let result = solver.add_workplane(10, 1, 0.0, 0.0, 1.0);
@@ -1512,8 +1512,8 @@ mod tests {
         let mut solver = Solver::new();
 
         // Create point and origin
-        solver.add_point(1, 0.0, 0.0, 0.0).unwrap();
-        solver.add_point(2, 10.0, 10.0, 0.0).unwrap();
+        solver.add_point(1, 0.0, 0.0, 0.0, false).unwrap();
+        solver.add_point(2, 10.0, 10.0, 0.0, false).unwrap();
 
         // Create workplane
         solver.add_workplane(10, 1, 0.0, 0.0, 1.0).unwrap();
@@ -1528,8 +1528,8 @@ mod tests {
         let mut solver = Solver::new();
 
         // Create point and origin
-        solver.add_point(1, 0.0, 0.0, 0.0).unwrap();
-        solver.add_point(2, 10.0, 10.0, 5.0).unwrap();
+        solver.add_point(1, 0.0, 0.0, 0.0, false).unwrap();
+        solver.add_point(2, 10.0, 10.0, 5.0, false).unwrap();
 
         // Create workplane
         solver.add_workplane(10, 1, 0.0, 0.0, 1.0).unwrap();
@@ -1544,9 +1544,9 @@ mod tests {
         let mut solver = Solver::new();
 
         // Create points and line
-        solver.add_point(1, 0.0, 0.0, 0.0).unwrap();
-        solver.add_point(2, 10.0, 0.0, 0.0).unwrap();
-        solver.add_point(3, 5.0, 5.0, 0.0).unwrap();
+        solver.add_point(1, 0.0, 0.0, 0.0, false).unwrap();
+        solver.add_point(2, 10.0, 0.0, 0.0, false).unwrap();
+        solver.add_point(3, 5.0, 5.0, 0.0, false).unwrap();
         solver.add_line(10, 1, 2).unwrap();
 
         // Add point line distance constraint - FFI binding should work
@@ -1559,10 +1559,10 @@ mod tests {
         let mut solver = Solver::new();
 
         // Create two lines
-        solver.add_point(1, 0.0, 0.0, 0.0).unwrap();
-        solver.add_point(2, 100.0, 0.0, 0.0).unwrap();
-        solver.add_point(3, 0.0, 0.0, 0.0).unwrap();
-        solver.add_point(4, 50.0, 0.0, 0.0).unwrap();
+        solver.add_point(1, 0.0, 0.0, 0.0, false).unwrap();
+        solver.add_point(2, 100.0, 0.0, 0.0, false).unwrap();
+        solver.add_point(3, 0.0, 0.0, 0.0, false).unwrap();
+        solver.add_point(4, 50.0, 0.0, 0.0, false).unwrap();
         solver.add_line(10, 1, 2).unwrap();
         solver.add_line(11, 3, 4).unwrap();
 
@@ -1635,10 +1635,10 @@ mod tests {
         let mut solver = Solver::new();
 
         // Create two lines for same orientation
-        solver.add_point(1, 0.0, 0.0, 0.0).unwrap();
-        solver.add_point(2, 100.0, 0.0, 0.0).unwrap();
-        solver.add_point(3, 0.0, 0.0, 0.0).unwrap();
-        solver.add_point(4, 100.0, 0.0, 0.0).unwrap();
+        solver.add_point(1, 0.0, 0.0, 0.0, false).unwrap();
+        solver.add_point(2, 100.0, 0.0, 0.0, false).unwrap();
+        solver.add_point(3, 0.0, 0.0, 0.0, false).unwrap();
+        solver.add_point(4, 100.0, 0.0, 0.0, false).unwrap();
         solver.add_line(10, 1, 2).unwrap();
         solver.add_line(11, 3, 4).unwrap();
 
@@ -1667,10 +1667,10 @@ mod tests {
         let mut solver = Solver::new();
 
         // Create two lines
-        solver.add_point(1, 0.0, 0.0, 0.0).unwrap();
-        solver.add_point(2, 100.0, 0.0, 0.0).unwrap();
-        solver.add_point(3, 0.0, 0.0, 0.0).unwrap();
-        solver.add_point(4, 50.0, 0.0, 0.0).unwrap();
+        solver.add_point(1, 0.0, 0.0, 0.0, false).unwrap();
+        solver.add_point(2, 100.0, 0.0, 0.0, false).unwrap();
+        solver.add_point(3, 0.0, 0.0, 0.0, false).unwrap();
+        solver.add_point(4, 50.0, 0.0, 0.0, false).unwrap();
         solver.add_line(10, 1, 2).unwrap();
         solver.add_line(11, 3, 4).unwrap();
 
@@ -1684,7 +1684,7 @@ mod tests {
         let mut solver = Solver::new();
 
         // Create point and face (simplified - face entity support needed)
-        solver.add_point(1, 10.0, 10.0, 0.0).unwrap();
+        solver.add_point(1, 10.0, 10.0, 0.0, false).unwrap();
         // Note: Face entity support needed for full functionality
         // For now, just test FFI binding works
         let result = solver.add_point_on_face_constraint(100, 1, 10);
@@ -1697,7 +1697,7 @@ mod tests {
         let mut solver = Solver::new();
 
         // Create point
-        solver.add_point(1, 10.0, 10.0, 5.0).unwrap();
+        solver.add_point(1, 10.0, 10.0, 5.0, false).unwrap();
         // Note: Face entity support needed for full functionality
         let result = solver.add_point_face_distance_constraint(100, 1, 10, 5.0);
         // May fail if face entity not properly supported, but FFI binding should work
@@ -1709,8 +1709,8 @@ mod tests {
         let mut solver = Solver::new();
 
         // Create line and arc (simplified)
-        solver.add_point(1, 0.0, 0.0, 0.0).unwrap();
-        solver.add_point(2, 100.0, 0.0, 0.0).unwrap();
+        solver.add_point(1, 0.0, 0.0, 0.0, false).unwrap();
+        solver.add_point(2, 100.0, 0.0, 0.0, false).unwrap();
         solver.add_line(10, 1, 2).unwrap();
         solver.add_circle(20, 0.0, 0.0, 0.0, 25.0).unwrap(); // Using circle as arc for now
 
@@ -1724,11 +1724,11 @@ mod tests {
         let mut solver = Solver::new();
 
         // Create line, point, and reference line
-        solver.add_point(1, 0.0, 0.0, 0.0).unwrap();
-        solver.add_point(2, 100.0, 0.0, 0.0).unwrap();
-        solver.add_point(3, 50.0, 10.0, 0.0).unwrap();
-        solver.add_point(4, 0.0, 0.0, 0.0).unwrap();
-        solver.add_point(5, 0.0, 100.0, 0.0).unwrap();
+        solver.add_point(1, 0.0, 0.0, 0.0, false).unwrap();
+        solver.add_point(2, 100.0, 0.0, 0.0, false).unwrap();
+        solver.add_point(3, 50.0, 10.0, 0.0, false).unwrap();
+        solver.add_point(4, 0.0, 0.0, 0.0, false).unwrap();
+        solver.add_point(5, 0.0, 100.0, 0.0, false).unwrap();
         solver.add_line(10, 1, 2).unwrap();
         solver.add_line(11, 4, 5).unwrap();
 
@@ -1742,12 +1742,12 @@ mod tests {
         let mut solver = Solver::new();
 
         // Create two points and two lines
-        solver.add_point(1, 10.0, 10.0, 0.0).unwrap();
-        solver.add_point(2, 20.0, 20.0, 0.0).unwrap();
-        solver.add_point(3, 0.0, 0.0, 0.0).unwrap();
-        solver.add_point(4, 100.0, 0.0, 0.0).unwrap();
-        solver.add_point(5, 0.0, 0.0, 0.0).unwrap();
-        solver.add_point(6, 0.0, 100.0, 0.0).unwrap();
+        solver.add_point(1, 10.0, 10.0, 0.0, false).unwrap();
+        solver.add_point(2, 20.0, 20.0, 0.0, false).unwrap();
+        solver.add_point(3, 0.0, 0.0, 0.0, false).unwrap();
+        solver.add_point(4, 100.0, 0.0, 0.0, false).unwrap();
+        solver.add_point(5, 0.0, 0.0, 0.0, false).unwrap();
+        solver.add_point(6, 0.0, 100.0, 0.0, false).unwrap();
         solver.add_line(10, 3, 4).unwrap();
         solver.add_line(11, 5, 6).unwrap();
 
@@ -1761,8 +1761,8 @@ mod tests {
         let mut solver = Solver::new();
 
         // Create cubic and line (simplified - cubic entity support needed)
-        solver.add_point(1, 0.0, 0.0, 0.0).unwrap();
-        solver.add_point(2, 100.0, 0.0, 0.0).unwrap();
+        solver.add_point(1, 0.0, 0.0, 0.0, false).unwrap();
+        solver.add_point(2, 100.0, 0.0, 0.0, false).unwrap();
         solver.add_line(10, 1, 2).unwrap();
         // Note: Cubic entity support needed for full functionality
         let result = solver.add_cubic_line_tangent_constraint(100, 20, 10);
@@ -1789,8 +1789,8 @@ mod tests {
 
         // Create arc and line
         solver.add_circle(10, 0.0, 0.0, 0.0, 25.0).unwrap();
-        solver.add_point(1, 0.0, 0.0, 0.0).unwrap();
-        solver.add_point(2, 100.0, 0.0, 0.0).unwrap();
+        solver.add_point(1, 0.0, 0.0, 0.0, false).unwrap();
+        solver.add_point(2, 100.0, 0.0, 0.0, false).unwrap();
         solver.add_line(20, 1, 2).unwrap();
 
         // Add arc-line length ratio constraint - FFI binding should work
@@ -1817,8 +1817,8 @@ mod tests {
 
         // Create arc and line
         solver.add_circle(10, 0.0, 0.0, 0.0, 25.0).unwrap();
-        solver.add_point(1, 0.0, 0.0, 0.0).unwrap();
-        solver.add_point(2, 100.0, 0.0, 0.0).unwrap();
+        solver.add_point(1, 0.0, 0.0, 0.0, false).unwrap();
+        solver.add_point(2, 100.0, 0.0, 0.0, false).unwrap();
         solver.add_line(20, 1, 2).unwrap();
 
         // Add arc-line length difference constraint - FFI binding should work
@@ -1831,9 +1831,9 @@ mod tests {
         let mut solver = Solver::new();
 
         // Create a workplane first
-        solver.add_point(1, 0.0, 0.0, 0.0).unwrap();
-        solver.add_point(2, 1.0, 0.0, 0.0).unwrap();
-        solver.add_point(3, 0.0, 1.0, 0.0).unwrap();
+        solver.add_point(1, 0.0, 0.0, 0.0, false).unwrap();
+        solver.add_point(2, 1.0, 0.0, 0.0, false).unwrap();
+        solver.add_point(3, 0.0, 1.0, 0.0, false).unwrap();
         solver.add_workplane(10, 1, 0.0, 0.0, 1.0).unwrap();
 
         // Add 2D point in workplane - FFI binding should work
@@ -1846,9 +1846,9 @@ mod tests {
         let mut solver = Solver::new();
 
         // Create center, start, and end points
-        solver.add_point(1, 0.0, 0.0, 0.0).unwrap(); // center
-        solver.add_point(2, 10.0, 0.0, 0.0).unwrap(); // start
-        solver.add_point(3, 0.0, 10.0, 0.0).unwrap(); // end
+        solver.add_point(1, 0.0, 0.0, 0.0, false).unwrap(); // center
+        solver.add_point(2, 10.0, 0.0, 0.0, false).unwrap(); // start
+        solver.add_point(3, 0.0, 10.0, 0.0, false).unwrap(); // end
 
         // Add arc - FFI binding should work
         let result = solver.add_arc(10, 1, 2, 3, 0.0, 0.0, 1.0, None);
@@ -1860,10 +1860,10 @@ mod tests {
         let mut solver = Solver::new();
 
         // Create 4 control points
-        solver.add_point(1, 0.0, 0.0, 0.0).unwrap();
-        solver.add_point(2, 10.0, 0.0, 0.0).unwrap();
-        solver.add_point(3, 20.0, 10.0, 0.0).unwrap();
-        solver.add_point(4, 30.0, 10.0, 0.0).unwrap();
+        solver.add_point(1, 0.0, 0.0, 0.0, false).unwrap();
+        solver.add_point(2, 10.0, 0.0, 0.0, false).unwrap();
+        solver.add_point(3, 20.0, 10.0, 0.0, false).unwrap();
+        solver.add_point(4, 30.0, 10.0, 0.0, false).unwrap();
 
         // Add cubic Bezier curve - FFI binding should work
         let result = solver.add_cubic(10, 1, 2, 3, 4, None);

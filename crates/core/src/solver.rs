@@ -311,7 +311,7 @@ impl Solver {
                     // Create origin point first (temporary, will be used by workplane)
                     let origin_point_id = next_id;
                     ffi_solver
-                        .add_point(origin_point_id, ox, oy, oz)
+                        .add_point(origin_point_id, ox, oy, oz, false)  // Plane origin not preserved
                         .map_err(|e| crate::error::Error::InvalidInput {
                             message: format!("Failed to add plane origin point '{}': {}", id, e),
                             pointer: Some(format!("/entities/{}", entity_idx)),
