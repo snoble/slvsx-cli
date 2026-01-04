@@ -115,6 +115,13 @@ This will:
 - Create multiple views (XY, XZ, YZ) for 3D examples
 - Save everything to `examples/outputs/`
 
+**CI Verification**: Renders are automatically generated and verified in CI. If examples change, CI will fail until renders are updated. This ensures renders always match the current examples.
+
+**Local Verification**: Check if your renders are up-to-date:
+```bash
+./scripts/verify_renders.sh
+```
+
 ### Export from Multiple Angles
 
 For 3D objects, export from different viewing angles to see them from all sides:
