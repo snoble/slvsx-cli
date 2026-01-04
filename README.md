@@ -147,6 +147,13 @@ The [`examples/`](examples/) directory contains many constraint problems:
 ### 🔧 Real-World Applications
 - **[Four-Bar Linkage](examples/ai-examples/four_bar_linkage.json)** - Classic kinematic mechanism
 - **[Planetary Gears](examples/ai-examples/gear_meshing.json)** - Gear train positioning
+
+### 🎨 Interactive Editing Features
+- **[Preserve Flag](examples/23_preserve_flag.json)** - Mark entities to minimize changes during solving
+- **[WHERE_DRAGGED Constraint](examples/24_where_dragged.json)** - Absolutely lock points to their current position
+- **[Iterative Refinement](examples/25_iterative_refinement.json)** - Build designs step-by-step with preserved features
+
+See [docs/AI_INTERACTIVE_FEATURES.md](docs/AI_INTERACTIVE_FEATURES.md) for detailed documentation.
 - **[3D Tetrahedron](examples/04_3d_tetrahedron.json)** - Three-dimensional geometry
 
 ### 📚 Learning Path

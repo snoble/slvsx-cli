@@ -108,8 +108,19 @@ if solution["status"] == "ok":
 
 Each example demonstrates SLVSX's ability to turn mechanical design from manual sketching into mathematical constraint solving - perfect for AI agents doing systematic mechanical problem solving.
 
+## 🎨 Interactive Editing Features
+
+SLVSX supports interactive editing features that enable iterative design workflows:
+
+- **Preserve Flag** (`examples/23_preserve_flag.json`) - Mark entities with `"preserve": true` to minimize changes during solving
+- **WHERE_DRAGGED Constraint** (`examples/24_where_dragged.json`) - Use `"type": "dragged"` constraint to absolutely lock points
+- **Iterative Refinement** (`examples/25_iterative_refinement.json`) - Build designs step-by-step, preserving established features
+
+See [docs/AI_INTERACTIVE_FEATURES.md](../docs/AI_INTERACTIVE_FEATURES.md) for detailed documentation.
+
 ## 📚 Learning Resources
 
 - **[Iterative Design Guide](../docs/ITERATIVE_DESIGN.md)** - Learn how to build complex problems step-by-step
 - **[Visual Gallery](../docs/VISUAL_GALLERY.md)** - See rendered examples
 - **[AI Agent Guide](../docs/AI_GUIDE.md)** - For AI agents using SLVSX
+- **[Interactive Features Guide](../docs/AI_INTERACTIVE_FEATURES.md)** - Preserve flag and WHERE_DRAGGED constraint

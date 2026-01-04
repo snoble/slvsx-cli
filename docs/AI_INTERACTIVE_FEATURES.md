@@ -105,6 +105,14 @@ Where `session.json` tracks what's preserved:
 }
 ```
 
+## Examples
+
+See the following examples for practical usage:
+
+- **`examples/23_preserve_flag.json`** - Basic preserve flag usage
+- **`examples/24_where_dragged.json`** - WHERE_DRAGGED constraint for absolute locking
+- **`examples/25_iterative_refinement.json`** - Iterative design workflow
+
 ## AI Agent Workflows
 
 ### Workflow 1: Iterative Refinement
