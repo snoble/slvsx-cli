@@ -59,6 +59,10 @@ pub fn handle_solve<R: InputReader + ?Sized, W: OutputWriter + ?Sized>(
     let input = reader.read()?;
     let doc: InputDocument = parse_json_with_context(&input, filename)?;
 
+    // Validate document before solving to catch errors early
+    let validator = slvsx_core::validator::Validator::new();
+    validator.validate(&doc)?;
+
     let solver = Solver::new(SolverConfig::default());
     let result = solver.solve(&doc)?;
 
@@ -311,7 +315,7 @@ mod tests {
         let result = handle_solve(&mut reader, &mut writer, "test.json");
         assert!(result.is_err());
 
-        // Test with invalid document structure
+        // Test with invalid document structure - constraint references nonexistent entity
         let invalid = json!({
             "schema": "slvs-json/1",
             "units": "mm",
@@ -324,9 +328,15 @@ mod tests {
         });
         let mut reader = MemoryReader::new(serde_json::to_string(&invalid).unwrap());
         let mut writer = MemoryWriter::new();
-        // This should fail validation
+        // This should fail validation before solving
         let result = handle_solve(&mut reader, &mut writer, "test.json");
-        // May succeed or fail depending on when validation happens
+        assert!(result.is_err(), "Should fail validation for nonexistent entity reference");
+        match result.unwrap_err().downcast_ref::<slvsx_core::error::Error>() {
+            Some(slvsx_core::error::Error::InvalidInput { message, .. }) => {
+                assert!(message.contains("unknown entity") || message.contains("nonexistent"));
+            }
+            _ => {} // Other error types are also acceptable
+        }
     }
 
     #[test]
