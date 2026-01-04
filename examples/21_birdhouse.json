@@ -1,0 +1,243 @@
+{
+  "schema": "slvs-json/1",
+  "units": "mm",
+  "parameters": {
+    "width": 150.0,
+    "depth": 120.0,
+    "height": 200.0,
+    "roof_height": 50.0
+  },
+  "entities": [
+    {
+      "type": "point",
+      "id": "base_front_left",
+      "at": [0, 0, 0]
+    },
+    {
+      "type": "point",
+      "id": "base_front_right",
+      "at": [150, 0, 0]
+    },
+    {
+      "type": "point",
+      "id": "base_back_left",
+      "at": [0, 120, 0]
+    },
+    {
+      "type": "point",
+      "id": "base_back_right",
+      "at": [150, 120, 0]
+    },
+    {
+      "type": "point",
+      "id": "top_front_left",
+      "at": [0, 0, 200]
+    },
+    {
+      "type": "point",
+      "id": "top_front_right",
+      "at": [150, 0, 200]
+    },
+    {
+      "type": "point",
+      "id": "top_back_left",
+      "at": [0, 120, 200]
+    },
+    {
+      "type": "point",
+      "id": "top_back_right",
+      "at": [150, 120, 200]
+    },
+    {
+      "type": "line",
+      "id": "base_front",
+      "p1": "base_front_left",
+      "p2": "base_front_right"
+    },
+    {
+      "type": "line",
+      "id": "base_back",
+      "p1": "base_back_left",
+      "p2": "base_back_right"
+    },
+    {
+      "type": "line",
+      "id": "base_left",
+      "p1": "base_front_left",
+      "p2": "base_back_left"
+    },
+    {
+      "type": "line",
+      "id": "base_right",
+      "p1": "base_front_right",
+      "p2": "base_back_right"
+    },
+    {
+      "type": "line",
+      "id": "front_left_edge",
+      "p1": "base_front_left",
+      "p2": "top_front_left"
+    },
+    {
+      "type": "line",
+      "id": "front_right_edge",
+      "p1": "base_front_right",
+      "p2": "top_front_right"
+    },
+    {
+      "type": "line",
+      "id": "back_left_edge",
+      "p1": "base_back_left",
+      "p2": "top_back_left"
+    },
+    {
+      "type": "line",
+      "id": "back_right_edge",
+      "p1": "base_back_right",
+      "p2": "top_back_right"
+    },
+    {
+      "type": "line",
+      "id": "top_front",
+      "p1": "top_front_left",
+      "p2": "top_front_right"
+    },
+    {
+      "type": "line",
+      "id": "top_back",
+      "p1": "top_back_left",
+      "p2": "top_back_right"
+    },
+    {
+      "type": "line",
+      "id": "top_left",
+      "p1": "top_front_left",
+      "p2": "top_back_left"
+    },
+    {
+      "type": "line",
+      "id": "top_right",
+      "p1": "top_front_right",
+      "p2": "top_back_right"
+    },
+    {
+      "type": "point",
+      "id": "roof_peak",
+      "at": [75, 60, 250]
+    },
+    {
+      "type": "line",
+      "id": "roof_front_left",
+      "p1": "top_front_left",
+      "p2": "roof_peak"
+    },
+    {
+      "type": "line",
+      "id": "roof_front_right",
+      "p1": "top_front_right",
+      "p2": "roof_peak"
+    },
+    {
+      "type": "line",
+      "id": "roof_back_left",
+      "p1": "top_back_left",
+      "p2": "roof_peak"
+    },
+    {
+      "type": "line",
+      "id": "roof_back_right",
+      "p1": "top_back_right",
+      "p2": "roof_peak"
+    }
+  ],
+  "constraints": [
+    {
+      "type": "fixed",
+      "entity": "base_front_left"
+    },
+    {
+      "type": "distance",
+      "between": ["base_front_left", "base_front_right"],
+      "value": "$width"
+    },
+    {
+      "type": "distance",
+      "between": ["base_front_left", "base_back_left"],
+      "value": "$depth"
+    },
+    {
+      "type": "distance",
+      "between": ["base_front_right", "base_back_right"],
+      "value": "$depth"
+    },
+    {
+      "type": "distance",
+      "between": ["base_back_left", "base_back_right"],
+      "value": "$width"
+    },
+    {
+      "type": "distance",
+      "between": ["base_front_left", "top_front_left"],
+      "value": "$height"
+    },
+    {
+      "type": "distance",
+      "between": ["base_front_right", "top_front_right"],
+      "value": "$height"
+    },
+    {
+      "type": "distance",
+      "between": ["base_back_left", "top_back_left"],
+      "value": "$height"
+    },
+    {
+      "type": "distance",
+      "between": ["base_back_right", "top_back_right"],
+      "value": "$height"
+    },
+    {
+      "type": "distance",
+      "between": ["top_front_left", "top_front_right"],
+      "value": "$width"
+    },
+    {
+      "type": "distance",
+      "between": ["top_front_left", "top_back_left"],
+      "value": "$depth"
+    },
+    {
+      "type": "distance",
+      "between": ["top_back_left", "top_back_right"],
+      "value": "$width"
+    },
+    {
+      "type": "distance",
+      "between": ["top_front_right", "top_back_right"],
+      "value": "$depth"
+    },
+    {
+      "type": "distance",
+      "between": ["top_front_left", "roof_peak"],
+      "value": "$roof_height"
+    },
+    {
+      "type": "distance",
+      "between": ["top_front_right", "roof_peak"],
+      "value": "$roof_height"
+    },
+    {
+      "type": "distance",
+      "between": ["top_back_left", "roof_peak"],
+      "value": "$roof_height"
+    },
+    {
+      "type": "distance",
+      "between": ["top_back_right", "roof_peak"],
+      "value": "$roof_height"
+    },
+    {
+      "type": "equal_length",
+      "entities": ["roof_front_left", "roof_front_right", "roof_back_left", "roof_back_right"]
+    }
+  ]
+}
