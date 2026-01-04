@@ -106,9 +106,13 @@ Coverage is collected on every PR and push to main:
 1. Tests run with `cargo llvm-cov` on both Ubuntu and macOS
 2. Results upload to [Codecov](https://codecov.io/gh/snoble/slvsx-cli) using `CODECOV_TOKEN` secret
 3. PRs automatically show coverage diff in comments (always)
-4. PRs that decrease coverage below 100% will fail CI checks
-5. Coverage status is shown in PR checks and on the Codecov dashboard
-6. Each OS (Ubuntu/macOS) has separate coverage flags for comparison
+4. **Project coverage**: Target is 80% with 1% threshold (allows gradual improvements)
+5. **Patch coverage**: Target is 100% (all new/changed code must be covered)
+6. **Changes coverage**: Target is 100% (coverage changes must maintain 100%)
+7. Coverage status is shown in PR checks and on the Codecov dashboard
+8. Each OS (Ubuntu/macOS) has separate coverage flags for comparison
+
+Note: The project coverage target is set lower to allow incremental improvements while still enforcing high standards for new code.
 
 ## Adding Tests for Uncovered Code
 

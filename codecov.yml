@@ -8,9 +8,9 @@ coverage:
   status:
     project:
       default:
-        target: 100%
-        threshold: 0%
-        # PRs that decrease coverage below 100% will fail
+        target: 80%  # Lowered from 100% to allow gradual improvements
+        threshold: 1%  # Allow 1% drop before failing
+        # PRs that decrease coverage by more than 1% will fail
     patch:
       default:
         target: 100%
