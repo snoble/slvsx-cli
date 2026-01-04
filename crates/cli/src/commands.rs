@@ -35,7 +35,7 @@ impl From<ViewPlane> for SvgViewPlane {
 }
 
 /// Validate command handler
-pub fn handle_validate<R: InputReader>(
+pub fn handle_validate<R: InputReader + ?Sized>(
     reader: &mut R,
     filename: &str,
     error_writer: &mut dyn ErrorWriter,
@@ -51,7 +51,7 @@ pub fn handle_validate<R: InputReader>(
 }
 
 /// Solve command handler
-pub fn handle_solve<R: InputReader, W: OutputWriter>(
+pub fn handle_solve<R: InputReader + ?Sized, W: OutputWriter + ?Sized>(
     reader: &mut R,
     writer: &mut W,
     filename: &str,
@@ -68,7 +68,7 @@ pub fn handle_solve<R: InputReader, W: OutputWriter>(
 }
 
 /// Export command handler
-pub fn handle_export<R: InputReader, W: OutputWriter>(
+pub fn handle_export<R: InputReader + ?Sized, W: OutputWriter + ?Sized>(
     reader: &mut R,
     writer: &mut W,
     filename: &str,
@@ -121,7 +121,7 @@ pub fn export_entities(
 }
 
 /// Capabilities command handler
-pub fn handle_capabilities<W: OutputWriter>(writer: &mut W) -> Result<()> {
+pub fn handle_capabilities<W: OutputWriter + ?Sized>(writer: &mut W) -> Result<()> {
     let version = env!("CARGO_PKG_VERSION");
     let capabilities = format!(
         r#"{{
