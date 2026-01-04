@@ -409,10 +409,14 @@ mod tests {
                 Entity::Point {
                     id: "p1".to_string(),
                     at: vec![ExprOrNumber::Number(0.0)],
+                    construction: false,
+                    preserve: false,
                 },
                 Entity::Point {
                     id: "p2".to_string(),
                     at: vec![ExprOrNumber::Number(1.0)],
+                    construction: false,
+                    preserve: false,
                 },
             ],
             constraints: vec![],
@@ -431,10 +435,14 @@ mod tests {
                 Entity::Point {
                     id: "p1".to_string(),
                     at: vec![ExprOrNumber::Number(0.0)],
+                    construction: false,
+                    preserve: false,
                 },
                 Entity::Point {
                     id: "p1".to_string(),
                     at: vec![ExprOrNumber::Number(1.0)],
+                    construction: false,
+                    preserve: false,
                 },
             ],
             constraints: vec![],
@@ -493,6 +501,8 @@ mod tests {
             entities: vec![Entity::Point {
                 id: "p1".to_string(),
                 at: vec![ExprOrNumber::Number(0.0)],
+                construction: false,
+                preserve: false,
             }],
             constraints: vec![],
         };
@@ -511,10 +521,14 @@ mod tests {
                 Entity::Point {
                     id: "p1".to_string(),
                     at: vec![ExprOrNumber::Number(0.0)],
+                    construction: false,
+                    preserve: false,
                 },
                 Entity::Point {
                     id: "p2".to_string(),
                     at: vec![ExprOrNumber::Number(1.0)],
+                    construction: false,
+                    preserve: false,
                 },
             ],
             constraints: vec![Constraint::Fixed {
@@ -535,6 +549,8 @@ mod tests {
             entities: vec![Entity::Point {
                 id: "p1".to_string(),
                 at: vec![ExprOrNumber::Number(0.0)],
+                construction: false,
+                preserve: false,
             }],
             constraints: vec![Constraint::Fixed {
                 entity: "nonexistent".to_string(),
@@ -564,15 +580,21 @@ mod tests {
                 Entity::Point {
                     id: "p1".to_string(),
                     at: vec![ExprOrNumber::Number(0.0)],
+                    construction: false,
+                    preserve: false,
                 },
                 Entity::Point {
                     id: "p2".to_string(),
                     at: vec![ExprOrNumber::Number(1.0)],
+                    construction: false,
+                    preserve: false,
                 },
                 Entity::Line {
                     id: "l1".to_string(),
                     p1: "p1".to_string(),
                     p2: "p2".to_string(),
+                    construction: false,
+                    preserve: false,
                 },
             ],
             constraints: vec![],
@@ -592,11 +614,15 @@ mod tests {
                 Entity::Point {
                     id: "p1".to_string(),
                     at: vec![ExprOrNumber::Number(0.0)],
+                    construction: false,
+                    preserve: false,
                 },
                 Entity::Line {
                     id: "l1".to_string(),
                     p1: "p1".to_string(),
                     p2: "nonexistent".to_string(), // p2 doesn't exist
+                    construction: false,
+                    preserve: false,
                 },
             ],
             constraints: vec![],
@@ -625,11 +651,15 @@ mod tests {
                 Entity::Point {
                     id: "p2".to_string(),
                     at: vec![ExprOrNumber::Number(1.0)],
+                    construction: false,
+                    preserve: false,
                 },
                 Entity::Line {
                     id: "l1".to_string(),
                     p1: "nonexistent".to_string(), // p1 doesn't exist
                     p2: "p2".to_string(),
+                    construction: false,
+                    preserve: false,
                 },
             ],
             constraints: vec![],
@@ -658,12 +688,17 @@ mod tests {
                 Entity::Point {
                     id: "end".to_string(),
                     at: vec![ExprOrNumber::Number(1.0)],
+                    construction: false,
+                    preserve: false,
                 },
                 Entity::Arc {
                     id: "a1".to_string(),
                     center: vec![ExprOrNumber::Number(0.0)],
                     start: "nonexistent".to_string(), // start doesn't exist
                     end: "end".to_string(),
+                    construction: false,
+                    preserve: false,
+                    preserve: false,
                 },
             ],
             constraints: vec![],
@@ -692,12 +727,17 @@ mod tests {
                 Entity::Point {
                     id: "start".to_string(),
                     at: vec![ExprOrNumber::Number(0.0)],
+                    construction: false,
+                    preserve: false,
                 },
                 Entity::Arc {
                     id: "a1".to_string(),
                     center: vec![ExprOrNumber::Number(0.0)],
                     start: "start".to_string(),
                     end: "nonexistent".to_string(), // end doesn't exist
+                    construction: false,
+                    preserve: false,
+                    preserve: false,
                 },
             ],
             constraints: vec![],
@@ -727,15 +767,21 @@ mod tests {
                 Entity::Point {
                     id: "p1".to_string(),
                     at: vec![ExprOrNumber::Number(0.0)],
+                    construction: false,
+                    preserve: false,
                 },
                 Entity::Line {
                     id: "l1".to_string(),
                     p1: "p1".to_string(),
                     p2: "p2".to_string(), // p2 is defined later - forward reference!
+                    construction: false,
+                    preserve: false,
                 },
                 Entity::Point {
                     id: "p2".to_string(),
                     at: vec![ExprOrNumber::Number(1.0)],
+                    construction: false,
+                    preserve: false,
                 },
             ],
             constraints: vec![],
@@ -765,16 +811,22 @@ mod tests {
                 Entity::Point {
                     id: "p1".to_string(),
                     at: vec![ExprOrNumber::Number(0.0)],
+                    construction: false,
+                    preserve: false,
                 },
                 Entity::Circle {
                     id: "c1".to_string(),
                     center: vec![ExprOrNumber::Number(0.0)],
                     diameter: ExprOrNumber::Number(10.0),
+                    construction: false,
+                    preserve: false,
                 },
                 Entity::Line {
                     id: "l1".to_string(),
                     p1: "p1".to_string(),
                     p2: "c1".to_string(), // c1 is a Circle, not a Point!
+                    construction: false,
+                    preserve: false,
                 },
             ],
             constraints: vec![],
@@ -805,17 +857,23 @@ mod tests {
                 Entity::Point {
                     id: "p1".to_string(),
                     at: vec![ExprOrNumber::Number(0.0)],
+                    construction: false,
+                    preserve: false,
                 },
                 Entity::Circle {
                     id: "c1".to_string(),
                     center: vec![ExprOrNumber::Number(0.0)],
                     diameter: ExprOrNumber::Number(10.0),
+                    construction: false,
+                    preserve: false,
                 },
                 Entity::Arc {
                     id: "a1".to_string(),
                     center: vec![ExprOrNumber::Number(0.0)],
                     start: "p1".to_string(),
                     end: "c1".to_string(), // c1 is a Circle, not a Point!
+                    construction: false,
+                    preserve: false,
                 },
             ],
             constraints: vec![],
@@ -846,16 +904,22 @@ mod tests {
                 Entity::Point {
                     id: "p1".to_string(),
                     at: vec![ExprOrNumber::Number(0.0)],
+                    construction: false,
+                    preserve: false,
                 },
                 Entity::Line {
                     id: "l1".to_string(),
                     p1: "p1".to_string(),
                     p2: "p1".to_string(), // Self-reference is valid
+                    construction: false,
+                    preserve: false,
                 },
                 Entity::Line {
                     id: "l2".to_string(),
                     p1: "p1".to_string(),
                     p2: "l1".to_string(), // l1 is a Line, not a Point!
+                    construction: false,
+                    preserve: false,
                 },
             ],
             constraints: vec![],
@@ -911,29 +975,41 @@ mod tests {
                 Entity::Point {
                     id: "p1".to_string(),
                     at: vec![ExprOrNumber::Number(0.0)],
+                    construction: false,
+                    preserve: false,
                 },
                 Entity::Point {
                     id: "p2".to_string(),
                     at: vec![ExprOrNumber::Number(1.0)],
+                    construction: false,
+                    preserve: false,
                 },
                 Entity::Point {
                     id: "p3".to_string(),
                     at: vec![ExprOrNumber::Number(2.0)],
+                    construction: false,
+                    preserve: false,
                 },
                 Entity::Line {
                     id: "l1".to_string(),
                     p1: "p1".to_string(),
                     p2: "p2".to_string(),
+                    construction: false,
+                    preserve: false,
                 },
                 Entity::Line {
                     id: "l2".to_string(),
                     p1: "p2".to_string(),
                     p2: "p3".to_string(),
+                    construction: false,
+                    preserve: false,
                 },
                 Entity::Circle {
                     id: "c1".to_string(),
                     center: vec![ExprOrNumber::Number(0.0)],
                     diameter: ExprOrNumber::Number(10.0),
+                    construction: false,
+                    preserve: false,
                 },
             ],
             constraints: vec![
@@ -1013,6 +1089,8 @@ mod tests {
             entities: vec![Entity::Point {
                 id: "p1".to_string(),
                 at: vec![ExprOrNumber::Number(0.0)],
+                construction: false,
+                preserve: false,
             }],
             constraints: vec![Constraint::Distance {
                 between: vec!["p1".to_string(), "nonexistent".to_string()],
@@ -1042,6 +1120,8 @@ mod tests {
             entities: vec![Entity::Point {
                 id: "p1".to_string(),
                 at: vec![ExprOrNumber::Number(0.0)],
+                construction: false,
+                preserve: false,
             }],
             constraints: vec![Constraint::Coincident {
                 data: CoincidentData::PointOnLine {
@@ -1073,6 +1153,8 @@ mod tests {
             entities: vec![Entity::Point {
                 id: "p1".to_string(),
                 at: vec![ExprOrNumber::Number(0.0)],
+                construction: false,
+                preserve: false,
             }],
             constraints: vec![Constraint::Coincident {
                 data: CoincidentData::TwoEntities {
@@ -1104,14 +1186,20 @@ mod tests {
                 Entity::Point {
                     id: "zebra".to_string(),
                     at: vec![ExprOrNumber::Number(0.0)],
+                    construction: false,
+                    preserve: false,
                 },
                 Entity::Point {
                     id: "apple".to_string(),
                     at: vec![ExprOrNumber::Number(1.0)],
+                    construction: false,
+                    preserve: false,
                 },
                 Entity::Point {
                     id: "banana".to_string(),
                     at: vec![ExprOrNumber::Number(2.0)],
+                    construction: false,
+                    preserve: false,
                 },
             ],
             constraints: vec![Constraint::Fixed {

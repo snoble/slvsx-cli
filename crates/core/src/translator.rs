@@ -175,6 +175,8 @@ mod tests {
             parameters: HashMap::new(),
             entities: vec![Entity::Point {
                 id: "p1".to_string(),
+                construction: false,
+                preserve: false,
                 at: vec![ExprOrNumber::Number(0.0)],
             }],
             constraints: vec![
