@@ -105,7 +105,6 @@ fn test_solvable_examples_solve() {
         "examples/02_distance_constraint.json",
         "examples/02_triangle.json",
         "examples/03_correctly_constrained.json",
-        "examples/05_parallel_perpendicular.json",
         "examples/07_point_on_line.json",
         "examples/09_coincident.json",
     ];

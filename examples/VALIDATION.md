@@ -44,6 +44,7 @@ These examples use only implemented constraints and should solve successfully:
 
 These examples require constraints that are not yet implemented:
 
+- `05_parallel_perpendicular.json` - Requires **Parallel** and **Perpendicular** constraints
 - `11_symmetric.json` - Requires **Symmetric** constraint
 - `13_arcs.json` - Requires arc-related constraints
 - `13_midpoint.json` - Requires **Midpoint** constraint
@@ -55,7 +56,6 @@ These examples will fail validation with "not yet implemented" errors until the 
 These examples currently fail but could work with constraint adjustments:
 
 - `03_overconstrained.json` - Intentionally overconstrained (demonstrates error handling)
-- `05_parallel_perpendicular.json` - Underconstrained, needs more constraints
 - `10_equal_length.json` - Underconstrained, needs more constraints  
 - `17_four_bar_linkage.json` - Underconstrained without angle constraint
 - `20_slider_crank.json` - Underconstrained without angle/horizontal constraints

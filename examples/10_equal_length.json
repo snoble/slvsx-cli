@@ -58,11 +58,13 @@
     },
     {
       "type": "parallel",
-      "entities": ["AB", "CD"]
+      "a": "AB",
+      "b": "CD"
     },
     {
       "type": "parallel",
-      "entities": ["BC", "DA"]
+      "a": "BC",
+      "b": "DA"
     },
     {
       "type": "perpendicular",
