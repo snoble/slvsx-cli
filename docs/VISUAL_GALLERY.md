@@ -13,7 +13,7 @@ This gallery showcases SLVSX's capabilities through rendered visualizations. Eac
 
 ## 🎨 3D Geometry
 
-### Tetrahedron (Multiple Views)
+### Tetrahedron (Multiple Views) {#tetrahedron-multiple-views}
 
 A perfect tetrahedron with all edges equal length, shown from different viewing angles:
 
@@ -55,7 +55,7 @@ A 3D coordinate system showing X, Y, and Z axes with a point in space:
 
 ## 🔧 Mechanisms & Linkages
 
-### Angle-Controlled Hinge
+### Angle-Controlled Hinge {#angle-controlled-hinge}
 
 A parametric hinge mechanism where two arms meet at a specific angle:
 
@@ -73,7 +73,7 @@ slvsx solve examples/08_angles.json
 slvsx export -f svg examples/08_angles.json -o hinge.svg
 ```
 
-### Symmetric Arrowhead
+### Symmetric Arrowhead {#symmetric-arrowhead}
 
 A perfectly symmetric arrowhead design:
 

@@ -115,4 +115,4 @@ The slider moved to x=40 on the rail - directly below the target point, maintain
 
 The `point_on_line` constraint adds one degree of freedom - the point can slide along the line but can't leave it. Combine with other constraints to fully define the position.
 
-**[Next: Symmetric Constraints →](08_symmetric.md)**
+**[Next: Angles →](08_angles.md)**
