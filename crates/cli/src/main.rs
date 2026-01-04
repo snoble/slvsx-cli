@@ -18,7 +18,7 @@ struct Cli {
     command: Commands,
 }
 
-#[derive(Clone, ValueEnum)]
+#[derive(Clone, Debug, PartialEq, ValueEnum)]
 enum ExportFormat {
     Svg,
     Dxf,
@@ -26,7 +26,7 @@ enum ExportFormat {
     Stl,
 }
 
-#[derive(Clone, Debug, ValueEnum)]
+#[derive(Clone, Debug, PartialEq, ValueEnum)]
 enum ViewPlane {
     Xy,
     Xz,
