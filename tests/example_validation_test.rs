@@ -65,9 +65,9 @@ fn test_all_examples_validate() {
     let examples = find_example_files();
     assert!(!examples.is_empty(), "No example files found");
     
-    let mut cmd = Command::cargo_bin("slvsx").unwrap();
-    
     for example in &examples {
+        // Create a fresh command for each example to avoid argument accumulation
+        let mut cmd = Command::cargo_bin("slvsx").unwrap();
         cmd.arg("validate").arg(example);
         
         let output = cmd.output().unwrap_or_else(|e| {
@@ -92,9 +92,6 @@ fn test_all_examples_validate() {
             // Otherwise, log the error but don't fail - some examples might be intentionally invalid
             eprintln!("Warning: {} failed validation: {}", example.display(), stderr);
         }
-        
-        // Reset command for next iteration
-        cmd = Command::cargo_bin("slvsx").unwrap();
     }
 }
 
