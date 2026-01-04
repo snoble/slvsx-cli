@@ -6,9 +6,17 @@ use slvsx_core::ir::{Constraint, Entity, ExprOrNumber, InputDocument};
 use slvsx_core::solver::{Solver, SolverConfig};
 use std::collections::HashMap;
 
+/// Default max_iterations value for testing error mapping
+const DEFAULT_MAX_ITERATIONS: u32 = 1000;
+
 /// Helper function to test error mapping from FfiError to Error
 fn test_error_mapping(ffi_error: FfiError, expected_error: Error) {
-    let mapped = Solver::map_ffi_error(ffi_error);
+    test_error_mapping_with_iterations(ffi_error, expected_error, DEFAULT_MAX_ITERATIONS);
+}
+
+/// Helper function to test error mapping with a specific max_iterations value
+fn test_error_mapping_with_iterations(ffi_error: FfiError, expected_error: Error, max_iterations: u32) {
+    let mapped = Solver::map_ffi_error(ffi_error, max_iterations);
 
     match (&mapped, &expected_error) {
         (Error::Overconstrained, Error::Overconstrained) => {}
@@ -32,9 +40,21 @@ fn test_ffi_error_mapping_inconsistent() {
 
 #[test]
 fn test_ffi_error_mapping_didnt_converge() {
+    // With default max_iterations (1000), convergence error should report 1000 iterations
     test_error_mapping(
         FfiError::DidntConverge,
-        Error::SolverConvergence { iterations: 100 },
+        Error::SolverConvergence { iterations: DEFAULT_MAX_ITERATIONS },
+    );
+}
+
+#[test]
+fn test_ffi_error_mapping_didnt_converge_custom_iterations() {
+    // Test that custom max_iterations values are correctly reflected in the error
+    let custom_iterations = 500;
+    test_error_mapping_with_iterations(
+        FfiError::DidntConverge,
+        Error::SolverConvergence { iterations: custom_iterations },
+        custom_iterations,
     );
 }
 
@@ -73,6 +93,99 @@ fn test_ffi_error_mapping_constraint_failed() {
         FfiError::ConstraintFailed("test constraint".to_string()),
         Error::Ffi("Constraint operation failed: test constraint".to_string()),
     );
+}
+
+// Property-based tests for error mapping consistency
+mod property_tests {
+    use super::*;
+    use proptest::prelude::*;
+
+    proptest! {
+        /// Property: For any max_iterations value, the convergence error should report
+        /// exactly that iteration count. This ensures we never use hardcoded values.
+        #[test]
+        fn convergence_error_reports_configured_iterations(max_iterations in 1u32..=100_000) {
+            let error = Solver::map_ffi_error(FfiError::DidntConverge, max_iterations);
+
+            match error {
+                Error::SolverConvergence { iterations } => {
+                    prop_assert_eq!(
+                        iterations, max_iterations,
+                        "Convergence error should report the configured max_iterations ({}), not a hardcoded value",
+                        max_iterations
+                    );
+                }
+                _ => prop_assert!(false, "DidntConverge should map to SolverConvergence error"),
+            }
+        }
+
+        /// Property: The iteration count in the error message should always equal
+        /// the iteration count in the error struct.
+        #[test]
+        fn convergence_error_message_matches_iterations(max_iterations in 1u32..=100_000) {
+            let error = Solver::map_ffi_error(FfiError::DidntConverge, max_iterations);
+
+            let error_message = error.to_string();
+            let expected_message = format!("Solver failed to converge after {} iterations", max_iterations);
+            prop_assert_eq!(
+                error_message, expected_message,
+                "Error message should contain the correct iteration count"
+            );
+        }
+
+        /// Property: Error mapping should be deterministic - same input always produces same output
+        #[test]
+        fn error_mapping_is_deterministic(max_iterations in 1u32..=100_000) {
+            let error1 = Solver::map_ffi_error(FfiError::DidntConverge, max_iterations);
+            let error2 = Solver::map_ffi_error(FfiError::DidntConverge, max_iterations);
+
+            prop_assert_eq!(
+                error1.to_string(), error2.to_string(),
+                "Error mapping should be deterministic"
+            );
+        }
+
+        /// Property: Overconstrained errors should not be affected by max_iterations
+        #[test]
+        fn overconstrained_error_independent_of_iterations(max_iterations in 1u32..=100_000) {
+            let error = Solver::map_ffi_error(FfiError::Inconsistent, max_iterations);
+
+            match error {
+                Error::Overconstrained => {} // Expected
+                _ => prop_assert!(false, "Inconsistent should always map to Overconstrained"),
+            }
+        }
+
+        /// Property: Underconstrained errors should not be affected by max_iterations
+        #[test]
+        fn underconstrained_error_independent_of_iterations(max_iterations in 1u32..=100_000) {
+            let error = Solver::map_ffi_error(FfiError::TooManyUnknowns, max_iterations);
+
+            match error {
+                Error::Underconstrained { dof: 0 } => {} // Expected
+                _ => prop_assert!(false, "TooManyUnknowns should always map to Underconstrained with dof 0"),
+            }
+        }
+
+        /// Property: Unknown error codes should preserve the code in the message
+        #[test]
+        fn unknown_error_preserves_code(code in -1000i32..=1000, max_iterations in 1u32..=100_000) {
+            // Skip codes that map to known errors
+            prop_assume!(code != 0 && code != 1 && code != 2 && code != 3 && code != -1);
+
+            let error = Solver::map_ffi_error(FfiError::Unknown(code), max_iterations);
+
+            match error {
+                Error::Ffi(msg) => {
+                    prop_assert!(
+                        msg.contains(&code.to_string()),
+                        "Unknown error message should contain the error code"
+                    );
+                }
+                _ => prop_assert!(false, "Unknown should map to Ffi error"),
+            }
+        }
+    }
 }
 
 /// Test that overconstrained systems return Overconstrained error

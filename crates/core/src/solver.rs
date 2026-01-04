@@ -31,11 +31,17 @@ impl Solver {
 
     /// Map FFI errors to high-level Error types
     /// This is public for testing purposes
-    pub fn map_ffi_error(e: crate::ffi::FfiError) -> crate::error::Error {
+    ///
+    /// # Arguments
+    /// * `e` - The FFI error to map
+    /// * `max_iterations` - The configured maximum iterations, used for convergence error messages
+    pub fn map_ffi_error(e: crate::ffi::FfiError, max_iterations: u32) -> crate::error::Error {
         match e {
             crate::ffi::FfiError::Inconsistent => crate::error::Error::Overconstrained,
             crate::ffi::FfiError::DidntConverge => {
-                crate::error::Error::SolverConvergence { iterations: 100 }
+                crate::error::Error::SolverConvergence {
+                    iterations: max_iterations,
+                }
             }
             crate::ffi::FfiError::TooManyUnknowns => {
                 // Try to get DOF from solver if possible, otherwise default to 0
@@ -258,7 +264,10 @@ impl Solver {
         }
 
         // Actually solve the constraints!
-        ffi_solver.solve().map_err(|e| Self::map_ffi_error(e))?;
+        let max_iterations = self.config.max_iterations;
+        ffi_solver
+            .solve()
+            .map_err(|e| Self::map_ffi_error(e, max_iterations))?;
 
         // Get solved positions from libslvs
         let mut resolved_entities = HashMap::new();
@@ -358,5 +367,137 @@ mod tests {
         let solver = Solver::new(config);
         // Just verify it can be created
         assert!(std::mem::size_of_val(&solver) > 0);
+    }
+
+    #[test]
+    fn test_map_ffi_error_convergence_uses_max_iterations() {
+        // Verify that the convergence error uses the provided max_iterations
+        // not a hardcoded value
+        let error = Solver::map_ffi_error(crate::ffi::FfiError::DidntConverge, 500);
+        match error {
+            crate::error::Error::SolverConvergence { iterations } => {
+                assert_eq!(iterations, 500);
+            }
+            _ => panic!("Expected SolverConvergence error"),
+        }
+
+        // Test with default config's max_iterations
+        let error = Solver::map_ffi_error(crate::ffi::FfiError::DidntConverge, 1000);
+        match error {
+            crate::error::Error::SolverConvergence { iterations } => {
+                assert_eq!(iterations, 1000);
+            }
+            _ => panic!("Expected SolverConvergence error"),
+        }
+    }
+
+    #[test]
+    fn test_map_ffi_error_other_errors() {
+        // Verify other errors still work correctly
+        let error = Solver::map_ffi_error(crate::ffi::FfiError::Inconsistent, 1000);
+        assert!(matches!(error, crate::error::Error::Overconstrained));
+
+        let error = Solver::map_ffi_error(crate::ffi::FfiError::TooManyUnknowns, 1000);
+        assert!(matches!(error, crate::error::Error::Underconstrained { dof: 0 }));
+
+        let error = Solver::map_ffi_error(crate::ffi::FfiError::InvalidSystem, 1000);
+        assert!(matches!(error, crate::error::Error::Ffi(_)));
+
+        let error = Solver::map_ffi_error(crate::ffi::FfiError::Unknown(42), 1000);
+        if let crate::error::Error::Ffi(msg) = error {
+            assert!(msg.contains("42"));
+        } else {
+            panic!("Expected Ffi error");
+        }
+    }
+}
+
+#[cfg(test)]
+mod property_tests {
+    use super::*;
+    use proptest::prelude::*;
+
+    proptest! {
+        /// Property: Convergence error must report the exact max_iterations value provided.
+        /// This catches any hardcoded iteration values.
+        #[test]
+        fn convergence_error_uses_provided_max_iterations(max_iterations in 1u32..=100_000) {
+            let error = Solver::map_ffi_error(crate::ffi::FfiError::DidntConverge, max_iterations);
+
+            match error {
+                crate::error::Error::SolverConvergence { iterations } => {
+                    prop_assert_eq!(
+                        iterations, max_iterations,
+                        "Convergence error must report provided max_iterations, not a hardcoded value"
+                    );
+                }
+                _ => prop_assert!(false, "DidntConverge must map to SolverConvergence"),
+            }
+        }
+
+        /// Property: Error message content must match the iterations field value.
+        #[test]
+        fn error_message_contains_correct_iteration_count(max_iterations in 1u32..=100_000) {
+            let error = Solver::map_ffi_error(crate::ffi::FfiError::DidntConverge, max_iterations);
+            let message = error.to_string();
+
+            prop_assert!(
+                message.contains(&max_iterations.to_string()),
+                "Error message '{}' must contain iteration count {}",
+                message,
+                max_iterations
+            );
+        }
+
+        /// Property: max_iterations parameter should not affect non-convergence errors.
+        #[test]
+        fn max_iterations_does_not_affect_other_errors(max_iterations in 1u32..=100_000) {
+            // Inconsistent always produces Overconstrained
+            let error = Solver::map_ffi_error(crate::ffi::FfiError::Inconsistent, max_iterations);
+            prop_assert!(
+                matches!(error, crate::error::Error::Overconstrained),
+                "Inconsistent should always map to Overconstrained"
+            );
+
+            // TooManyUnknowns always produces Underconstrained with dof 0
+            let error = Solver::map_ffi_error(crate::ffi::FfiError::TooManyUnknowns, max_iterations);
+            prop_assert!(
+                matches!(error, crate::error::Error::Underconstrained { dof: 0 }),
+                "TooManyUnknowns should always map to Underconstrained with dof 0"
+            );
+
+            // InvalidSystem always produces a specific Ffi error
+            let error = Solver::map_ffi_error(crate::ffi::FfiError::InvalidSystem, max_iterations);
+            match error {
+                crate::error::Error::Ffi(msg) => {
+                    prop_assert_eq!(msg, "Invalid solver system");
+                }
+                _ => prop_assert!(false, "InvalidSystem should map to Ffi error"),
+            }
+        }
+
+        /// Property: SolverConfig default max_iterations should be used in convergence errors
+        /// when using the solve method (integration check).
+        #[test]
+        fn solver_config_max_iterations_consistency(max_iterations in 1u32..10_000) {
+            let config = SolverConfig {
+                tolerance: 1e-6,
+                max_iterations,
+                timeout_ms: None,
+            };
+
+            // Simulate what happens when solve() encounters a convergence error
+            let error = Solver::map_ffi_error(crate::ffi::FfiError::DidntConverge, config.max_iterations);
+
+            match error {
+                crate::error::Error::SolverConvergence { iterations } => {
+                    prop_assert_eq!(
+                        iterations, config.max_iterations,
+                        "Solver should use its configured max_iterations in error"
+                    );
+                }
+                _ => prop_assert!(false, "Expected SolverConvergence"),
+            }
+        }
     }
 }
