@@ -170,7 +170,7 @@ int real_slvs_add_point_2d(RealSlvsSystem* s, int id, int workplane_id, double u
     s->sys.param[s->sys.params++] = Slvs_MakeParam(pv, g, v);
     
     // If dragged, mark these parameters as dragged
-    if (is_dragged && s->sys.ndragged < 1000) {
+    if (is_dragged && s->sys.ndragged < 998) {  // Leave room for 2 params
         s->sys.dragged[s->sys.ndragged++] = pu;
         s->sys.dragged[s->sys.ndragged++] = pv;
     }
