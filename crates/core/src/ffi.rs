@@ -1451,8 +1451,8 @@ mod tests {
         let mut solver = Solver::new();
 
         // Create a line with endpoints
-        solver.add_point(1, 0.0, 50.0, 0.0).unwrap();
-        solver.add_point(2, 100.0, 50.0, 0.0).unwrap();
+        solver.add_point(1, 0.0, 50.0, 0.0, false).unwrap();
+        solver.add_point(2, 100.0, 50.0, 0.0, false).unwrap();
         solver.add_line(10, 1, 2).unwrap();
 
         // Create midpoint
@@ -1576,12 +1576,12 @@ mod tests {
         let mut solver = Solver::new();
 
         // Create 4 lines for equal angle constraint
-        solver.add_point(1, 0.0, 0.0, 0.0).unwrap();
-        solver.add_point(2, 100.0, 0.0, 0.0).unwrap();
-        solver.add_point(3, 0.0, 100.0, 0.0).unwrap();
-        solver.add_point(4, 0.0, 0.0, 0.0).unwrap();
-        solver.add_point(5, 100.0, 0.0, 0.0).unwrap();
-        solver.add_point(6, 0.0, 100.0, 0.0).unwrap();
+        solver.add_point(1, 0.0, 0.0, 0.0, false).unwrap();
+        solver.add_point(2, 100.0, 0.0, 0.0, false).unwrap();
+        solver.add_point(3, 0.0, 100.0, 0.0, false).unwrap();
+        solver.add_point(4, 0.0, 0.0, 0.0, false).unwrap();
+        solver.add_point(5, 100.0, 0.0, 0.0, false).unwrap();
+        solver.add_point(6, 0.0, 100.0, 0.0, false).unwrap();
         solver.add_line(10, 1, 2).unwrap(); // First pair: line 1
         solver.add_line(11, 1, 3).unwrap(); // First pair: line 2
         solver.add_line(12, 4, 5).unwrap(); // Second pair: line 1
@@ -1597,8 +1597,8 @@ mod tests {
         let mut solver = Solver::new();
 
         // Create two points for horizontal symmetry
-        solver.add_point(1, 30.0, 50.0, 0.0).unwrap();
-        solver.add_point(2, 70.0, 50.0, 0.0).unwrap();
+        solver.add_point(1, 30.0, 50.0, 0.0, false).unwrap();
+        solver.add_point(2, 70.0, 50.0, 0.0, false).unwrap();
 
         // Add symmetric horizontal constraint - FFI binding should work
         let result = solver.add_symmetric_horizontal_constraint(100, 1, 2);
@@ -1610,8 +1610,8 @@ mod tests {
         let mut solver = Solver::new();
 
         // Create two points for vertical symmetry
-        solver.add_point(1, 50.0, 30.0, 0.0).unwrap();
-        solver.add_point(2, 50.0, 70.0, 0.0).unwrap();
+        solver.add_point(1, 50.0, 30.0, 0.0, false).unwrap();
+        solver.add_point(2, 50.0, 70.0, 0.0, false).unwrap();
 
         // Add symmetric vertical constraint - FFI binding should work
         let result = solver.add_symmetric_vertical_constraint(100, 1, 2);
@@ -1652,9 +1652,9 @@ mod tests {
         let mut solver = Solver::new();
 
         // Create points and workplane
-        solver.add_point(1, 0.0, 0.0, 0.0).unwrap();
-        solver.add_point(2, 10.0, 10.0, 0.0).unwrap();
-        solver.add_point(3, 5.0, 5.0, 0.0).unwrap();
+        solver.add_point(1, 0.0, 0.0, 0.0, false).unwrap();
+        solver.add_point(2, 10.0, 10.0, 0.0, false).unwrap();
+        solver.add_point(3, 5.0, 5.0, 0.0, false).unwrap();
         solver.add_workplane(10, 1, 0.0, 0.0, 1.0).unwrap();
 
         // Add projected point distance constraint - FFI binding should work
