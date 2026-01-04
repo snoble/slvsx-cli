@@ -1,12 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="-20.1 -21.3 83.4 81.3" width="800" height="800">
-  <line id="BC" x1="-0.121735" y1="-1.260321" x2="43.238460" y2="-1.029132" stroke="black"/>
-  <circle id="B" cx="-0.121735" cy="-1.260321" r="2" fill="black"/>
-  <line id="CD" x1="43.238460" y1="-1.029132" x2="14.746008" y2="40.046973" stroke="black"/>
-  <circle id="D" cx="14.746008" cy="40.046973" r="2" fill="black"/>
   <circle id="A" cx="0.000000" cy="0.000000" r="2" fill="black"/>
+  <circle id="B" cx="-0.121735" cy="-1.260321" r="2" fill="black"/>
+  <line id="CA" x1="43.238460" y1="-1.029132" x2="0.000000" y2="0.000000" stroke="black"/>
   <line id="AB" x1="0.000000" y1="0.000000" x2="-0.121735" y2="-1.260321" stroke="black"/>
   <circle id="C" cx="43.238460" cy="-1.029132" r="2" fill="black"/>
-  <line id="CA" x1="43.238460" y1="-1.029132" x2="0.000000" y2="0.000000" stroke="black"/>
-  <line id="BD" x1="-0.121735" y1="-1.260321" x2="14.746008" y2="40.046973" stroke="black"/>
   <line id="AD" x1="0.000000" y1="0.000000" x2="14.746008" y2="40.046973" stroke="black"/>
+  <line id="BD" x1="-0.121735" y1="-1.260321" x2="14.746008" y2="40.046973" stroke="black"/>
+  <circle id="D" cx="14.746008" cy="40.046973" r="2" fill="black"/>
+  <line id="CD" x1="43.238460" y1="-1.029132" x2="14.746008" y2="40.046973" stroke="black"/>
+  <line id="BC" x1="-0.121735" y1="-1.260321" x2="43.238460" y2="-1.029132" stroke="black"/>
 </svg>
