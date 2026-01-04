@@ -95,7 +95,7 @@ slvsx export -f svg triangle.json > triangle.svg
 
 **What this does**: Given two fixed points and distances to a third point, SLVSX calculates where the third point must be. This is triangulation - the same math used in GPS!
 
-See [SHOWCASE.md](SHOWCASE.md) for impressive examples and [docs/AI_GUIDE.md](docs/AI_GUIDE.md) for AI agent usage.
+See [SHOWCASE.md](SHOWCASE.md) for impressive examples, [docs/AI_GUIDE.md](docs/AI_GUIDE.md) for AI agent usage, and [docs/ITERATIVE_DESIGN.md](docs/ITERATIVE_DESIGN.md) for best practices on building constraint problems iteratively.
 
 ### Commands
 
