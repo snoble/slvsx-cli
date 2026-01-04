@@ -1227,13 +1227,17 @@ mod tests {
         let mut solver = FfiSolver::new();
         let entity_map = std::collections::HashMap::new();
         
-        // Test an unimplemented constraint
+        // All constraints are now implemented, so this test verifies that
+        // constraints with missing entities return appropriate errors
         let constraint = Constraint::Angle {
             between: vec!["l1".to_string(), "l2".to_string()],
             value: ExprOrNumber::Number(90.0),
         };
         let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map);
+        // Angle constraint is implemented, but will fail because entities don't exist
+        // The error should be about missing entities, not "not yet implemented"
         assert!(result.is_err());
-        assert!(result.unwrap_err().contains("not yet implemented"));
+        // The error should be from the FFI layer, not about unimplemented constraint
+        assert!(!result.unwrap_err().contains("not yet implemented"));
     }
 }
