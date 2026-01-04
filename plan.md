@@ -4,19 +4,21 @@ This plan breaks down the work from [spec.md](./spec.md) into sessions that can 
 
 ---
 
-## Session 1: Branch Protection & Codecov Setup
+## Session 1: Branch Protection & Codecov Setup ✅ COMPLETE
 
 **Goal**: Get CI rigor in place before making other changes.
 
+**Status**: ✅ Complete - Merged in PR #5
+
 ### Tasks
 
-1. **Configure branch protection** (GitHub settings)
+1. **Configure branch protection** (GitHub settings) ✅
    - Enable "Require a pull request before merging"
    - Enable "Require status checks to pass before merging"
    - Add required checks: `build (ubuntu-latest)`, `build (macos-latest)`
    - Optional: Require 1 approving review
 
-2. **Create codecov.yml** in repo root
+2. **Create codecov.yml** in repo root ✅
    ```yaml
    codecov:
      require_ci_to_pass: yes
@@ -60,16 +62,18 @@ This plan breaks down the work from [spec.md](./spec.md) into sessions that can 
    ```
 
 ### Verification
-- [ ] Direct push to main is blocked
-- [ ] PR requires CI to pass
-- [ ] Coverage report appears on Codecov
-- [ ] Coverage badge shows in README
+- [x] Direct push to main is blocked
+- [x] PR requires CI to pass
+- [x] Coverage report appears on Codecov
+- [x] Coverage badge shows in README
 
 ---
 
-## Session 2: Fix Download URLs & Release Documentation
+## Session 2: Fix Download URLs & Release Documentation ✅ COMPLETE
 
 **Goal**: Make download instructions actually work.
+
+**Status**: ✅ Complete - Merged in PR #6
 
 ### Current State
 Docs reference: `slvsx-$(uname -s)-$(uname -m)` and `slvsx-linux`, `slvsx-macos`
@@ -111,14 +115,16 @@ Actual releases are:
 7. **Verify install.sh** still works with new release format
 
 ### Verification
-- [ ] Run download commands from each doc file
-- [ ] Verify binary works after download
+- [x] Run download commands from each doc file
+- [x] Verify binary works after download
 
 ---
 
-## Session 3: Fix Broken Internal Links
+## Session 3: Fix Broken Internal Links ✅ COMPLETE
 
 **Goal**: All internal doc links resolve to existing files.
+
+**Status**: ✅ Complete - Merged in PR #6 (combined with Session 2)
 
 ### Tasks
 
@@ -156,51 +162,53 @@ Actual releases are:
    - Either create the missing file or update README to point to existing example
 
 ### Verification
-- [ ] Click every internal link in README.md
-- [ ] Click every internal link in QUICKSTART.md
-- [ ] Click every internal link in docs/*.md
+- [x] Click every internal link in README.md
+- [x] Click every internal link in QUICKSTART.md
+- [x] Click every internal link in docs/*.md
 
 ---
 
-## Session 4: Implement MCP Server Mode
+## Session 4: Implement MCP Server Mode 🚧 IN PROGRESS
 
 **Goal**: Make `slvsx mcp-server` command work as documented.
+
+**Status**: 🚧 In Progress - Implemented in PR #8 (open), needs testing
 
 ### Context
 The docs describe MCP server functionality that doesn't exist yet. Rather than remove the docs, we implement the feature.
 
 ### Tasks
 
-1. **Implement `slvsx mcp-server` command**
+1. **Implement `slvsx mcp-server` command** ✅
    - Add MCP server subcommand to CLI
    - Use stdio transport (standard for local MCP servers)
    - Implement MCP protocol handshake
 
-2. **Implement MCP tools**
+2. **Implement MCP tools** ✅
    - `solve_constraints` - Solve a constraint system (returns JSON)
    - `validate_constraints` - Check validity without solving
    - `render_solution` - Return SVG/PNG image inline (agent can see it!)
    - `export_solution` - Export to SVG/DXF/STL formats (returns file content)
    - `get_capabilities` - List supported constraint types
 
-3. **Implement MCP resources (searchable docs)**
+3. **Implement MCP resources (searchable docs)** ⏳
    - Expose documentation as MCP resources
    - Include: constraint types, JSON schema, examples
    - Enable AI to search/read docs through MCP protocol
 
-4. **Create crates/cli/src/mcp.rs**
+4. **Create crates/cli/src/mcp.rs** ✅
    - MCP protocol handler
    - JSON-RPC message handling
    - Tool dispatch
    - Resource serving
 
-5. **Test with Claude Desktop**
+5. **Test with Claude Desktop** ⏳
    - Add to Claude Desktop config
    - Verify tools appear
    - Test constraint solving through MCP
    - Verify docs are searchable
 
-6. **Update mcp-server.js prototype**
+6. **Update mcp-server.js prototype** ⏳
    - Either remove (replaced by Rust implementation)
    - Or keep as reference/alternative
 
@@ -212,9 +220,11 @@ The docs describe MCP server functionality that doesn't exist yet. Rather than r
 
 ---
 
-## Session 5: Distribution Packages
+## Session 5: Distribution Packages 🚧 IN PROGRESS
 
 **Goal**: Implement the distribution methods documented in README-EASY.md.
+
+**Status**: 🚧 In Progress - Implemented in separate branches (feature/distribution-packages), needs PR
 
 ### Tasks
 
@@ -247,9 +257,11 @@ The docs describe MCP server functionality that doesn't exist yet. Rather than r
 
 ---
 
-## Session 6: Cleanup Obsolete Documentation (Optional)
+## Session 6: Preserve and Consolidate Historical Documentation ✅ COMPLETE
 
-**Goal**: Remove or archive docs that are no longer needed.
+**Goal**: Preserve valuable debugging insights while cleaning up obsolete docs.
+
+**Status**: ✅ Complete - Done in docs/preserve-history branch (preserved docs in archive/, created HISTORY.md and TROUBLESHOOTING.md)
 
 ### Review These Files
 
@@ -265,20 +277,23 @@ The docs describe MCP server functionality that doesn't exist yet. Rather than r
 
 ### Tasks
 
-1. **Review each file** - determine if still relevant
-2. **Archive historical docs** - move to `docs/archive/` or delete
-3. **Update KNOWN_ISSUES.md** - remove FIXED items or archive
-4. **Update CLAUDE.md** - ensure it references current state
+1. **Review each file** - determine if still relevant ✅
+2. **Archive historical docs** - move to `docs/archive/` or delete ✅
+3. **Update KNOWN_ISSUES.md** - remove FIXED items or archive ✅
+4. **Extract lessons** - Created HISTORY.md and TROUBLESHOOTING.md ✅
 
 ### Verification
-- [ ] Root directory is cleaner
-- [ ] No outdated status docs confuse readers
+- [x] Root directory is cleaner
+- [x] Historical insights preserved in docs/archive/
+- [x] Key lessons extracted to consolidated docs
 
 ---
 
-## Session 6: Final Verification & Testing
+## Session 7: Final Verification & Testing 🚧 IN PROGRESS
 
 **Goal**: Verify everything works end-to-end.
+
+**Status**: 🚧 In Progress - Comprehensive tests added in PR #8, validation improvements in PR #9
 
 ### Tasks
 
@@ -306,10 +321,12 @@ The docs describe MCP server functionality that doesn't exist yet. Rather than r
    - Manual: Click-test critical paths
 
 ### Verification
-- [ ] New user can download and use slvsx
-- [ ] Developer can build from source
-- [ ] PR workflow enforces quality gates
-- [ ] All documentation links work
+- [x] New user can download and use slvsx
+- [x] Developer can build from source
+- [x] PR workflow enforces quality gates
+- [x] All documentation links work
+- [x] Comprehensive test coverage added
+- [x] Validation improvements implemented
 
 ---
 
@@ -330,17 +347,19 @@ The docs describe MCP server functionality that doesn't exist yet. Rather than r
 ## Dependencies Between Sessions
 
 ```
-Session 1 (Branch Protection + Codecov) ✅ DONE
+Session 1 (Branch Protection + Codecov) ✅ DONE (PR #5)
     ↓
-Session 2 (Download URLs) ←→ Session 3 (Internal Links)
-    ↓                            ↓
-    └──────────┬─────────────────┘
-               ↓
-Session 4 (MCP Server) ←→ Session 5 (Distribution)
-               ↓
-Session 6 (Cleanup Old Docs) - Optional
-               ↓
-Session 7 (Final Verification)
+Session 2 (Download URLs) ✅ DONE (PR #6)
+    ↓
+Session 3 (Internal Links) ✅ DONE (PR #6)
+    ↓
+Session 4 (MCP Server) 🚧 IN PROGRESS (PR #8 - open)
+    ↓
+Session 5 (Distribution) 🚧 IN PROGRESS (branches ready)
+    ↓
+Session 6 (Preserve Docs) ✅ DONE (docs/preserve-history)
+    ↓
+Session 7 (Final Verification) 🚧 IN PROGRESS (PR #8, #9)
 ```
 
 Sessions 2-3 can be done together. Sessions 4-5 are independent features.
@@ -349,14 +368,14 @@ Sessions 2-3 can be done together. Sessions 4-5 are independent features.
 
 ## Estimated Effort
 
-| Session | Complexity | Notes |
-|---------|------------|-------|
-| 1 | Medium | ✅ DONE - Branch protection + Codecov |
-| 2 | Low | Simple URL fixes |
-| 3 | Low-Medium | Create docs/DEVELOPMENT.md, build.sh |
-| 4 | High | Implement MCP server in Rust |
-| 5 | Medium | NPM/Homebrew/Docker packaging |
-| 6 | Low | Optional - archive old debugging docs |
-| 7 | Low | Testing and verification |
+| Session | Complexity | Status |
+|---------|------------|--------|
+| 1 | Medium | ✅ DONE - Branch protection + Codecov (PR #5) |
+| 2 | Low | ✅ DONE - Simple URL fixes (PR #6) |
+| 3 | Low-Medium | ✅ DONE - Created docs/DEVELOPMENT.md, build.sh (PR #6) |
+| 4 | High | 🚧 IN PROGRESS - MCP server implemented (PR #8 open) |
+| 5 | Medium | 🚧 IN PROGRESS - NPM/Homebrew/Docker ready (branches exist) |
+| 6 | Low | ✅ DONE - Preserved docs in archive/, created HISTORY.md |
+| 7 | Low | 🚧 IN PROGRESS - Tests added (PR #8), validation (PR #9) |
 
 Total: ~7 sessions. Sessions 4-5 are substantial feature work.
