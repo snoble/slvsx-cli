@@ -204,6 +204,8 @@ fn test_overconstrained_error() {
                     ExprOrNumber::Number(0.0),
                     ExprOrNumber::Number(0.0),
                 ],
+                construction: false,
+                preserve: false,
             },
             Entity::Point {
                 id: "p2".to_string(),
@@ -212,6 +214,8 @@ fn test_overconstrained_error() {
                     ExprOrNumber::Number(0.0),
                     ExprOrNumber::Number(0.0),
                 ],
+                construction: false,
+                preserve: false,
             },
         ],
         constraints: vec![

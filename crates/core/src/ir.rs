@@ -578,6 +578,8 @@ mod tests {
         let point = Entity::Point {
             id: "p1".to_string(),
             at: vec![ExprOrNumber::Number(0.0)],
+            construction: false,
+            preserve: false,
         };
         assert_eq!(point.id(), "p1");
 
@@ -585,6 +587,8 @@ mod tests {
             id: "l1".to_string(),
             p1: "p1".to_string(),
             p2: "p2".to_string(),
+            construction: false,
+            preserve: false,
         };
         assert_eq!(line.id(), "l1");
 
@@ -592,6 +596,8 @@ mod tests {
             id: "c1".to_string(),
             center: vec![ExprOrNumber::Number(0.0)],
             diameter: ExprOrNumber::Number(10.0),
+            construction: false,
+            preserve: false,
         };
         assert_eq!(circle.id(), "c1");
     }

@@ -147,11 +147,15 @@ mod tests {
                 Entity::Point {
                     id: "p1".to_string(),
                     at: vec![ExprOrNumber::Number(0.0)],
+                    construction: false,
+                    preserve: false,
                 },
                 Entity::Line {
                     id: "l1".to_string(),
                     p1: "p1".to_string(),
                     p2: "p2".to_string(),
+                    construction: false,
+                    preserve: false,
                 },
             ],
             constraints: vec![Constraint::Horizontal {

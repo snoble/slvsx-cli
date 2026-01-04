@@ -30,6 +30,8 @@ fn test_fixed_constraint() {
             Entity::Point {
                 id: "p1".to_string(),
                 at: vec![ExprOrNumber::Number(10.0), ExprOrNumber::Number(20.0), ExprOrNumber::Number(0.0)],
+                construction: false,
+                preserve: false,
             },
         ],
         vec![
@@ -57,10 +59,14 @@ fn test_distance_constraint() {
             Entity::Point {
                 id: "p1".to_string(),
                 at: vec![ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0)],
+                construction: false,
+                preserve: false,
             },
             Entity::Point {
                 id: "p2".to_string(),
                 at: vec![ExprOrNumber::Number(10.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0)],
+                construction: false,
+                preserve: false,
             },
         ],
         vec![
@@ -95,19 +101,27 @@ fn test_point_on_line_constraint() {
             Entity::Point {
                 id: "p1".to_string(),
                 at: vec![ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0)],
+                construction: false,
+                preserve: false,
             },
             Entity::Point {
                 id: "p2".to_string(),
                 at: vec![ExprOrNumber::Number(100.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0)],
+                construction: false,
+                preserve: false,
             },
             Entity::Point {
                 id: "p3".to_string(),
                 at: vec![ExprOrNumber::Number(50.0), ExprOrNumber::Number(50.0), ExprOrNumber::Number(0.0)],
+                construction: false,
+                preserve: false,
             },
             Entity::Line {
                 id: "line1".to_string(),
                 p1: "p1".to_string(),
                 p2: "p2".to_string(),
+                construction: false,
+                preserve: false,
             },
         ],
         vec![
@@ -144,19 +158,27 @@ fn test_coincident_constraint() {
             Entity::Point {
                 id: "p1".to_string(),
                 at: vec![ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0)],
+                construction: false,
+                preserve: false,
             },
             Entity::Point {
                 id: "p2".to_string(),
                 at: vec![ExprOrNumber::Number(100.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0)],
+                construction: false,
+                preserve: false,
             },
             Entity::Point {
                 id: "p3".to_string(),
                 at: vec![ExprOrNumber::Number(50.0), ExprOrNumber::Number(50.0), ExprOrNumber::Number(0.0)],
+                construction: false,
+                preserve: false,
             },
             Entity::Line {
                 id: "line1".to_string(),
                 p1: "p1".to_string(),
                 p2: "p2".to_string(),
+                construction: false,
+                preserve: false,
             },
         ],
         vec![
@@ -192,24 +214,34 @@ fn test_perpendicular_constraint() {
             Entity::Point {
                 id: "origin".to_string(),
                 at: vec![ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0)],
+                construction: false,
+                preserve: false,
             },
             Entity::Point {
                 id: "p1".to_string(),
                 at: vec![ExprOrNumber::Number(100.0), ExprOrNumber::Number(10.0), ExprOrNumber::Number(0.0)],
+                construction: false,
+                preserve: false,
             },
             Entity::Point {
                 id: "p2".to_string(),
                 at: vec![ExprOrNumber::Number(10.0), ExprOrNumber::Number(100.0), ExprOrNumber::Number(0.0)],
+                construction: false,
+                preserve: false,
             },
             Entity::Line {
                 id: "line1".to_string(),
                 p1: "origin".to_string(),
                 p2: "p1".to_string(),
+                construction: false,
+                preserve: false,
             },
             Entity::Line {
                 id: "line2".to_string(),
                 p1: "origin".to_string(),
                 p2: "p2".to_string(),
+                construction: false,
+                preserve: false,
             },
         ],
         vec![
@@ -250,28 +282,40 @@ fn test_parallel_constraint() {
             Entity::Point {
                 id: "p1".to_string(),
                 at: vec![ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0)],
+                construction: false,
+                preserve: false,
             },
             Entity::Point {
                 id: "p2".to_string(),
                 at: vec![ExprOrNumber::Number(100.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0)],
+                construction: false,
+                preserve: false,
             },
             Entity::Point {
                 id: "p3".to_string(),
                 at: vec![ExprOrNumber::Number(0.0), ExprOrNumber::Number(50.0), ExprOrNumber::Number(0.0)],
+                construction: false,
+                preserve: false,
             },
             Entity::Point {
                 id: "p4".to_string(),
                 at: vec![ExprOrNumber::Number(100.0), ExprOrNumber::Number(60.0), ExprOrNumber::Number(0.0)],
+                construction: false,
+                preserve: false,
             },
             Entity::Line {
                 id: "line1".to_string(),
                 p1: "p1".to_string(),
                 p2: "p2".to_string(),
+                construction: false,
+                preserve: false,
             },
             Entity::Line {
                 id: "line2".to_string(),
                 p1: "p3".to_string(),
                 p2: "p4".to_string(),
+                construction: false,
+                preserve: false,
             },
         ],
         vec![
@@ -309,15 +353,21 @@ fn test_unimplemented_constraint_ignored() {
             Entity::Point {
                 id: "p1".to_string(),
                 at: vec![ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0)],
+                construction: false,
+                preserve: false,
             },
             Entity::Point {
                 id: "p2".to_string(),
                 at: vec![ExprOrNumber::Number(100.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0)],
+                construction: false,
+                preserve: false,
             },
             Entity::Line {
                 id: "line1".to_string(),
                 p1: "p1".to_string(),
                 p2: "p2".to_string(),
+                construction: false,
+                preserve: false,
             },
         ],
         vec![
@@ -340,10 +390,14 @@ fn test_over_constrained_system_fails() {
             Entity::Point {
                 id: "p1".to_string(),
                 at: vec![ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0)],
+                construction: false,
+                preserve: false,
             },
             Entity::Point {
                 id: "p2".to_string(),
                 at: vec![ExprOrNumber::Number(100.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0)],
+                construction: false,
+                preserve: false,
             },
         ],
         vec![
