@@ -81,17 +81,23 @@ A perfectly symmetric arrowhead design:
 
 ## 📐 Geometric Shapes
 
-### Parallel and Perpendicular Lines
+### Triangle from Distances
 
-A rectangle constructed using parallel and perpendicular constraints:
+A classic triangle construction using distance constraints:
 
-![Parallel Perpendicular](examples/outputs/05_parallel_perpendicular.svg)
+![Triangle](examples/outputs/02_triangle.svg)
 
 **What it demonstrates**:
-- Parallel constraints
-- Perpendicular relationships
 - Distance constraints
-- Geometric construction
+- Multiple solutions (two possible positions)
+- Basic geometric construction
+- Triangulation
+
+**Try it**:
+```bash
+slvsx solve examples/02_triangle.json
+slvsx export -f svg examples/02_triangle.json -o triangle.svg
+```
 
 ## 🎯 Creating Your Own Visualizations
 

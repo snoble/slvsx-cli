@@ -1,8 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="-20.0 -26.2 99.7 94.8" width="800" height="800">
-  <circle id="B" cx="59.682479" cy="-6.164552" r="2" fill="black"/>
-  <line id="CA" x1="35.179898" y1="48.604267" x2="0.000000" y2="0.000000" stroke="black"/>
   <line id="AB" x1="0.000000" y1="0.000000" x2="59.682479" y2="-6.164552" stroke="black"/>
-  <circle id="C" cx="35.179898" cy="48.604267" r="2" fill="black"/>
-  <line id="BC" x1="59.682479" y1="-6.164552" x2="35.179898" y2="48.604267" stroke="black"/>
+  <circle id="B" cx="59.682479" cy="-6.164552" r="2" fill="black"/>
   <circle id="A" cx="0.000000" cy="0.000000" r="2" fill="black"/>
+  <line id="BC" x1="59.682479" y1="-6.164552" x2="35.179898" y2="48.604267" stroke="black"/>
+  <circle id="C" cx="35.179898" cy="48.604267" r="2" fill="black"/>
+  <line id="CA" x1="35.179898" y1="48.604267" x2="0.000000" y2="0.000000" stroke="black"/>
 </svg>
