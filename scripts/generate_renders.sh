@@ -75,6 +75,16 @@ if [ -f "$PROJECT_ROOT/examples/12_3d_basics.json" ]; then
     echo "  Generated 3D basics views (XY, XZ, Isometric)"
 fi
 
+# Birdhouse - all views including isometric
+if [ -f "$PROJECT_ROOT/examples/21_birdhouse.json" ]; then
+    "$BINARY" solve "$PROJECT_ROOT/examples/21_birdhouse.json" > /dev/null 2>&1
+    "$BINARY" export -f svg -v xy "$PROJECT_ROOT/examples/21_birdhouse.json" -o "$OUTPUT_DIR/birdhouse_xy.svg" 2>&1
+    "$BINARY" export -f svg -v xz "$PROJECT_ROOT/examples/21_birdhouse.json" -o "$OUTPUT_DIR/birdhouse_xz.svg" 2>&1
+    "$BINARY" export -f svg -v yz "$PROJECT_ROOT/examples/21_birdhouse.json" -o "$OUTPUT_DIR/birdhouse_yz.svg" 2>&1
+    "$BINARY" export -f svg -v isometric "$PROJECT_ROOT/examples/21_birdhouse.json" -o "$OUTPUT_DIR/birdhouse_isometric.svg" 2>&1
+    echo "  Generated birdhouse views (XY, XZ, YZ, Isometric)"
+fi
+
 echo ""
 echo "✓ Renders generated in $OUTPUT_DIR"
 echo "  Total SVG files: $(ls -1 "$OUTPUT_DIR"/*.svg 2>/dev/null | wc -l | tr -d ' ')"
