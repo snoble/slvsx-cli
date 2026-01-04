@@ -25,3 +25,8 @@ assert_cmd.workspace = true
 predicates.workspace = true
 tempfile.workspace = true
 insta.workspace = true
+
+# Make json_error module accessible for testing
+[lib]
+name = "slvsx"
+path = "src/lib.rs"

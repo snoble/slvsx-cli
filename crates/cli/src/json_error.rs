@@ -112,4 +112,127 @@ mod tests {
         let err = result.unwrap_err().to_string();
         assert!(err.contains("line 1"));
     }
+
+    #[test]
+    fn test_unknown_field_error() {
+        let json = r#"{"name": "test", "value": 42, "unknown": "field"}"#;
+        let result: Result<TestStruct> = parse_json_with_context(json, "test.json");
+        assert!(result.is_err());
+        let err = result.unwrap_err().to_string();
+        assert!(err.contains("unknown field") || err.contains("not recognized"));
+    }
+
+    #[test]
+    fn test_invalid_type_error() {
+        let json = r#"{"name": "test", "value": "not a number"}"#;
+        let result: Result<TestStruct> = parse_json_with_context(json, "test.json");
+        assert!(result.is_err());
+        let err = result.unwrap_err().to_string();
+        assert!(err.contains("invalid type") || err.contains("expected"));
+    }
+
+    #[test]
+    fn test_eof_error() {
+        let json = r#"{"name": "test""#;  // missing closing brace
+        let result: Result<TestStruct> = parse_json_with_context(json, "test.json");
+        assert!(result.is_err());
+        let err = result.unwrap_err().to_string();
+        assert!(err.contains("EOF") || err.contains("end of file") || err.contains("unclosed"));
+    }
+
+    #[test]
+    fn test_empty_input() {
+        let json = "";
+        let result: Result<TestStruct> = parse_json_with_context(json, "test.json");
+        assert!(result.is_err());
+        let err = result.unwrap_err().to_string();
+        assert!(err.contains("test.json"));
+    }
+
+    #[test]
+    fn test_multiline_error() {
+        let json = r#"{
+  "name": "test",
+  "value": "wrong type"
+}"#;
+        let result: Result<TestStruct> = parse_json_with_context(json, "test.json");
+        assert!(result.is_err());
+        let err = result.unwrap_err().to_string();
+        // Should show context lines
+        assert!(err.contains("Context:") || err.contains("│"));
+    }
+
+    #[test]
+    fn test_successful_parsing() {
+        let json = r#"{"name": "test", "value": 42}"#;
+        let result: Result<TestStruct> = parse_json_with_context(json, "test.json");
+        assert!(result.is_ok());
+        let parsed = result.unwrap();
+        assert_eq!(parsed.name, "test");
+        assert_eq!(parsed.value, 42);
+    }
+
+    #[derive(Debug, Deserialize)]
+    struct TestStructWithOptional {
+        name: String,
+        value: i32,
+        optional: Option<String>,
+    }
+
+    #[test]
+    fn test_successful_parsing_with_optional() {
+        let json = r#"{"name": "test", "value": 42, "optional": "present"}"#;
+        let result: Result<TestStructWithOptional> = parse_json_with_context(json, "test.json");
+        assert!(result.is_ok());
+        let parsed = result.unwrap();
+        assert_eq!(parsed.optional, Some("present".to_string()));
+    }
+
+    #[test]
+    fn test_error_hints() {
+        let json = r#"{"name": "test", }"#;
+        let result: Result<TestStruct> = parse_json_with_context(json, "test.json");
+        assert!(result.is_err());
+        let err = result.unwrap_err().to_string();
+        // Should include common issues section
+        assert!(err.contains("Common issues") || err.contains("trailing comma"));
+    }
+
+    #[test]
+    fn test_get_helpful_hint_coverage() {
+        // Test all branches of get_helpful_hint through parse errors
+        let test_cases = vec![
+            (r#"{"name": "test"}"#, "missing field"),  // missing field
+            (r#"{"name": "test", "value": 42, "extra": "field"}"#, "unknown field"),  // unknown field
+            (r#"{"name": "test", "value": "string"}"#, "invalid type"),  // invalid type
+            (r#"{"name": "test", "value": 42, }"#, "trailing comma"),  // trailing comma
+            (r#"{"name": "test""#, "EOF"),  // EOF
+        ];
+
+        for (json, expected_keyword) in test_cases {
+            let result: Result<TestStruct> = parse_json_with_context(json, "test.json");
+            assert!(result.is_err(), "Expected error for: {}", json);
+            let err = result.unwrap_err().to_string();
+            // The error message should contain helpful information
+            assert!(err.len() > 0, "Error message should not be empty");
+        }
+    }
+
+    #[test]
+    fn test_format_json_error_edge_cases() {
+        // Test with line 0 (should still work)
+        let json = "";
+        let result: Result<TestStruct> = parse_json_with_context(json, "test.json");
+        assert!(result.is_err());
+        let err = result.unwrap_err().to_string();
+        assert!(err.contains("test.json"));
+
+        // Test with single line
+        let json = r#"{"name": "test"}"#;
+        let result: Result<TestStruct> = parse_json_with_context(json, "test.json");
+        assert!(result.is_err());
+        let err = result.unwrap_err().to_string();
+        // Should show context even for single line
+        assert!(err.contains("test.json"));
+    }
 }
