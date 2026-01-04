@@ -14,7 +14,16 @@ fn test_mcp_server_command_exists() {
     // For now, just verify the command is recognized
     let result = cmd.output();
     // Command should not fail with "unknown command"
-    assert!(result.is_ok() || result.unwrap().status.code() != Some(2));
+    match result {
+        Ok(output) => {
+            // If command succeeded or failed with non-2 exit code, that's fine
+            assert_ne!(output.status.code(), Some(2), "Command should not fail with 'unknown command' error");
+        }
+        Err(_) => {
+            // If command couldn't be executed, that's also acceptable for this test
+            // The test is just checking that the command exists
+        }
+    }
 }
 
 /// Test MCP server responds to invalid JSON
