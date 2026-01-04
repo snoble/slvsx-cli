@@ -332,28 +332,34 @@ impl Solver {
             }
         }
 
-        // Add constraints from JSON - generic handling
+        // Add constraints from JSON - use ConstraintRegistry to ensure all constraints are handled
+        use crate::constraint_registry::ConstraintRegistry;
         let mut constraint_id = 100;
 
         // Process all constraints from JSON
         for (constraint_idx, constraint) in doc.constraints.iter().enumerate() {
-            match constraint {
-                crate::ir::Constraint::Fixed { entity } => {
-                    let entity_id = entity_id_map.get(entity).copied().unwrap_or_else(|| {
-                        0
-                    });
-                    ffi_solver
-                        .add_fixed_constraint(constraint_id, entity_id)
-                        .map_err(|e| crate::error::Error::InvalidInput {
-                            message: format!("Failed to add fixed constraint for entity '{}': {}", entity, e),
-                            pointer: Some(format!("/constraints/{}", constraint_idx)),
-                        })?;
-                    constraint_id += 1;
-                }
-                crate::ir::Constraint::Distance { between, value } => {
-                    if between.len() == 2 {
-                        let id1 = entity_id_map.get(&between[0]).copied().unwrap_or(0);
-                        let id2 = entity_id_map.get(&between[1]).copied().unwrap_or(0);
+            ConstraintRegistry::process_constraint(
+                constraint,
+                &mut ffi_solver,
+                constraint_id,
+                &entity_id_map,
+                &eval,
+            )
+            .map_err(|e| crate::error::Error::InvalidInput {
+                message: format!("Failed to process constraint: {}", e),
+                pointer: Some(format!("/constraints/{}", constraint_idx)),
+            })?;
+            constraint_id += 1;
+        }
+
+        // Actually solve the constraints!
+        let max_iterations = self.config.max_iterations;
+        ffi_solver
+            .solve()
+            .map_err(|e| Self::map_ffi_error(e, max_iterations))?;
+
+        // Get solved positions from libslvs
+        let mut resolved_entities = HashMap::new();
                         let dist = match value {
                             crate::ir::ExprOrNumber::Number(n) => *n,
                             crate::ir::ExprOrNumber::Expression(e) => eval.eval(&e)?,
@@ -733,11 +739,6 @@ impl Solver {
                             pointer: Some(format!("/constraints/{}", constraint_idx)),
                         })?;
                     constraint_id += 1;
-                }
-                _ => {
-                    // Constraint type not yet implemented - will be ignored
-                } // Handle other constraint types as needed
-            }
         }
 
         // Actually solve the constraints!
