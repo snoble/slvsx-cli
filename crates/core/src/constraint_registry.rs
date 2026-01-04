@@ -1141,6 +1141,30 @@ mod tests {
     }
 
     #[test]
+    fn test_dragged_constraint_processing() {
+        let mut solver = FfiSolver::new();
+        let mut entity_map = std::collections::HashMap::new();
+        entity_map.insert("p1".to_string(), 1);
+        entity_map.insert("wp1".to_string(), 10);
+
+        // Test 3D dragged constraint
+        let constraint = Constraint::Dragged {
+            point: "p1".to_string(),
+            workplane: None,
+        };
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map);
+        assert!(result.is_ok(), "Dragged constraint (3D) should process successfully: {:?}", result.err());
+
+        // Test 2D dragged constraint
+        let constraint = Constraint::Dragged {
+            point: "p1".to_string(),
+            workplane: Some("wp1".to_string()),
+        };
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 101, &entity_map);
+        assert!(result.is_ok(), "Dragged constraint (2D) should process successfully: {:?}", result.err());
+    }
+
+    #[test]
     fn test_missing_implementations_documented() {
         let missing = ConstraintRegistry::missing_implementations();
         // All constraints are now implemented!

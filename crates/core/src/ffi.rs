@@ -1869,4 +1869,60 @@ mod tests {
         let result = solver.add_cubic(10, 1, 2, 3, 4, None);
         assert!(result.is_ok(), "Should be able to add cubic Bezier curve via FFI");
     }
+
+    #[test]
+    fn test_add_point_with_dragged_flag() {
+        let mut solver = Solver::new();
+
+        // Add point with dragged flag set to true
+        let result = solver.add_point(1, 10.0, 20.0, 30.0, true);
+        assert!(result.is_ok(), "Should be able to add dragged point via FFI");
+
+        // Add point with dragged flag set to false
+        let result = solver.add_point(2, 40.0, 50.0, 60.0, false);
+        assert!(result.is_ok(), "Should be able to add non-dragged point via FFI");
+    }
+
+    #[test]
+    fn test_add_point_2d_with_dragged_flag() {
+        let mut solver = Solver::new();
+
+        // Create a workplane first
+        solver.add_point(1, 0.0, 0.0, 0.0, false).unwrap();
+        solver.add_workplane(10, 1, 0.0, 0.0, 1.0).unwrap();
+
+        // Add 2D point with dragged flag set to true
+        let result = solver.add_point_2d(20, 10, 5.0, 10.0, true);
+        assert!(result.is_ok(), "Should be able to add dragged 2D point via FFI");
+
+        // Add 2D point with dragged flag set to false
+        let result = solver.add_point_2d(21, 10, 15.0, 20.0, false);
+        assert!(result.is_ok(), "Should be able to add non-dragged 2D point via FFI");
+    }
+
+    #[test]
+    fn test_where_dragged_constraint_ffi_binding_3d() {
+        let mut solver = Solver::new();
+
+        // Create a point
+        solver.add_point(1, 10.0, 20.0, 30.0, false).unwrap();
+
+        // Add WHERE_DRAGGED constraint for 3D point (no workplane)
+        let result = solver.add_where_dragged_constraint(100, 1, None);
+        assert!(result.is_ok(), "Should be able to add WHERE_DRAGGED constraint for 3D point via FFI");
+    }
+
+    #[test]
+    fn test_where_dragged_constraint_ffi_binding_2d() {
+        let mut solver = Solver::new();
+
+        // Create a workplane and 2D point
+        solver.add_point(1, 0.0, 0.0, 0.0, false).unwrap();
+        solver.add_workplane(10, 1, 0.0, 0.0, 1.0).unwrap();
+        solver.add_point_2d(2, 10, 5.0, 10.0, false).unwrap();
+
+        // Add WHERE_DRAGGED constraint for 2D point (with workplane)
+        let result = solver.add_where_dragged_constraint(100, 2, Some(10));
+        assert!(result.is_ok(), "Should be able to add WHERE_DRAGGED constraint for 2D point via FFI");
+    }
 }
