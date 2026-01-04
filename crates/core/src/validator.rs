@@ -203,4 +203,248 @@ mod tests {
         };
         assert!(validator.validate(&doc).is_ok());
     }
+
+    #[test]
+    fn test_validate_constraint_references_empty_entities() {
+        use crate::ir::Constraint;
+        let validator = Validator::new();
+        let doc = InputDocument {
+            schema: "slvs-json/1".to_string(),
+            units: "mm".to_string(),
+            parameters: HashMap::new(),
+            entities: vec![],
+            constraints: vec![Constraint::Fixed {
+                entity: "nonexistent".to_string(),
+            }],
+        };
+        let result = validator.validate_constraint_references(&doc);
+        assert!(result.is_err());
+        match result.unwrap_err() {
+            Error::InvalidInput { message, pointer } => {
+                assert!(message.contains("unknown entity"));
+                assert!(message.contains("nonexistent"));
+                assert!(message.contains("(none)"));
+                assert_eq!(pointer, Some("/constraints/0".to_string()));
+            }
+            _ => panic!("Wrong error type"),
+        }
+    }
+
+    #[test]
+    fn test_validate_constraint_references_with_available_entities() {
+        use crate::ir::Constraint;
+        let validator = Validator::new();
+        let doc = InputDocument {
+            schema: "slvs-json/1".to_string(),
+            units: "mm".to_string(),
+            parameters: HashMap::new(),
+            entities: vec![
+                Entity::Point {
+                    id: "p1".to_string(),
+                    at: vec![ExprOrNumber::Number(0.0)],
+                },
+                Entity::Point {
+                    id: "p2".to_string(),
+                    at: vec![ExprOrNumber::Number(1.0)],
+                },
+            ],
+            constraints: vec![Constraint::Fixed {
+                entity: "nonexistent".to_string(),
+            }],
+        };
+        let result = validator.validate_constraint_references(&doc);
+        assert!(result.is_err());
+        match result.unwrap_err() {
+            Error::InvalidInput { message, .. } => {
+                assert!(message.contains("unknown entity"));
+                assert!(message.contains("Available entities"));
+                assert!(message.contains("p1"));
+                assert!(message.contains("p2"));
+            }
+            _ => panic!("Wrong error type"),
+        }
+    }
+
+    #[test]
+    fn test_validate_entity_references_line_missing_p1() {
+        use crate::ir::Entity;
+        let validator = Validator::new();
+        let doc = InputDocument {
+            schema: "slvs-json/1".to_string(),
+            units: "mm".to_string(),
+            parameters: HashMap::new(),
+            entities: vec![
+                Entity::Point {
+                    id: "p2".to_string(),
+                    at: vec![ExprOrNumber::Number(1.0)],
+                },
+                Entity::Line {
+                    id: "l1".to_string(),
+                    p1: "p1".to_string(), // p1 doesn't exist
+                    p2: "p2".to_string(),
+                },
+            ],
+            constraints: vec![],
+        };
+        let result = validator.validate_entity_references(&doc);
+        assert!(result.is_err());
+        match result.unwrap_err() {
+            Error::InvalidInput { message, pointer } => {
+                assert!(message.contains("unknown point"));
+                assert!(message.contains("p1"));
+                assert_eq!(pointer, Some("/entities/1/p1".to_string()));
+            }
+            _ => panic!("Wrong error type"),
+        }
+    }
+
+    #[test]
+    fn test_validate_entity_references_arc_missing_start() {
+        use crate::ir::Entity;
+        let validator = Validator::new();
+        let doc = InputDocument {
+            schema: "slvs-json/1".to_string(),
+            units: "mm".to_string(),
+            parameters: HashMap::new(),
+            entities: vec![
+                Entity::Point {
+                    id: "end".to_string(),
+                    at: vec![ExprOrNumber::Number(1.0)],
+                },
+                Entity::Arc {
+                    id: "a1".to_string(),
+                    center: vec![ExprOrNumber::Number(0.0)],
+                    start: "start".to_string(), // start doesn't exist
+                    end: "end".to_string(),
+                },
+            ],
+            constraints: vec![],
+        };
+        let result = validator.validate_entity_references(&doc);
+        assert!(result.is_err());
+        match result.unwrap_err() {
+            Error::InvalidInput { message, pointer } => {
+                assert!(message.contains("unknown point"));
+                assert!(message.contains("start"));
+                assert_eq!(pointer, Some("/entities/1/start".to_string()));
+            }
+            _ => panic!("Wrong error type"),
+        }
+    }
+
+    #[test]
+    fn test_validate_entity_references_valid_line() {
+        use crate::ir::Entity;
+        let validator = Validator::new();
+        let doc = InputDocument {
+            schema: "slvs-json/1".to_string(),
+            units: "mm".to_string(),
+            parameters: HashMap::new(),
+            entities: vec![
+                Entity::Point {
+                    id: "p1".to_string(),
+                    at: vec![ExprOrNumber::Number(0.0)],
+                },
+                Entity::Point {
+                    id: "p2".to_string(),
+                    at: vec![ExprOrNumber::Number(1.0)],
+                },
+                Entity::Line {
+                    id: "l1".to_string(),
+                    p1: "p1".to_string(),
+                    p2: "p2".to_string(),
+                },
+            ],
+            constraints: vec![],
+        };
+        assert!(validator.validate_entity_references(&doc).is_ok());
+    }
+
+    #[test]
+    fn test_validate_entity_references_valid_arc() {
+        use crate::ir::Entity;
+        let validator = Validator::new();
+        let doc = InputDocument {
+            schema: "slvs-json/1".to_string(),
+            units: "mm".to_string(),
+            parameters: HashMap::new(),
+            entities: vec![
+                Entity::Point {
+                    id: "start".to_string(),
+                    at: vec![ExprOrNumber::Number(0.0)],
+                },
+                Entity::Point {
+                    id: "end".to_string(),
+                    at: vec![ExprOrNumber::Number(1.0)],
+                },
+                Entity::Arc {
+                    id: "a1".to_string(),
+                    center: vec![ExprOrNumber::Number(0.0)],
+                    start: "start".to_string(),
+                    end: "end".to_string(),
+                },
+            ],
+            constraints: vec![],
+        };
+        assert!(validator.validate_entity_references(&doc).is_ok());
+    }
+
+    #[test]
+    fn test_validate_constraint_references_all_constraint_types() {
+        use crate::ir::{Constraint, ExprOrNumber};
+        let validator = Validator::new();
+        let mut entities = vec![
+            Entity::Point {
+                id: "p1".to_string(),
+                at: vec![ExprOrNumber::Number(0.0)],
+            },
+            Entity::Point {
+                id: "p2".to_string(),
+                at: vec![ExprOrNumber::Number(1.0)],
+            },
+            Entity::Line {
+                id: "l1".to_string(),
+                p1: "p1".to_string(),
+                p2: "p2".to_string(),
+            },
+            Entity::Circle {
+                id: "c1".to_string(),
+                center: vec![ExprOrNumber::Number(0.0)],
+                diameter: ExprOrNumber::Number(10.0),
+            },
+        ];
+
+        // Test various constraint types
+        let constraints = vec![
+            Constraint::Fixed { entity: "p1".to_string() },
+            Constraint::Distance {
+                between: vec!["p1".to_string(), "p2".to_string()],
+                value: ExprOrNumber::Number(10.0),
+            },
+            Constraint::Perpendicular {
+                a: "l1".to_string(),
+                b: "l1".to_string(), // Same line (edge case)
+            },
+            Constraint::PointOnLine {
+                point: "p1".to_string(),
+                line: "l1".to_string(),
+            },
+        ];
+
+        let doc = InputDocument {
+            schema: "slvs-json/1".to_string(),
+            units: "mm".to_string(),
+            parameters: HashMap::new(),
+            entities,
+            constraints,
+        };
+
+        assert!(validator.validate_constraint_references(&doc).is_ok());
+    }
+
+    #[test]
+    fn test_validator_default() {
+        let validator = Validator::default();
+        assert!(std::mem::size_of_val(&validator) > 0);
+    }
 }
