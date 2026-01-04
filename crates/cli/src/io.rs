@@ -103,7 +103,7 @@ pub fn create_output_writer(output_path: Option<&str>) -> Box<dyn OutputWriter> 
 }
 
 #[cfg(test)]
-mod tests {
+pub mod tests {
     use super::*;
     use std::io::Cursor;
 
@@ -200,28 +200,33 @@ mod tests {
     fn test_create_input_reader_stdin() {
         let reader = create_input_reader("-");
         // Verify it can be created (type checking would require downcasting)
-        assert!(reader.as_ref() as *const dyn InputReader != std::ptr::null());
+        // Just verify it's not null by checking the pointer address
+        let ptr = reader.as_ref() as *const dyn InputReader;
+        assert!(!ptr.is_null());
     }
 
     #[test]
     fn test_create_input_reader_file() {
         let reader = create_input_reader("test.txt");
         // Verify it can be created
-        assert!(reader.as_ref() as *const dyn InputReader != std::ptr::null());
+        let ptr = reader.as_ref() as *const dyn InputReader;
+        assert!(!ptr.is_null());
     }
 
     #[test]
     fn test_create_output_writer_stdout() {
         let writer = create_output_writer(None);
         // Verify it can be created
-        assert!(writer.as_ref() as *const dyn OutputWriter != std::ptr::null());
+        let ptr = writer.as_ref() as *const dyn OutputWriter;
+        assert!(!ptr.is_null());
     }
 
     #[test]
     fn test_create_output_writer_file() {
         let writer = create_output_writer(Some("output.txt"));
         // Verify it can be created
-        assert!(writer.as_ref() as *const dyn OutputWriter != std::ptr::null());
+        let ptr = writer.as_ref() as *const dyn OutputWriter;
+        assert!(!ptr.is_null());
     }
 
     #[test]

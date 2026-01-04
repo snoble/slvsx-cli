@@ -211,7 +211,7 @@ mod tests {
             (r#"{"name": "test""#, "EOF"),  // EOF
         ];
 
-        for (json, expected_keyword) in test_cases {
+        for (json, _expected_keyword) in test_cases {
             let result: Result<TestStruct> = parse_json_with_context(json, "test.json");
             assert!(result.is_err(), "Expected error for: {}", json);
             let err = result.unwrap_err().to_string();

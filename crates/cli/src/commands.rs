@@ -223,7 +223,8 @@ mod tests {
         let entities = HashMap::new();
         let result = export_entities(&entities, ExportFormat::Svg, ViewPlane::Xy);
         assert!(result.is_ok());
-        let svg = String::from_utf8_lossy(&result.unwrap());
+        let result_bytes = result.unwrap();
+        let svg = String::from_utf8_lossy(&result_bytes);
         assert!(svg.contains("<svg"));
     }
 
@@ -253,9 +254,9 @@ mod tests {
 
     #[test]
     fn test_view_plane_conversion() {
-        assert_eq!(SvgViewPlane::from(ViewPlane::Xy), SvgViewPlane::XY);
-        assert_eq!(SvgViewPlane::from(ViewPlane::Xz), SvgViewPlane::XZ);
-        assert_eq!(SvgViewPlane::from(ViewPlane::Yz), SvgViewPlane::YZ);
+        assert!(matches!(SvgViewPlane::from(ViewPlane::Xy), SvgViewPlane::XY));
+        assert!(matches!(SvgViewPlane::from(ViewPlane::Xz), SvgViewPlane::XZ));
+        assert!(matches!(SvgViewPlane::from(ViewPlane::Yz), SvgViewPlane::YZ));
     }
 
     #[test]
@@ -360,9 +361,9 @@ mod tests {
     #[test]
     fn test_view_plane_all_variants() {
         // Test all view plane conversions
-        assert_eq!(SvgViewPlane::from(ViewPlane::Xy), SvgViewPlane::XY);
-        assert_eq!(SvgViewPlane::from(ViewPlane::Xz), SvgViewPlane::XZ);
-        assert_eq!(SvgViewPlane::from(ViewPlane::Yz), SvgViewPlane::YZ);
+        assert!(matches!(SvgViewPlane::from(ViewPlane::Xy), SvgViewPlane::XY));
+        assert!(matches!(SvgViewPlane::from(ViewPlane::Xz), SvgViewPlane::XZ));
+        assert!(matches!(SvgViewPlane::from(ViewPlane::Yz), SvgViewPlane::YZ));
     }
 
     #[test]

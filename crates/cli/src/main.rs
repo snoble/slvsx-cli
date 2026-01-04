@@ -6,7 +6,8 @@ mod io;
 mod json_error;
 
 use commands::{handle_capabilities, handle_export, handle_solve, handle_validate};
-use io::{create_input_reader, create_output_writer, StderrWriter};
+use io::{create_input_reader, create_output_writer};
+use io::StderrWriter;
 
 #[derive(Parser)]
 #[command(name = "slvsx")]
@@ -17,7 +18,7 @@ struct Cli {
 }
 
 // Re-export for clap ValueEnum
-#[derive(Clone, clap::ValueEnum)]
+#[derive(Clone, Debug, PartialEq, clap::ValueEnum)]
 pub enum ExportFormat {
     Svg,
     Dxf,
@@ -25,7 +26,7 @@ pub enum ExportFormat {
     Stl,
 }
 
-#[derive(Clone, Debug, clap::ValueEnum)]
+#[derive(Clone, Debug, PartialEq, clap::ValueEnum)]
 pub enum ViewPlane {
     Xy,
     Xz,
@@ -90,12 +91,12 @@ fn main() -> Result<()> {
         Commands::Validate { file } => {
             let mut reader = create_input_reader(&file);
             let mut error_writer = StderrWriter;
-            handle_validate(&mut *reader, &file, &mut error_writer)
+            handle_validate(reader.as_mut(), &file, &mut error_writer)
         }
         Commands::Solve { file } => {
             let mut reader = create_input_reader(&file);
             let mut writer = create_output_writer(None);
-            handle_solve(&mut *reader, &mut *writer, &file)
+            handle_solve(reader.as_mut(), writer.as_mut(), &file)
         }
         Commands::Export {
             file,
@@ -105,11 +106,11 @@ fn main() -> Result<()> {
         } => {
             let mut reader = create_input_reader(&file);
             let mut writer = create_output_writer(output.as_deref());
-            handle_export(&mut *reader, &mut *writer, &file, format.into(), view.into())
+            handle_export(reader.as_mut(), writer.as_mut(), &file, format.into(), view.into())
         }
         Commands::Capabilities => {
             let mut writer = create_output_writer(None);
-            handle_capabilities(&mut *writer)
+            handle_capabilities(writer.as_mut())
         }
     }
 }
