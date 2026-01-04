@@ -59,6 +59,14 @@ extern "C" {
         point1_id: c_int,
         point2_id: c_int,
     ) -> c_int;
+    pub fn real_slvs_add_point_2d(
+        sys: *mut SolverSystem,
+        id: c_int,
+        workplane_id: c_int,
+        u: c_double,
+        v: c_double,
+    ) -> c_int;
+
     pub fn real_slvs_add_circle(
         sys: *mut SolverSystem,
         id: c_int,
@@ -66,6 +74,28 @@ extern "C" {
         cy: c_double,
         cz: c_double,
         radius: c_double,
+    ) -> c_int;
+
+    pub fn real_slvs_add_arc(
+        sys: *mut SolverSystem,
+        id: c_int,
+        center_point_id: c_int,
+        start_point_id: c_int,
+        end_point_id: c_int,
+        nx: c_double,
+        ny: c_double,
+        nz: c_double,
+        workplane_id: c_int, // -1 for 3D, otherwise workplane ID
+    ) -> c_int;
+
+    pub fn real_slvs_add_cubic(
+        sys: *mut SolverSystem,
+        id: c_int,
+        pt0_id: c_int,
+        pt1_id: c_int,
+        pt2_id: c_int,
+        pt3_id: c_int,
+        workplane_id: c_int, // -1 for 3D, otherwise workplane ID
     ) -> c_int;
 
     pub fn real_slvs_add_fixed_constraint(
@@ -388,6 +418,23 @@ impl Solver {
         }
     }
 
+    pub fn add_point_2d(
+        &mut self,
+        id: i32,
+        workplane_id: i32,
+        u: f64,
+        v: f64,
+    ) -> Result<(), FfiError> {
+        unsafe {
+            let result = real_slvs_add_point_2d(self.system, id, workplane_id, u, v);
+            if result == 0 {
+                Ok(())
+            } else {
+                Err(FfiError::ConstraintFailed(format!("Failed to add 2D point {}", id)))
+            }
+        }
+    }
+
     pub fn add_circle(
         &mut self,
         id: i32,
@@ -402,6 +449,53 @@ impl Solver {
                 Ok(())
             } else {
                 Err(format!("Failed to add circle {}", id))
+            }
+        }
+    }
+
+    pub fn add_arc(
+        &mut self,
+        id: i32,
+        center_point_id: i32,
+        start_point_id: i32,
+        end_point_id: i32,
+        nx: f64,
+        ny: f64,
+        nz: f64,
+        workplane_id: Option<i32>, // None for 3D, Some(id) for 2D
+    ) -> Result<(), FfiError> {
+        unsafe {
+            let wp_id = workplane_id.unwrap_or(-1);
+            let result = real_slvs_add_arc(
+                self.system, id, center_point_id, start_point_id, end_point_id,
+                nx, ny, nz, wp_id
+            );
+            if result == 0 {
+                Ok(())
+            } else {
+                Err(FfiError::ConstraintFailed(format!("Failed to add arc {}", id)))
+            }
+        }
+    }
+
+    pub fn add_cubic(
+        &mut self,
+        id: i32,
+        pt0_id: i32,
+        pt1_id: i32,
+        pt2_id: i32,
+        pt3_id: i32,
+        workplane_id: Option<i32>, // None for 3D, Some(id) for 2D
+    ) -> Result<(), FfiError> {
+        unsafe {
+            let wp_id = workplane_id.unwrap_or(-1);
+            let result = real_slvs_add_cubic(
+                self.system, id, pt0_id, pt1_id, pt2_id, pt3_id, wp_id
+            );
+            if result == 0 {
+                Ok(())
+            } else {
+                Err(FfiError::ConstraintFailed(format!("Failed to add cubic {}", id)))
             }
         }
     }
@@ -1701,5 +1795,49 @@ mod tests {
         // Add arc-line length difference constraint - FFI binding should work
         let result = solver.add_arc_line_length_difference_constraint(100, 10, 20, 5.0);
         assert!(result.is_ok(), "Should be able to add arc-line length difference constraint via FFI");
+    }
+
+    #[test]
+    fn test_point_2d_ffi_binding() {
+        let mut solver = Solver::new();
+
+        // Create a workplane first
+        solver.add_point(1, 0.0, 0.0, 0.0).unwrap();
+        solver.add_point(2, 1.0, 0.0, 0.0).unwrap();
+        solver.add_point(3, 0.0, 1.0, 0.0).unwrap();
+        solver.add_workplane(10, 1, 0.0, 0.0, 1.0).unwrap();
+
+        // Add 2D point in workplane - FFI binding should work
+        let result = solver.add_point_2d(20, 10, 5.0, 10.0);
+        assert!(result.is_ok(), "Should be able to add 2D point via FFI");
+    }
+
+    #[test]
+    fn test_arc_ffi_binding() {
+        let mut solver = Solver::new();
+
+        // Create center, start, and end points
+        solver.add_point(1, 0.0, 0.0, 0.0).unwrap(); // center
+        solver.add_point(2, 10.0, 0.0, 0.0).unwrap(); // start
+        solver.add_point(3, 0.0, 10.0, 0.0).unwrap(); // end
+
+        // Add arc - FFI binding should work
+        let result = solver.add_arc(10, 1, 2, 3, 0.0, 0.0, 1.0, None);
+        assert!(result.is_ok(), "Should be able to add arc via FFI");
+    }
+
+    #[test]
+    fn test_cubic_ffi_binding() {
+        let mut solver = Solver::new();
+
+        // Create 4 control points
+        solver.add_point(1, 0.0, 0.0, 0.0).unwrap();
+        solver.add_point(2, 10.0, 0.0, 0.0).unwrap();
+        solver.add_point(3, 20.0, 10.0, 0.0).unwrap();
+        solver.add_point(4, 30.0, 10.0, 0.0).unwrap();
+
+        // Add cubic Bezier curve - FFI binding should work
+        let result = solver.add_cubic(10, 1, 2, 3, 4, None);
+        assert!(result.is_ok(), "Should be able to add cubic Bezier curve via FFI");
     }
 }

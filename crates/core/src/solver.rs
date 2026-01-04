@@ -70,7 +70,7 @@ impl Solver {
 
         for (entity_idx, entity) in doc.entities.iter().enumerate() {
             match entity {
-                crate::ir::Entity::Point { id, at } => {
+                crate::ir::Entity::Point { id, at, .. } => {
                     // Evaluate expressions for point coordinates
                     let x = match &at[0] {
                         crate::ir::ExprOrNumber::Number(n) => *n,
@@ -98,7 +98,32 @@ impl Solver {
                     entity_id_map.insert(id.clone(), next_id);
                     next_id += 1;
                 }
-                crate::ir::Entity::Line { id, p1, p2 } => {
+                crate::ir::Entity::Point2D { id, at, workplane, .. } => {
+                    // Evaluate expressions for 2D point coordinates
+                    let u = match &at[0] {
+                        crate::ir::ExprOrNumber::Number(n) => *n,
+                        crate::ir::ExprOrNumber::Expression(e) => eval.eval(&e)?,
+                    };
+                    let v = match &at[1] {
+                        crate::ir::ExprOrNumber::Number(n) => *n,
+                        crate::ir::ExprOrNumber::Expression(e) => eval.eval(&e)?,
+                    };
+
+                    // Look up workplane entity ID
+                    let workplane_id = entity_id_map
+                        .get(workplane)
+                        .ok_or_else(|| crate::error::Error::EntityNotFound(workplane.clone()))?;
+
+                    ffi_solver
+                        .add_point_2d(next_id, *workplane_id, u, v)
+                        .map_err(|e| crate::error::Error::InvalidInput {
+                            message: format!("Failed to add 2D point '{}': {}", id, e),
+                            pointer: Some(format!("/entities/{}", entity_idx)),
+                        })?;
+                    entity_id_map.insert(id.clone(), next_id);
+                    next_id += 1;
+                }
+                crate::ir::Entity::Line { id, p1, p2, .. } => {
                     // Look up the point entity IDs
                     let point1_id = entity_id_map
                         .get(p1)
@@ -120,6 +145,7 @@ impl Solver {
                     id,
                     center,
                     diameter,
+                    ..
                 } => {
                     // Evaluate expressions
                     let cx = match &center[0] {
@@ -147,6 +173,101 @@ impl Solver {
                     ffi_solver
                         .add_circle(next_id, cx, cy, cz, radius)
                         .map_err(|e| crate::error::Error::Ffi(e))?;
+                    entity_id_map.insert(id.clone(), next_id);
+                    next_id += 1;
+                }
+                crate::ir::Entity::Arc {
+                    id,
+                    center,
+                    start,
+                    end,
+                    normal,
+                    workplane,
+                    ..
+                } => {
+                    // Look up point entity IDs
+                    let center_id = entity_id_map
+                        .get(center)
+                        .ok_or_else(|| crate::error::Error::EntityNotFound(center.clone()))?;
+                    let start_id = entity_id_map
+                        .get(start)
+                        .ok_or_else(|| crate::error::Error::EntityNotFound(start.clone()))?;
+                    let end_id = entity_id_map
+                        .get(end)
+                        .ok_or_else(|| crate::error::Error::EntityNotFound(end.clone()))?;
+
+                    // Evaluate normal vector
+                    let nx = match &normal[0] {
+                        crate::ir::ExprOrNumber::Number(n) => *n,
+                        crate::ir::ExprOrNumber::Expression(e) => eval.eval(&e)?,
+                    };
+                    let ny = match &normal[1] {
+                        crate::ir::ExprOrNumber::Number(n) => *n,
+                        crate::ir::ExprOrNumber::Expression(e) => eval.eval(&e)?,
+                    };
+                    let nz = if normal.len() > 2 {
+                        match &normal[2] {
+                            crate::ir::ExprOrNumber::Number(n) => *n,
+                            crate::ir::ExprOrNumber::Expression(e) => eval.eval(&e)?,
+                        }
+                    } else {
+                        1.0 // Default to Z-axis
+                    };
+
+                    // Normalize normal vector
+                    let norm_len = (nx * nx + ny * ny + nz * nz).sqrt();
+                    let nx_norm = if norm_len > 0.0 { nx / norm_len } else { 0.0 };
+                    let ny_norm = if norm_len > 0.0 { ny / norm_len } else { 0.0 };
+                    let nz_norm = if norm_len > 0.0 { nz / norm_len } else { 1.0 };
+
+                    // Get workplane ID if specified
+                    let workplane_id = workplane.as_ref().and_then(|wp| entity_id_map.get(wp).copied());
+
+                    ffi_solver
+                        .add_arc(next_id, *center_id, *start_id, *end_id, nx_norm, ny_norm, nz_norm, workplane_id)
+                        .map_err(|e| crate::error::Error::InvalidInput {
+                            message: format!("Failed to add arc '{}': {}", id, e),
+                            pointer: Some(format!("/entities/{}", entity_idx)),
+                        })?;
+                    entity_id_map.insert(id.clone(), next_id);
+                    next_id += 1;
+                }
+                crate::ir::Entity::Cubic {
+                    id,
+                    control_points,
+                    workplane,
+                    ..
+                } => {
+                    if control_points.len() != 4 {
+                        return Err(crate::error::Error::InvalidInput {
+                            message: format!("Cubic curve '{}' must have exactly 4 control points, got {}", id, control_points.len()),
+                            pointer: Some(format!("/entities/{}", entity_idx)),
+                        });
+                    }
+
+                    // Look up point entity IDs
+                    let pt0_id = entity_id_map
+                        .get(&control_points[0])
+                        .ok_or_else(|| crate::error::Error::EntityNotFound(control_points[0].clone()))?;
+                    let pt1_id = entity_id_map
+                        .get(&control_points[1])
+                        .ok_or_else(|| crate::error::Error::EntityNotFound(control_points[1].clone()))?;
+                    let pt2_id = entity_id_map
+                        .get(&control_points[2])
+                        .ok_or_else(|| crate::error::Error::EntityNotFound(control_points[2].clone()))?;
+                    let pt3_id = entity_id_map
+                        .get(&control_points[3])
+                        .ok_or_else(|| crate::error::Error::EntityNotFound(control_points[3].clone()))?;
+
+                    // Get workplane ID if specified
+                    let workplane_id = workplane.as_ref().and_then(|wp| entity_id_map.get(wp).copied());
+
+                    ffi_solver
+                        .add_cubic(next_id, *pt0_id, *pt1_id, *pt2_id, *pt3_id, workplane_id)
+                        .map_err(|e| crate::error::Error::InvalidInput {
+                            message: format!("Failed to add cubic curve '{}': {}", id, e),
+                            pointer: Some(format!("/entities/{}", entity_idx)),
+                        })?;
                     entity_id_map.insert(id.clone(), next_id);
                     next_id += 1;
                 }
@@ -618,7 +739,7 @@ impl Solver {
         // Retrieve solved positions for all entities
         for entity in &doc.entities {
             match entity {
-                crate::ir::Entity::Point { id, .. } => {
+                crate::ir::Entity::Point { id, .. } | crate::ir::Entity::Point2D { id, .. } => {
                     let entity_id = entity_id_map.get(id).copied().unwrap_or(0);
                     if let Ok((x, y, z)) = ffi_solver.get_point_position(entity_id) {
                         resolved_entities.insert(

@@ -93,6 +93,27 @@ int real_slvs_add_line(RealSlvsSystem* s, int id, int point1_id, int point2_id) 
     return 0;
 }
 
+// Add a 2D point in a workplane
+int real_slvs_add_point_2d(RealSlvsSystem* s, int id, int workplane_id, double u, double v) {
+    if (!s) return -1;
+    
+    Slvs_hGroup g = 1;
+    
+    // Create parameters for 2D coordinates
+    int pu = s->next_param++;
+    int pv = s->next_param++;
+    
+    s->sys.param[s->sys.params++] = Slvs_MakeParam(pu, g, u);
+    s->sys.param[s->sys.params++] = Slvs_MakeParam(pv, g, v);
+    
+    // Create 2D point entity
+    Slvs_hEntity entity_id = 1000 + id;
+    Slvs_hEntity wp = 1000 + workplane_id;
+    s->sys.entity[s->sys.entities++] = Slvs_MakePoint2d(entity_id, g, wp, pu, pv);
+    
+    return 0;
+}
+
 // Add a circle (simplified - just stores center point and radius)
 int real_slvs_add_circle(RealSlvsSystem* s, int id, double cx, double cy, double cz, double radius) {
     if (!s) return -1;
@@ -116,6 +137,64 @@ int real_slvs_add_circle(RealSlvsSystem* s, int id, double cx, double cy, double
     if (id < 1000) {
         s->circle_radii[id] = radius;
     }
+    
+    return 0;
+}
+
+// Add a proper arc of circle
+int real_slvs_add_arc(RealSlvsSystem* s, int id, int center_point_id, int start_point_id, 
+                     int end_point_id, double nx, double ny, double nz, int workplane_id) {
+    if (!s) return -1;
+    
+    Slvs_hGroup g = 1;
+    
+    // Convert normal vector to quaternion for normal entity
+    double qw, qx, qy, qz;
+    normal_to_quaternion(nx, ny, nz, &qw, &qx, &qy, &qz);
+    
+    // Create parameters for the quaternion
+    int pqw = s->next_param++;
+    int pqx = s->next_param++;
+    int pqy = s->next_param++;
+    int pqz = s->next_param++;
+    
+    s->sys.param[s->sys.params++] = Slvs_MakeParam(pqw, g, qw);
+    s->sys.param[s->sys.params++] = Slvs_MakeParam(pqx, g, qx);
+    s->sys.param[s->sys.params++] = Slvs_MakeParam(pqy, g, qy);
+    s->sys.param[s->sys.params++] = Slvs_MakeParam(pqz, g, qz);
+    
+    // Create normal entity
+    Slvs_hEntity normal_id = 3000 + id; // Use different range
+    s->sys.entity[s->sys.entities++] = Slvs_MakeNormal3d(normal_id, g, pqw, pqx, pqy, pqz);
+    
+    // Create arc entity
+    Slvs_hEntity arc_id = 1000 + id;
+    Slvs_hEntity center = 1000 + center_point_id;
+    Slvs_hEntity start = 1000 + start_point_id;
+    Slvs_hEntity end = 1000 + end_point_id;
+    Slvs_hEntity wrkpl = (workplane_id >= 0) ? (1000 + workplane_id) : SLVS_FREE_IN_3D;
+    
+    s->sys.entity[s->sys.entities++] = Slvs_MakeArcOfCircle(arc_id, g, wrkpl, normal_id, center, start, end);
+    
+    return 0;
+}
+
+// Add a cubic Bezier curve
+int real_slvs_add_cubic(RealSlvsSystem* s, int id, int pt0_id, int pt1_id, 
+                       int pt2_id, int pt3_id, int workplane_id) {
+    if (!s) return -1;
+    
+    Slvs_hGroup g = 1;
+    
+    // Create cubic entity
+    Slvs_hEntity cubic_id = 1000 + id;
+    Slvs_hEntity pt0 = 1000 + pt0_id;
+    Slvs_hEntity pt1 = 1000 + pt1_id;
+    Slvs_hEntity pt2 = 1000 + pt2_id;
+    Slvs_hEntity pt3 = 1000 + pt3_id;
+    Slvs_hEntity wrkpl = (workplane_id >= 0) ? (1000 + workplane_id) : SLVS_FREE_IN_3D;
+    
+    s->sys.entity[s->sys.entities++] = Slvs_MakeCubic(cubic_id, g, wrkpl, pt0, pt1, pt2, pt3);
     
     return 0;
 }

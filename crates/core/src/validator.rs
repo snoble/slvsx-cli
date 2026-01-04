@@ -169,7 +169,28 @@ impl Validator {
                         }
                     }
                 }
-                Entity::Arc { start, end, .. } => {
+                Entity::Arc { center, start, end, workplane, .. } => {
+                    // Validate center point reference
+                    if !seen_point_ids.contains(center.as_str()) {
+                        if !seen_entity_ids.contains(center.as_str()) {
+                            return Err(Error::InvalidInput {
+                                message: format!(
+                                    "Arc entity #{} references point '{}' that is not yet defined. Entities must be defined before they are referenced.",
+                                    idx + 1, center
+                                ),
+                                pointer: Some(format!("/entities/{}/center", idx)),
+                            });
+                        } else {
+                            return Err(Error::InvalidInput {
+                                message: format!(
+                                    "Arc entity #{} references '{}' which is not a Point entity. Arc center must reference a Point entity.",
+                                    idx + 1, center
+                                ),
+                                pointer: Some(format!("/entities/{}/center", idx)),
+                            });
+                        }
+                    }
+                    // Validate start point reference
                     if !seen_point_ids.contains(start.as_str()) {
                         if !seen_entity_ids.contains(start.as_str()) {
                             return Err(Error::InvalidInput {
@@ -189,6 +210,7 @@ impl Validator {
                             });
                         }
                     }
+                    // Validate end point reference
                     if !seen_point_ids.contains(end.as_str()) {
                         if !seen_entity_ids.contains(end.as_str()) {
                             return Err(Error::InvalidInput {
@@ -208,8 +230,68 @@ impl Validator {
                             });
                         }
                     }
+                    // Validate workplane if specified
+                    if let Some(wp_id) = workplane {
+                        if !seen_entity_ids.contains(wp_id.as_str()) {
+                            return Err(Error::InvalidInput {
+                                message: format!(
+                                    "Arc entity #{} references workplane '{}' that is not yet defined. Entities must be defined before they are referenced.",
+                                    idx + 1, wp_id
+                                ),
+                                pointer: Some(format!("/entities/{}/workplane", idx)),
+                            });
+                        }
+                    }
                 }
-                Entity::Point { .. } => {
+                Entity::Cubic { control_points, workplane, .. } => {
+                    // Validate all control points
+                    for (pt_idx, pt_id) in control_points.iter().enumerate() {
+                        if !seen_point_ids.contains(pt_id.as_str()) {
+                            if !seen_entity_ids.contains(pt_id.as_str()) {
+                                return Err(Error::InvalidInput {
+                                    message: format!(
+                                        "Cubic entity #{} control point #{} '{}' is not yet defined. Entities must be defined before they are referenced.",
+                                        idx + 1, pt_idx + 1, pt_id
+                                    ),
+                                    pointer: Some(format!("/entities/{}/control_points/{}", idx, pt_idx)),
+                                });
+                            } else {
+                                return Err(Error::InvalidInput {
+                                    message: format!(
+                                        "Cubic entity #{} control point #{} '{}' is not a Point entity. Cubic control points must reference Point entities.",
+                                        idx + 1, pt_idx + 1, pt_id
+                                    ),
+                                    pointer: Some(format!("/entities/{}/control_points/{}", idx, pt_idx)),
+                                });
+                            }
+                        }
+                    }
+                    // Validate workplane if specified
+                    if let Some(wp_id) = workplane {
+                        if !seen_entity_ids.contains(wp_id.as_str()) {
+                            return Err(Error::InvalidInput {
+                                message: format!(
+                                    "Cubic entity #{} references workplane '{}' that is not yet defined. Entities must be defined before they are referenced.",
+                                    idx + 1, wp_id
+                                ),
+                                pointer: Some(format!("/entities/{}/workplane", idx)),
+                            });
+                        }
+                    }
+                }
+                Entity::Point2D { workplane, .. } => {
+                    // Validate workplane reference
+                    if !seen_entity_ids.contains(workplane.as_str()) {
+                        return Err(Error::InvalidInput {
+                            message: format!(
+                                "Point2D entity #{} references workplane '{}' that is not yet defined. Entities must be defined before they are referenced.",
+                                idx + 1, workplane
+                            ),
+                            pointer: Some(format!("/entities/{}/workplane", idx)),
+                        });
+                    }
+                }
+                Entity::Point { .. } | Entity::Point2D { .. } => {
                     // Track Point entities separately
                     seen_point_ids.insert(entity.id());
                 }

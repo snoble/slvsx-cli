@@ -31,22 +31,48 @@ pub enum Entity {
     Point {
         id: String,
         at: Vec<ExprOrNumber>,
+        #[serde(default)]
+        construction: bool,
+    },
+    Point2D {
+        id: String,
+        at: Vec<ExprOrNumber>, // [u, v] - 2D coordinates
+        workplane: String,
+        #[serde(default)]
+        construction: bool,
     },
     Line {
         id: String,
         p1: String,
         p2: String,
+        #[serde(default)]
+        construction: bool,
     },
     Circle {
         id: String,
         center: Vec<ExprOrNumber>,
         diameter: ExprOrNumber,
+        #[serde(default)]
+        construction: bool,
     },
     Arc {
         id: String,
-        center: Vec<ExprOrNumber>,
-        start: String,
-        end: String,
+        center: String, // Point entity ID
+        start: String,  // Point entity ID
+        end: String,    // Point entity ID
+        normal: Vec<ExprOrNumber>, // Normal vector [nx, ny, nz] or reference to normal entity
+        #[serde(skip_serializing_if = "Option::is_none")]
+        workplane: Option<String>, // Optional workplane for 2D arcs
+        #[serde(default)]
+        construction: bool,
+    },
+    Cubic {
+        id: String,
+        control_points: Vec<String>, // 4 point entity IDs: [p0, p1, p2, p3]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        workplane: Option<String>, // Optional workplane for 2D cubics
+        #[serde(default)]
+        construction: bool,
     },
     Plane {
         id: String,
@@ -59,10 +85,24 @@ impl Entity {
     pub fn id(&self) -> &str {
         match self {
             Entity::Point { id, .. }
+            | Entity::Point2D { id, .. }
             | Entity::Line { id, .. }
             | Entity::Circle { id, .. }
             | Entity::Arc { id, .. }
+            | Entity::Cubic { id, .. }
             | Entity::Plane { id, .. } => id,
+        }
+    }
+    
+    pub fn is_construction(&self) -> bool {
+        match self {
+            Entity::Point { construction, .. }
+            | Entity::Point2D { construction, .. }
+            | Entity::Line { construction, .. }
+            | Entity::Circle { construction, .. }
+            | Entity::Arc { construction, .. }
+            | Entity::Cubic { construction, .. } => *construction,
+            Entity::Plane { .. } => false,
         }
     }
 }
@@ -310,6 +350,7 @@ mod tests {
         let point = Entity::Point {
             id: "p1".into(),
             at: vec![ExprOrNumber::Number(0.0)],
+            construction: false,
         };
         assert_eq!(point.id(), "p1");
 
@@ -317,6 +358,7 @@ mod tests {
             id: "l1".into(),
             p1: "p1".into(),
             p2: "p2".into(),
+            construction: false,
         };
         assert_eq!(line.id(), "l1");
 
@@ -324,6 +366,7 @@ mod tests {
             id: "c1".into(),
             center: vec![ExprOrNumber::Number(0.0)],
             diameter: ExprOrNumber::Number(10.0),
+            construction: false,
         };
         assert_eq!(circle.id(), "c1");
     }
