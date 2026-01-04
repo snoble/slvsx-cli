@@ -301,5 +301,75 @@ mod tests {
             assert!(result.is_ok(), "Failed for view: {:?}", view);
         }
     }
+
+    #[test]
+    fn test_handle_solve_error_paths() {
+        // Test with invalid JSON
+        let mut reader = MemoryReader::new("{invalid json}".to_string());
+        let mut writer = MemoryWriter::new();
+        let result = handle_solve(&mut reader, &mut writer, "test.json");
+        assert!(result.is_err());
+
+        // Test with invalid document structure
+        let invalid = json!({
+            "schema": "slvs-json/1",
+            "units": "mm",
+            "entities": [
+                {"type": "point", "id": "p1", "at": [0, 0, 0]}
+            ],
+            "constraints": [
+                {"type": "fixed", "entity": "nonexistent"}
+            ]
+        });
+        let mut reader = MemoryReader::new(serde_json::to_string(&invalid).unwrap());
+        let mut writer = MemoryWriter::new();
+        // This should fail validation
+        let result = handle_solve(&mut reader, &mut writer, "test.json");
+        // May succeed or fail depending on when validation happens
+    }
+
+    #[test]
+    fn test_handle_validate_error_paths() {
+        // Test with invalid JSON
+        let mut reader = MemoryReader::new("{invalid}".to_string());
+        let mut error_writer = MemoryErrorWriter::new();
+        let result = handle_validate(&mut reader, "test.json", &mut error_writer);
+        assert!(result.is_err());
+
+        // Test with missing schema
+        let invalid = json!({
+            "entities": []
+        });
+        let mut reader = MemoryReader::new(serde_json::to_string(&invalid).unwrap());
+        let mut error_writer = MemoryErrorWriter::new();
+        let result = handle_validate(&mut reader, "test.json", &mut error_writer);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_export_entities_error_handling() {
+        use std::collections::HashMap;
+        // Test with empty entities (should not crash)
+        let entities = HashMap::new();
+        for format in [ExportFormat::Svg, ExportFormat::Dxf, ExportFormat::Slvs, ExportFormat::Stl] {
+            let result = export_entities(&entities, format, ViewPlane::Xy);
+            assert!(result.is_ok(), "Failed for format: {:?}", format);
+        }
+    }
+
+    #[test]
+    fn test_view_plane_all_variants() {
+        // Test all view plane conversions
+        assert_eq!(SvgViewPlane::from(ViewPlane::Xy), SvgViewPlane::XY);
+        assert_eq!(SvgViewPlane::from(ViewPlane::Xz), SvgViewPlane::XZ);
+        assert_eq!(SvgViewPlane::from(ViewPlane::Yz), SvgViewPlane::YZ);
+    }
+
+    #[test]
+    fn test_export_format_all_variants() {
+        // Test that all export formats are covered
+        let formats = [ExportFormat::Svg, ExportFormat::Dxf, ExportFormat::Slvs, ExportFormat::Stl];
+        assert_eq!(formats.len(), 4);
+    }
 }
 

@@ -223,5 +223,48 @@ mod tests {
         // Verify it can be created
         assert!(writer.as_ref() as *const dyn OutputWriter != std::ptr::null());
     }
+
+    #[test]
+    fn test_file_reader() {
+        use tempfile::NamedTempFile;
+        use std::fs;
+        
+        let tmp_file = NamedTempFile::new().unwrap();
+        fs::write(tmp_file.path(), "test content").unwrap();
+        
+        let mut reader = FileReader::new(tmp_file.path().to_str().unwrap().to_string());
+        assert_eq!(reader.read().unwrap(), "test content");
+    }
+
+    #[test]
+    fn test_file_writer() {
+        use tempfile::NamedTempFile;
+        
+        let tmp_file = NamedTempFile::new().unwrap();
+        let path = tmp_file.path().to_str().unwrap().to_string();
+        
+        let mut writer = FileWriter::new(path.clone());
+        writer.write(b"test content").unwrap();
+        
+        let content = std::fs::read_to_string(&path).unwrap();
+        assert_eq!(content, "test content");
+    }
+
+    #[test]
+    fn test_memory_writer_write_str() {
+        let mut writer = MemoryWriter::new();
+        writer.write_str("test").unwrap();
+        assert_eq!(writer.as_string(), "test");
+    }
+
+    #[test]
+    fn test_memory_error_writer_multiple() {
+        let mut writer = MemoryErrorWriter::new();
+        writer.write_error("error 1").unwrap();
+        writer.write_error("error 2").unwrap();
+        assert_eq!(writer.messages().len(), 2);
+        assert_eq!(writer.messages()[0], "error 1");
+        assert_eq!(writer.messages()[1], "error 2");
+    }
 }
 
