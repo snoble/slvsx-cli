@@ -306,7 +306,7 @@ See `examples/` directory for:
 
 ## Further Reading
 
-- [Showcase](SHOWCASE.md) - Impressive use cases
-- [Examples](examples/README.md) - Comprehensive tutorial series
-- [Schema Reference](schema/slvs-json.schema.json) - Complete schema definition
+- [Showcase](../SHOWCASE.md) - Impressive use cases
+- [Examples](../examples/README.md) - Comprehensive tutorial series
+- [Schema Reference](../schema/slvs-json.schema.json) - Complete schema definition
 

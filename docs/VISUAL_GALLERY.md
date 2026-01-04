@@ -18,16 +18,16 @@ This gallery showcases SLVSX's capabilities through rendered visualizations. Eac
 A perfect tetrahedron with all edges equal length, shown from different viewing angles:
 
 **XY View (Top-Down)**
-![Tetrahedron XY View](examples/outputs/tetrahedron_xy.svg)
+![Tetrahedron XY View](../examples/outputs/tetrahedron_xy.svg)
 
 **XZ View (Front)**
-![Tetrahedron XZ View](examples/outputs/tetrahedron_xz.svg)
+![Tetrahedron XZ View](../examples/outputs/tetrahedron_xz.svg)
 
 **YZ View (Side)**
-![Tetrahedron YZ View](examples/outputs/tetrahedron_yz.svg)
+![Tetrahedron YZ View](../examples/outputs/tetrahedron_yz.svg)
 
 **Isometric View (45° 3D)**
-![Tetrahedron Isometric View](examples/outputs/tetrahedron_isometric.svg)
+![Tetrahedron Isometric View](../examples/outputs/tetrahedron_isometric.svg)
 
 **What it demonstrates**:
 - 3D constraint solving
@@ -40,13 +40,13 @@ A perfect tetrahedron with all edges equal length, shown from different viewing 
 A 3D coordinate system showing X, Y, and Z axes with a point in space:
 
 **XY View**
-![3D Basics XY View](examples/outputs/3d_basics_xy.svg)
+![3D Basics XY View](../examples/outputs/3d_basics_xy.svg)
 
 **XZ View**
-![3D Basics XZ View](examples/outputs/3d_basics_xz.svg)
+![3D Basics XZ View](../examples/outputs/3d_basics_xz.svg)
 
 **Isometric View (45° 3D)**
-![3D Basics Isometric View](examples/outputs/3d_basics_isometric.svg)
+![3D Basics Isometric View](../examples/outputs/3d_basics_isometric.svg)
 
 **What it demonstrates**:
 - 3D point positioning
@@ -59,7 +59,7 @@ A 3D coordinate system showing X, Y, and Z axes with a point in space:
 
 A parametric hinge mechanism where two arms meet at a specific angle:
 
-![Angle Hinge](examples/outputs/08_angles.svg)
+![Angle Hinge](../examples/outputs/08_angles.svg)
 
 **What it demonstrates**:
 - Angle constraints
@@ -77,7 +77,7 @@ slvsx export -f svg examples/08_angles.json -o hinge.svg
 
 A perfectly symmetric arrowhead design:
 
-![Symmetric Arrow](examples/outputs/11_symmetric.svg)
+![Symmetric Arrow](../examples/outputs/11_symmetric.svg)
 
 **What it demonstrates**:
 - Symmetry constraints
@@ -91,7 +91,7 @@ A perfectly symmetric arrowhead design:
 
 A classic triangle construction using distance constraints:
 
-![Triangle](examples/outputs/02_triangle.svg)
+![Triangle](../examples/outputs/02_triangle.svg)
 
 **What it demonstrates**:
 - Distance constraints

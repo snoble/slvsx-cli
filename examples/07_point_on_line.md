@@ -1,6 +1,6 @@
 # Example 07: Point on Line Constraint
 
-**[← Working with Circles](06_circles.md)** | **[Next: Symmetric Constraints →](08_symmetric.md)**
+**[← Working with Circles](06_circles.md)** | **[Next: Angles →](08_angles.md)**
 
 ## The Story
 

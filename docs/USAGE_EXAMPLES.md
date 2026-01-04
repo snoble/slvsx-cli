@@ -225,7 +225,7 @@ cat underconstrained.json | slvsx solve -
 
 ## Next Steps
 
-- See [examples/](examples/) directory for more complex problems
-- Read [JSON Schema](schema/slvs-json.schema.json) for full specification
-- Check [MCP Integration](docs/MCP_INTEGRATION.md) for AI agent usage
+- See [examples/](../examples/) directory for more complex problems
+- Read [JSON Schema](../schema/slvs-json.schema.json) for full specification
+- Check [MCP Integration](MCP_INTEGRATION.md) for AI agent usage
 
