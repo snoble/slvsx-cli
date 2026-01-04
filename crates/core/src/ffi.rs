@@ -1837,7 +1837,7 @@ mod tests {
         solver.add_workplane(10, 1, 0.0, 0.0, 1.0).unwrap();
 
         // Add 2D point in workplane - FFI binding should work
-        let result = solver.add_point_2d(20, 10, 5.0, 10.0);
+        let result = solver.add_point_2d(20, 10, 5.0, 10.0, false);
         assert!(result.is_ok(), "Should be able to add 2D point via FFI");
     }
 
