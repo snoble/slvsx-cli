@@ -436,11 +436,11 @@ fn test_equal_radius_constraint_changes_solution() {
     let doc_without = create_test_doc(base_entities.clone(), base_constraints.clone());
     let result_without = solve_and_get(&doc_without).expect("Should solve");
     let circle1_without = match result_without.get("circle1") {
-        Some(ResolvedEntity::Circle { diameter }) => *diameter,
+        Some(ResolvedEntity::Circle { diameter, .. }) => *diameter,
         _ => panic!("circle1 not found"),
     };
     let circle2_without = match result_without.get("circle2") {
-        Some(ResolvedEntity::Circle { diameter }) => *diameter,
+        Some(ResolvedEntity::Circle { diameter, .. }) => *diameter,
         _ => panic!("circle2 not found"),
     };
     let diff_without = (circle1_without - circle2_without).abs();
@@ -453,11 +453,11 @@ fn test_equal_radius_constraint_changes_solution() {
     let doc_with = create_test_doc(base_entities.clone(), constraints_with);
     let result_with = solve_and_get(&doc_with).expect("Should solve");
     let circle1_with = match result_with.get("circle1") {
-        Some(ResolvedEntity::Circle { diameter }) => *diameter,
+        Some(ResolvedEntity::Circle { diameter, .. }) => *diameter,
         _ => panic!("circle1 not found"),
     };
     let circle2_with = match result_with.get("circle2") {
-        Some(ResolvedEntity::Circle { diameter }) => *diameter,
+        Some(ResolvedEntity::Circle { diameter, .. }) => *diameter,
         _ => panic!("circle2 not found"),
     };
     let diff_with = (circle1_with - circle2_with).abs();
@@ -1101,7 +1101,7 @@ fn test_diameter_constraint_changes_solution() {
     let doc_without = create_test_doc(base_entities.clone(), base_constraints.clone());
     let result_without = solve_and_get(&doc_without).expect("Should solve");
     let circle_without = match result_without.get("circle1") {
-        Some(ResolvedEntity::Circle { diameter }) => *diameter,
+        Some(ResolvedEntity::Circle { diameter, .. }) => *diameter,
         _ => panic!("circle1 not found"),
     };
 
@@ -1113,7 +1113,7 @@ fn test_diameter_constraint_changes_solution() {
     let doc_with = create_test_doc(base_entities.clone(), constraints_with);
     let result_with = solve_and_get(&doc_with).expect("Should solve");
     let circle_with = match result_with.get("circle1") {
-        Some(ResolvedEntity::Circle { diameter }) => *diameter,
+        Some(ResolvedEntity::Circle { diameter, .. }) => *diameter,
         _ => panic!("circle1 not found"),
     };
 

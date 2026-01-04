@@ -451,7 +451,8 @@ mod tests {
         let test_constraint = |c: Constraint| {
             let mut solver = FfiSolver::new();
             let entity_map = std::collections::HashMap::new();
-            let _ = ConstraintRegistry::process_constraint(&c, &mut solver, 1, &entity_map);
+            let evaluator = ExpressionEvaluator::new(std::collections::HashMap::new());
+            let _ = ConstraintRegistry::process_constraint(&c, &mut solver, 1, &entity_map, &evaluator);
         };
 
         // Test that we can handle all constraint types (compilation test)
@@ -599,7 +600,8 @@ mod tests {
             point: "p1".to_string(),
             of: "l1".to_string(),
         };
-        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map);
+        let evaluator = ExpressionEvaluator::new(std::collections::HashMap::new());
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map, &evaluator);
         assert!(result.is_ok(), "Midpoint constraint should process successfully");
     }
 
@@ -623,7 +625,8 @@ mod tests {
             b: "p2".to_string(),
             about: "l1".to_string(),
         };
-        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map);
+        let evaluator = ExpressionEvaluator::new(std::collections::HashMap::new());
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map, &evaluator);
         assert!(result.is_ok(), "Symmetric constraint should process successfully");
     }
 
@@ -638,7 +641,8 @@ mod tests {
             point: "p1".to_string(),
             circle: "c1".to_string(),
         };
-        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map);
+        let evaluator = ExpressionEvaluator::new(std::collections::HashMap::new());
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map, &evaluator);
         assert!(result.is_ok(), "PointOnCircle constraint should process successfully");
     }
 
@@ -653,7 +657,8 @@ mod tests {
             a: "l1".to_string(),
             b: "c1".to_string(),
         };
-        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map);
+        let evaluator = ExpressionEvaluator::new(std::collections::HashMap::new());
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map, &evaluator);
         assert!(result.is_ok(), "Tangent constraint should process successfully");
     }
 
@@ -668,7 +673,8 @@ mod tests {
             a: "c1".to_string(),
             b: "c2".to_string(),
         };
-        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map);
+        let evaluator = ExpressionEvaluator::new(std::collections::HashMap::new());
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map, &evaluator);
         assert!(result.is_ok(), "EqualRadius constraint should process successfully");
     }
 
@@ -685,21 +691,24 @@ mod tests {
         let constraint = Constraint::EqualLength {
             entities: vec!["l1".to_string(), "l2".to_string()],
         };
-        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map);
+        let evaluator = ExpressionEvaluator::new(std::collections::HashMap::new());
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map, &evaluator);
         assert!(result.is_ok(), "EqualLength constraint with 2 entities should process successfully");
 
         // Test with 3 entities (should create 2 pairwise constraints)
         let constraint = Constraint::EqualLength {
             entities: vec!["l1".to_string(), "l2".to_string(), "l3".to_string()],
         };
-        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 101, &entity_map);
+        let evaluator = ExpressionEvaluator::new(std::collections::HashMap::new());
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 101, &entity_map, &evaluator);
         assert!(result.is_ok(), "EqualLength constraint with 3 entities should process successfully");
 
         // Test with insufficient entities
         let constraint = Constraint::EqualLength {
             entities: vec!["l1".to_string()],
         };
-        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 102, &entity_map);
+        let evaluator = ExpressionEvaluator::new(std::collections::HashMap::new());
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 102, &entity_map, &evaluator);
         assert!(result.is_err(), "EqualLength constraint with <2 entities should fail");
         assert!(result.unwrap_err().contains("at least 2 entities"));
     }
@@ -717,7 +726,8 @@ mod tests {
             between: vec!["l1".to_string(), "l2".to_string()],
             value: ExprOrNumber::Number(45.0),
         };
-        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map);
+        let evaluator = ExpressionEvaluator::new(std::collections::HashMap::new());
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map, &evaluator);
         assert!(result.is_ok(), "Angle constraint with number should process successfully");
 
         // Test with expression value
@@ -725,7 +735,8 @@ mod tests {
             between: vec!["l1".to_string(), "l2".to_string()],
             value: ExprOrNumber::Expression("45".to_string()),
         };
-        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 101, &entity_map);
+        let evaluator = ExpressionEvaluator::new(std::collections::HashMap::new());
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 101, &entity_map, &evaluator);
         assert!(result.is_ok(), "Angle constraint with expression should process successfully");
 
         // Test with wrong number of entities
@@ -733,7 +744,8 @@ mod tests {
             between: vec!["l1".to_string()],
             value: ExprOrNumber::Number(45.0),
         };
-        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 102, &entity_map);
+        let evaluator = ExpressionEvaluator::new(std::collections::HashMap::new());
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 102, &entity_map, &evaluator);
         assert!(result.is_err(), "Angle constraint with wrong entity count should fail");
         assert!(result.unwrap_err().contains("exactly 2 entities"));
     }
@@ -749,7 +761,8 @@ mod tests {
             point: "p1".to_string(),
             plane: "wp1".to_string(),
         };
-        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map);
+        let evaluator = ExpressionEvaluator::new(std::collections::HashMap::new());
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map, &evaluator);
         assert!(result.is_ok(), "PointInPlane constraint should process successfully");
     }
 
@@ -766,7 +779,8 @@ mod tests {
             plane: "wp1".to_string(),
             value: ExprOrNumber::Number(10.0),
         };
-        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map);
+        let evaluator = ExpressionEvaluator::new(std::collections::HashMap::new());
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map, &evaluator);
         assert!(result.is_ok(), "PointPlaneDistance constraint should process successfully");
     }
 
@@ -783,7 +797,8 @@ mod tests {
             line: "l1".to_string(),
             value: ExprOrNumber::Number(5.0),
         };
-        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map);
+        let evaluator = ExpressionEvaluator::new(std::collections::HashMap::new());
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map, &evaluator);
         assert!(result.is_ok(), "PointLineDistance constraint should process successfully");
     }
 
@@ -801,7 +816,8 @@ mod tests {
             b: "l2".to_string(),
             value: ExprOrNumber::Number(2.0),
         };
-        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map);
+        let evaluator = ExpressionEvaluator::new(std::collections::HashMap::new());
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map, &evaluator);
         assert!(result.is_ok(), "LengthRatio constraint with number should process successfully");
 
         // Test with expression value
@@ -810,7 +826,8 @@ mod tests {
             b: "l2".to_string(),
             value: ExprOrNumber::Expression("2.0".to_string()),
         };
-        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 101, &entity_map);
+        let evaluator = ExpressionEvaluator::new(std::collections::HashMap::new());
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 101, &entity_map, &evaluator);
         assert!(result.is_ok(), "LengthRatio constraint with expression should process successfully");
     }
 
@@ -827,14 +844,16 @@ mod tests {
         let constraint = Constraint::EqualAngle {
             lines: vec!["l1".to_string(), "l2".to_string(), "l3".to_string(), "l4".to_string()],
         };
-        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map);
+        let evaluator = ExpressionEvaluator::new(std::collections::HashMap::new());
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map, &evaluator);
         assert!(result.is_ok(), "EqualAngle constraint with 4 lines should process successfully");
 
         // Test with wrong number of lines
         let constraint = Constraint::EqualAngle {
             lines: vec!["l1".to_string(), "l2".to_string(), "l3".to_string()],
         };
-        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 101, &entity_map);
+        let evaluator = ExpressionEvaluator::new(std::collections::HashMap::new());
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 101, &entity_map, &evaluator);
         assert!(result.is_err(), "EqualAngle constraint with wrong line count should fail");
         assert!(result.unwrap_err().contains("exactly 4 lines"));
     }
@@ -850,7 +869,8 @@ mod tests {
             a: "p1".to_string(),
             b: "p2".to_string(),
         };
-        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map);
+        let evaluator = ExpressionEvaluator::new(std::collections::HashMap::new());
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map, &evaluator);
         assert!(result.is_ok(), "SymmetricHorizontal constraint should process successfully");
     }
 
@@ -865,7 +885,8 @@ mod tests {
             a: "p1".to_string(),
             b: "p2".to_string(),
         };
-        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map);
+        let evaluator = ExpressionEvaluator::new(std::collections::HashMap::new());
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map, &evaluator);
         assert!(result.is_ok(), "SymmetricVertical constraint should process successfully");
     }
 
@@ -881,7 +902,8 @@ mod tests {
             circle: "c1".to_string(),
             value: ExprOrNumber::Number(50.0),
         };
-        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map);
+        let evaluator = ExpressionEvaluator::new(std::collections::HashMap::new());
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map, &evaluator);
         assert!(result.is_ok(), "Diameter constraint with number should process successfully");
 
         // Test with expression value
@@ -889,7 +911,8 @@ mod tests {
             circle: "c1".to_string(),
             value: ExprOrNumber::Expression("50.0".to_string()),
         };
-        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 101, &entity_map);
+        let evaluator = ExpressionEvaluator::new(std::collections::HashMap::new());
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 101, &entity_map, &evaluator);
         assert!(result.is_ok(), "Diameter constraint with expression should process successfully");
     }
 
@@ -904,7 +927,8 @@ mod tests {
             a: "l1".to_string(),
             b: "l2".to_string(),
         };
-        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map);
+        let evaluator = ExpressionEvaluator::new(std::collections::HashMap::new());
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map, &evaluator);
         assert!(result.is_ok(), "SameOrientation constraint should process successfully");
     }
 
@@ -924,7 +948,8 @@ mod tests {
             plane: "wp1".to_string(),
             value: ExprOrNumber::Number(10.0),
         };
-        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map);
+        let evaluator = ExpressionEvaluator::new(std::collections::HashMap::new());
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map, &evaluator);
         assert!(result.is_ok(), "ProjectedPointDistance constraint with number should process successfully");
 
         // Test with expression value
@@ -934,7 +959,8 @@ mod tests {
             plane: "wp1".to_string(),
             value: ExprOrNumber::Expression("10.0".to_string()),
         };
-        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 101, &entity_map);
+        let evaluator = ExpressionEvaluator::new(std::collections::HashMap::new());
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 101, &entity_map, &evaluator);
         assert!(result.is_ok(), "ProjectedPointDistance constraint with expression should process successfully");
     }
 
@@ -952,7 +978,8 @@ mod tests {
             b: "l2".to_string(),
             value: ExprOrNumber::Number(20.0),
         };
-        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map);
+        let evaluator = ExpressionEvaluator::new(std::collections::HashMap::new());
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map, &evaluator);
         assert!(result.is_ok(), "LengthDifference constraint with number should process successfully");
 
         // Test with expression value
@@ -961,7 +988,8 @@ mod tests {
             b: "l2".to_string(),
             value: ExprOrNumber::Expression("20.0".to_string()),
         };
-        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 101, &entity_map);
+        let evaluator = ExpressionEvaluator::new(std::collections::HashMap::new());
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 101, &entity_map, &evaluator);
         assert!(result.is_ok(), "LengthDifference constraint with expression should process successfully");
     }
 
@@ -976,7 +1004,8 @@ mod tests {
             point: "p1".to_string(),
             face: "f1".to_string(),
         };
-        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map);
+        let evaluator = ExpressionEvaluator::new(std::collections::HashMap::new());
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map, &evaluator);
         // May fail if face entity not properly supported, but processing should work
         assert!(result.is_ok() || result.is_err());
     }
@@ -994,7 +1023,8 @@ mod tests {
             face: "f1".to_string(),
             value: ExprOrNumber::Number(10.0),
         };
-        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map);
+        let evaluator = ExpressionEvaluator::new(std::collections::HashMap::new());
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map, &evaluator);
         // May fail if face entity not properly supported, but processing should work
         assert!(result.is_ok() || result.is_err());
     }
@@ -1010,7 +1040,8 @@ mod tests {
             line: "l1".to_string(),
             arc: "a1".to_string(),
         };
-        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map);
+        let evaluator = ExpressionEvaluator::new(std::collections::HashMap::new());
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map, &evaluator);
         assert!(result.is_ok(), "EqualLineArcLength constraint should process successfully");
     }
 
@@ -1027,7 +1058,8 @@ mod tests {
             point: "p1".to_string(),
             reference_line: "l2".to_string(),
         };
-        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map);
+        let evaluator = ExpressionEvaluator::new(std::collections::HashMap::new());
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map, &evaluator);
         assert!(result.is_ok(), "EqualLengthPointLineDistance constraint should process successfully");
     }
 
@@ -1046,7 +1078,8 @@ mod tests {
             point2: "p2".to_string(),
             line2: "l2".to_string(),
         };
-        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map);
+        let evaluator = ExpressionEvaluator::new(std::collections::HashMap::new());
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map, &evaluator);
         assert!(result.is_ok(), "EqualPointLineDistances constraint should process successfully");
     }
 
@@ -1061,7 +1094,8 @@ mod tests {
             cubic: "c1".to_string(),
             line: "l1".to_string(),
         };
-        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map);
+        let evaluator = ExpressionEvaluator::new(std::collections::HashMap::new());
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map, &evaluator);
         // May fail if cubic entity not properly supported, but processing should work
         assert!(result.is_ok() || result.is_err());
     }
@@ -1079,7 +1113,8 @@ mod tests {
             b: "a2".to_string(),
             value: ExprOrNumber::Number(2.0),
         };
-        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map);
+        let evaluator = ExpressionEvaluator::new(std::collections::HashMap::new());
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map, &evaluator);
         assert!(result.is_ok(), "ArcArcLengthRatio constraint should process successfully");
     }
 
@@ -1096,7 +1131,8 @@ mod tests {
             line: "l1".to_string(),
             value: ExprOrNumber::Number(1.5),
         };
-        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map);
+        let evaluator = ExpressionEvaluator::new(std::collections::HashMap::new());
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map, &evaluator);
         assert!(result.is_ok(), "ArcLineLengthRatio constraint should process successfully");
     }
 
@@ -1113,7 +1149,8 @@ mod tests {
             b: "a2".to_string(),
             value: ExprOrNumber::Number(10.0),
         };
-        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map);
+        let evaluator = ExpressionEvaluator::new(std::collections::HashMap::new());
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map, &evaluator);
         assert!(result.is_ok(), "ArcArcLengthDifference constraint should process successfully");
     }
 
@@ -1130,7 +1167,8 @@ mod tests {
             line: "l1".to_string(),
             value: ExprOrNumber::Number(5.0),
         };
-        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map);
+        let evaluator = ExpressionEvaluator::new(std::collections::HashMap::new());
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map, &evaluator);
         assert!(result.is_ok(), "ArcLineLengthDifference constraint should process successfully");
     }
 
@@ -1146,7 +1184,8 @@ mod tests {
             point: "p1".to_string(),
             workplane: None,
         };
-        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map);
+        let evaluator = ExpressionEvaluator::new(std::collections::HashMap::new());
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map, &evaluator);
         assert!(result.is_ok(), "Dragged constraint (3D) should process successfully: {:?}", result.err());
 
         // Test 2D dragged constraint
@@ -1154,7 +1193,8 @@ mod tests {
             point: "p1".to_string(),
             workplane: Some("wp1".to_string()),
         };
-        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 101, &entity_map);
+        let evaluator = ExpressionEvaluator::new(std::collections::HashMap::new());
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 101, &entity_map, &evaluator);
         assert!(result.is_ok(), "Dragged constraint (2D) should process successfully: {:?}", result.err());
     }
 
@@ -1185,7 +1225,8 @@ mod tests {
         entity_map.insert("p1".to_string(), 1);
         
         let constraint = Constraint::Fixed { entity: "p1".to_string() };
-        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map);
+        let evaluator = ExpressionEvaluator::new(std::collections::HashMap::new());
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map, &evaluator);
         // Should succeed (or return error if entity not found, but we provided it)
         assert!(result.is_ok() || result.is_err()); // Either is valid
     }
