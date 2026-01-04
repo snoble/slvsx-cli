@@ -1,6 +1,12 @@
 #!/bin/bash
 # Generate SVG renders for all examples
 # This creates visualizations that can be used in documentation
+#
+# Usage:
+#   ./scripts/generate_renders.sh [binary_path]
+#
+# If binary_path is not provided, will look for target/release/slvsx
+# or target/x86_64-unknown-linux-gnu/release/slvsx
 
 set -e
 
@@ -14,14 +20,22 @@ mkdir -p "$OUTPUT_DIR"
 # Set up environment
 export SLVS_LIB_DIR="$PROJECT_ROOT/libslvs-static/build"
 
-# Check if binary exists
-if [ ! -f "$PROJECT_ROOT/target/release/slvsx" ]; then
-    echo "Building slvsx..."
-    cd "$PROJECT_ROOT"
-    cargo build --release
+# Determine binary path
+if [ -n "$1" ]; then
+    BINARY="$1"
+elif [ -f "$PROJECT_ROOT/target/x86_64-unknown-linux-gnu/release/slvsx" ]; then
+    BINARY="$PROJECT_ROOT/target/x86_64-unknown-linux-gnu/release/slvsx"
+elif [ -f "$PROJECT_ROOT/target/release/slvsx" ]; then
+    BINARY="$PROJECT_ROOT/target/release/slvsx"
+else
+    echo "Error: slvsx binary not found. Please build it first:"
+    echo "  cargo build --release"
+    echo "Or provide the binary path as an argument:"
+    echo "  $0 /path/to/slvsx"
+    exit 1
 fi
 
-BINARY="$PROJECT_ROOT/target/release/slvsx"
+echo "Using binary: $BINARY"
 
 echo "Generating SVG renders for examples..."
 
