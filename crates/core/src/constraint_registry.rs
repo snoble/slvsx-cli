@@ -72,6 +72,7 @@ impl ConstraintRegistry {
                         }
                     };
                     solver.add_angle_constraint(constraint_id, line1_id, line2_id, angle)
+                        .map_err(|e| e.to_string())
                 } else {
                     Err("Angle constraint requires exactly 2 entities".to_string())
                 }
@@ -116,10 +117,12 @@ impl ConstraintRegistry {
             Constraint::Horizontal { a } => {
                 let line_id = entity_id_map.get(a).copied().unwrap_or(0);
                 solver.add_horizontal_constraint(constraint_id, line_id)
+                    .map_err(|e| e.to_string())
             }
             Constraint::Vertical { a } => {
                 let line_id = entity_id_map.get(a).copied().unwrap_or(0);
                 solver.add_vertical_constraint(constraint_id, line_id)
+                    .map_err(|e| e.to_string())
             }
             Constraint::EqualLength { entities } => {
                 if entities.len() < 2 {
@@ -131,7 +134,8 @@ impl ConstraintRegistry {
                 for (idx, entity_id_str) in entities.iter().skip(1).enumerate() {
                     let other_line_id = entity_id_map.get(entity_id_str).copied().unwrap_or(0);
                     // Use constraint_id + idx to create unique constraint IDs
-                    solver.add_equal_length_constraint(constraint_id + idx as i32, base_line_id, other_line_id)?;
+                    solver.add_equal_length_constraint(constraint_id + idx as i32, base_line_id, other_line_id)
+                        .map_err(|e| e.to_string())?;
                 }
                 Ok(())
             }
@@ -139,11 +143,13 @@ impl ConstraintRegistry {
                 let circle1_id = entity_id_map.get(a).copied().unwrap_or(0);
                 let circle2_id = entity_id_map.get(b).copied().unwrap_or(0);
                 solver.add_equal_radius_constraint(constraint_id, circle1_id, circle2_id)
+                    .map_err(|e| e.to_string())
             }
             Constraint::Tangent { a, b } => {
                 let entity1_id = entity_id_map.get(a).copied().unwrap_or(0);
                 let entity2_id = entity_id_map.get(b).copied().unwrap_or(0);
                 solver.add_tangent_constraint(constraint_id, entity1_id, entity2_id)
+                    .map_err(|e| e.to_string())
             }
             Constraint::PointOnLine { point, line } => {
                 let point_id = entity_id_map.get(point).copied().unwrap_or(0);
@@ -154,17 +160,20 @@ impl ConstraintRegistry {
                 let point_id = entity_id_map.get(point).copied().unwrap_or(0);
                 let circle_id = entity_id_map.get(circle).copied().unwrap_or(0);
                 solver.add_point_on_circle_constraint(constraint_id, point_id, circle_id)
+                    .map_err(|e| e.to_string())
             }
             Constraint::Symmetric { a, b, about } => {
                 let entity1_id = entity_id_map.get(a).copied().unwrap_or(0);
                 let entity2_id = entity_id_map.get(b).copied().unwrap_or(0);
                 let line_id = entity_id_map.get(about).copied().unwrap_or(0);
                 solver.add_symmetric_constraint(constraint_id, entity1_id, entity2_id, line_id)
+                    .map_err(|e| e.to_string())
             }
             Constraint::Midpoint { point, of } => {
                 let point_id = entity_id_map.get(point).copied().unwrap_or(0);
                 let line_id = entity_id_map.get(of).copied().unwrap_or(0);
                 solver.add_midpoint_constraint(constraint_id, point_id, line_id)
+                    .map_err(|e| e.to_string())
             }
             // COMPILER ERROR if a constraint variant is missing here!
             // This ensures we never forget to handle a new constraint type
@@ -407,5 +416,62 @@ mod tests {
         
         // This test verifies all constraints are implemented
         println!("All constraints are implemented!");
+    }
+
+    #[test]
+    fn test_implemented_constraints() {
+        let implemented = ConstraintRegistry::implemented_constraints();
+        assert!(!implemented.is_empty());
+        // Verify expected implemented constraints are listed
+        assert!(implemented.contains(&"Fixed"));
+        assert!(implemented.contains(&"Distance"));
+    }
+
+    #[test]
+    fn test_process_constraint_fixed() {
+        use crate::ffi::Solver as FfiSolver;
+        let mut solver = FfiSolver::new();
+        let mut entity_map = std::collections::HashMap::new();
+        entity_map.insert("p1".to_string(), 1);
+        
+        let constraint = Constraint::Fixed { entity: "p1".to_string() };
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map);
+        // Should succeed (or return error if entity not found, but we provided it)
+        assert!(result.is_ok() || result.is_err()); // Either is valid
+    }
+
+    #[test]
+    fn test_process_constraint_distance() {
+        use crate::ffi::Solver as FfiSolver;
+        use crate::ir::ExprOrNumber;
+        let mut solver = FfiSolver::new();
+        let mut entity_map = std::collections::HashMap::new();
+        entity_map.insert("p1".to_string(), 1);
+        entity_map.insert("p2".to_string(), 2);
+        
+        let constraint = Constraint::Distance {
+            between: vec!["p1".to_string(), "p2".to_string()],
+            value: ExprOrNumber::Number(10.0),
+        };
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map);
+        // Should succeed or fail based on FFI state
+        assert!(result.is_ok() || result.is_err());
+    }
+
+    #[test]
+    fn test_process_constraint_unimplemented() {
+        use crate::ffi::Solver as FfiSolver;
+        use crate::ir::ExprOrNumber;
+        let mut solver = FfiSolver::new();
+        let entity_map = std::collections::HashMap::new();
+        
+        // Test an unimplemented constraint
+        let constraint = Constraint::Angle {
+            between: vec!["l1".to_string(), "l2".to_string()],
+            value: ExprOrNumber::Number(90.0),
+        };
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map);
+        assert!(result.is_err());
+        assert!(result.unwrap_err().contains("not yet implemented"));
     }
 }

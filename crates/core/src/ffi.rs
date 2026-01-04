@@ -1,5 +1,40 @@
 use std::os::raw::{c_double, c_int};
 
+/// FFI error types for better error handling
+#[derive(Debug, Clone)]
+pub enum FfiError {
+    /// System is inconsistent (overconstrained)
+    Inconsistent,
+    /// Solver didn't converge
+    DidntConverge,
+    /// Too many unknowns (underconstrained)
+    TooManyUnknowns,
+    /// Invalid system pointer
+    InvalidSystem,
+    /// Unknown error code
+    Unknown(i32),
+    /// Entity not found
+    EntityNotFound(String),
+    /// Constraint operation failed
+    ConstraintFailed(String),
+}
+
+impl std::fmt::Display for FfiError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            FfiError::Inconsistent => write!(f, "System is inconsistent (conflicting constraints)"),
+            FfiError::DidntConverge => write!(f, "Solver did not converge (try adjusting initial guesses or constraints)"),
+            FfiError::TooManyUnknowns => write!(f, "Too many unknowns (system is underconstrained)"),
+            FfiError::InvalidSystem => write!(f, "Invalid solver system"),
+            FfiError::Unknown(code) => write!(f, "Solver failed with unknown error code {}", code),
+            FfiError::EntityNotFound(id) => write!(f, "Entity not found: {}", id),
+            FfiError::ConstraintFailed(msg) => write!(f, "Constraint operation failed: {}", msg),
+        }
+    }
+}
+
+impl std::error::Error for FfiError {}
+
 // FFI bindings to our C wrapper
 #[repr(C)]
 pub struct SolverSystem {
@@ -298,13 +333,13 @@ impl Solver {
         line1_id: i32,
         line2_id: i32,
         angle: f64,
-    ) -> Result<(), String> {
+    ) -> Result<(), FfiError> {
         unsafe {
             let result = real_slvs_add_angle_constraint(self.system, id, line1_id, line2_id, angle);
             if result == 0 {
                 Ok(())
             } else {
-                Err(format!("Failed to add angle constraint {}", id))
+                Err(FfiError::ConstraintFailed(format!("Failed to add angle constraint {}", id)))
             }
         }
     }
@@ -313,13 +348,13 @@ impl Solver {
         &mut self,
         id: i32,
         line_id: i32,
-    ) -> Result<(), String> {
+    ) -> Result<(), FfiError> {
         unsafe {
             let result = real_slvs_add_horizontal_constraint(self.system, id, line_id);
             if result == 0 {
                 Ok(())
             } else {
-                Err(format!("Failed to add horizontal constraint {}", id))
+                Err(FfiError::ConstraintFailed(format!("Failed to add horizontal constraint {}", id)))
             }
         }
     }
@@ -328,13 +363,13 @@ impl Solver {
         &mut self,
         id: i32,
         line_id: i32,
-    ) -> Result<(), String> {
+    ) -> Result<(), FfiError> {
         unsafe {
             let result = real_slvs_add_vertical_constraint(self.system, id, line_id);
             if result == 0 {
                 Ok(())
             } else {
-                Err(format!("Failed to add vertical constraint {}", id))
+                Err(FfiError::ConstraintFailed(format!("Failed to add vertical constraint {}", id)))
             }
         }
     }
@@ -344,13 +379,13 @@ impl Solver {
         id: i32,
         line1_id: i32,
         line2_id: i32,
-    ) -> Result<(), String> {
+    ) -> Result<(), FfiError> {
         unsafe {
             let result = real_slvs_add_equal_length_constraint(self.system, id, line1_id, line2_id);
             if result == 0 {
                 Ok(())
             } else {
-                Err(format!("Failed to add equal length constraint {}", id))
+                Err(FfiError::ConstraintFailed(format!("Failed to add equal length constraint {}", id)))
             }
         }
     }
@@ -360,13 +395,13 @@ impl Solver {
         id: i32,
         circle1_id: i32,
         circle2_id: i32,
-    ) -> Result<(), String> {
+    ) -> Result<(), FfiError> {
         unsafe {
             let result = real_slvs_add_equal_radius_constraint(self.system, id, circle1_id, circle2_id);
             if result == 0 {
                 Ok(())
             } else {
-                Err(format!("Failed to add equal radius constraint {}", id))
+                Err(FfiError::ConstraintFailed(format!("Failed to add equal radius constraint {}", id)))
             }
         }
     }
@@ -376,13 +411,13 @@ impl Solver {
         id: i32,
         entity1_id: i32,
         entity2_id: i32,
-    ) -> Result<(), String> {
+    ) -> Result<(), FfiError> {
         unsafe {
             let result = real_slvs_add_tangent_constraint(self.system, id, entity1_id, entity2_id);
             if result == 0 {
                 Ok(())
             } else {
-                Err(format!("Failed to add tangent constraint {}", id))
+                Err(FfiError::ConstraintFailed(format!("Failed to add tangent constraint {}", id)))
             }
         }
     }
@@ -392,13 +427,13 @@ impl Solver {
         id: i32,
         point_id: i32,
         circle_id: i32,
-    ) -> Result<(), String> {
+    ) -> Result<(), FfiError> {
         unsafe {
             let result = real_slvs_add_point_on_circle_constraint(self.system, id, point_id, circle_id);
             if result == 0 {
                 Ok(())
             } else {
-                Err(format!("Failed to add point on circle constraint {}", id))
+                Err(FfiError::ConstraintFailed(format!("Failed to add point on circle constraint {}", id)))
             }
         }
     }
@@ -409,13 +444,13 @@ impl Solver {
         entity1_id: i32,
         entity2_id: i32,
         line_id: i32,
-    ) -> Result<(), String> {
+    ) -> Result<(), FfiError> {
         unsafe {
             let result = real_slvs_add_symmetric_constraint(self.system, id, entity1_id, entity2_id, line_id);
             if result == 0 {
                 Ok(())
             } else {
-                Err(format!("Failed to add symmetric constraint {}", id))
+                Err(FfiError::ConstraintFailed(format!("Failed to add symmetric constraint {}", id)))
             }
         }
     }
@@ -425,38 +460,27 @@ impl Solver {
         id: i32,
         point_id: i32,
         line_id: i32,
-    ) -> Result<(), String> {
+    ) -> Result<(), FfiError> {
         unsafe {
             let result = real_slvs_add_midpoint_constraint(self.system, id, point_id, line_id);
             if result == 0 {
                 Ok(())
             } else {
-                Err(format!("Failed to add midpoint constraint {}", id))
+                Err(FfiError::ConstraintFailed(format!("Failed to add midpoint constraint {}", id)))
             }
         }
     }
 
-    pub fn solve(&mut self) -> Result<(), String> {
+    pub fn solve(&mut self) -> Result<(), FfiError> {
         unsafe {
             let result = real_slvs_solve(self.system);
-            if result == 0 {
-                Ok(())
-            } else {
-                // Map SolveSpace error codes to descriptive messages
-                // See libslvs-static/include/slvs.h for definitions:
-                // SLVS_RESULT_OKAY = 0
-                // SLVS_RESULT_INCONSISTENT = 1
-                // SLVS_RESULT_DIDNT_CONVERGE = 2
-                // SLVS_RESULT_TOO_MANY_UNKNOWNS = 3
-                // SLVS_RESULT_REDUNDANT_OKAY = 4
-                let error_msg = match result {
-                    1 => "System is inconsistent (conflicting constraints)".to_string(),
-                    2 => "Solver did not converge (try adjusting initial guesses or constraints)".to_string(),
-                    3 => "Too many unknowns (system is underconstrained)".to_string(),
-                    4 => "System is redundant but solved".to_string(),
-                    _ => format!("Solver failed with unknown error code {}", result),
-                };
-                Err(error_msg)
+            match result {
+                0 => Ok(()),
+                1 => Err(FfiError::Inconsistent), // Overconstrained
+                2 => Err(FfiError::DidntConverge), // Convergence failure
+                3 => Err(FfiError::TooManyUnknowns), // Underconstrained
+                -1 => Err(FfiError::InvalidSystem),
+                code => Err(FfiError::Unknown(code)),
             }
         }
     }
@@ -570,7 +594,7 @@ mod tests {
         // Solve - should succeed (may be underconstrained but shouldn't error)
         let solve_result = solver.solve();
         // Angle constraint may cause underconstrained system, which is acceptable
-        assert!(solve_result.is_ok() || solve_result.unwrap_err().contains("code 3"), 
+        assert!(solve_result.is_ok() || matches!(solve_result.unwrap_err(), FfiError::TooManyUnknowns), 
                 "Solver should run without FFI errors");
     }
 
@@ -594,7 +618,7 @@ mod tests {
 
         // Solve - should succeed
         let solve_result = solver.solve();
-        assert!(solve_result.is_ok() || solve_result.unwrap_err().contains("code 3"), 
+        assert!(solve_result.is_ok() || matches!(solve_result.unwrap_err(), FfiError::TooManyUnknowns), 
                 "Solver should run without FFI errors");
     }
 
@@ -618,7 +642,7 @@ mod tests {
 
         // Solve - should succeed
         let solve_result = solver.solve();
-        assert!(solve_result.is_ok() || solve_result.unwrap_err().contains("code 3"), 
+        assert!(solve_result.is_ok() || matches!(solve_result.unwrap_err(), FfiError::TooManyUnknowns), 
                 "Solver should run without FFI errors");
     }
 
@@ -646,7 +670,7 @@ mod tests {
 
         // Solve - should succeed
         let solve_result = solver.solve();
-        assert!(solve_result.is_ok() || solve_result.unwrap_err().contains("code 3"), 
+        assert!(solve_result.is_ok() || matches!(solve_result.unwrap_err(), FfiError::TooManyUnknowns), 
                 "Solver should run without FFI errors");
     }
 
@@ -732,5 +756,37 @@ mod tests {
         // Add midpoint constraint - FFI binding should work
         let result = solver.add_midpoint_constraint(100, 3, 10);
         assert!(result.is_ok(), "Should be able to add midpoint constraint via FFI");
+    }
+
+    #[test]
+    fn test_ffi_error_display() {
+        assert_eq!(
+            FfiError::Inconsistent.to_string(),
+            "System is inconsistent (conflicting constraints)"
+        );
+        assert_eq!(
+            FfiError::DidntConverge.to_string(),
+            "Solver did not converge (try adjusting initial guesses or constraints)"
+        );
+        assert_eq!(
+            FfiError::TooManyUnknowns.to_string(),
+            "Too many unknowns (system is underconstrained)"
+        );
+        assert_eq!(
+            FfiError::InvalidSystem.to_string(),
+            "Invalid solver system"
+        );
+        assert_eq!(
+            FfiError::Unknown(42).to_string(),
+            "Solver failed with unknown error code 42"
+        );
+        assert_eq!(
+            FfiError::EntityNotFound("p1".to_string()).to_string(),
+            "Entity not found: p1"
+        );
+        assert_eq!(
+            FfiError::ConstraintFailed("test".to_string()).to_string(),
+            "Constraint operation failed: test"
+        );
     }
 }

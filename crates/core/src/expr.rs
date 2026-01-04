@@ -277,4 +277,150 @@ mod tests {
         let eval = ExpressionEvaluator::new(HashMap::new());
         assert_eq!(eval.eval_binary_op("42").unwrap(), None);
     }
+
+    #[test]
+    fn test_eval_empty_expression() {
+        let eval = ExpressionEvaluator::new(HashMap::new());
+        let result = eval.eval("");
+        assert!(result.is_err());
+        match result.unwrap_err() {
+            Error::ExpressionEval(msg) => assert!(msg.contains("Empty expression")),
+            _ => panic!("Wrong error type"),
+        }
+    }
+
+    #[test]
+    fn test_eval_parameter_with_dollar() {
+        let mut params = HashMap::new();
+        params.insert("W".to_string(), 100.0);
+        let eval = ExpressionEvaluator::new(params);
+        assert_eq!(eval.eval("$W").unwrap(), 100.0);
+    }
+
+    #[test]
+    fn test_eval_functions_cos() {
+        let eval = ExpressionEvaluator::new(HashMap::new());
+        let result = eval.eval("cos(0)").unwrap();
+        assert!((result - 1.0).abs() < 1e-10);
+    }
+
+    #[test]
+    fn test_eval_functions_sin() {
+        let eval = ExpressionEvaluator::new(HashMap::new());
+        let result = eval.eval("sin(0)").unwrap();
+        assert!((result - 0.0).abs() < 1e-10);
+    }
+
+    #[test]
+    fn test_eval_functions_tan() {
+        let eval = ExpressionEvaluator::new(HashMap::new());
+        let result = eval.eval("tan(0)").unwrap();
+        assert!((result - 0.0).abs() < 1e-10);
+    }
+
+    #[test]
+    fn test_eval_functions_sqrt() {
+        let eval = ExpressionEvaluator::new(HashMap::new());
+        assert_eq!(eval.eval("sqrt(4)").unwrap(), 2.0);
+        assert_eq!(eval.eval("sqrt(9)").unwrap(), 3.0);
+    }
+
+    #[test]
+    fn test_eval_functions_abs() {
+        let eval = ExpressionEvaluator::new(HashMap::new());
+        assert_eq!(eval.eval("abs(-5)").unwrap(), 5.0);
+        assert_eq!(eval.eval("abs(5)").unwrap(), 5.0);
+    }
+
+    #[test]
+    fn test_eval_functions_with_expressions() {
+        let eval = ExpressionEvaluator::new(HashMap::new());
+        assert_eq!(eval.eval("sqrt(4 + 5)").unwrap(), 3.0);
+        assert_eq!(eval.eval("abs(-10 + 5)").unwrap(), 5.0);
+    }
+
+    #[test]
+    fn test_eval_unknown_function() {
+        let eval = ExpressionEvaluator::new(HashMap::new());
+        let result = eval.eval("unknown(5)");
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_eval_parentheses_without_function() {
+        let eval = ExpressionEvaluator::new(HashMap::new());
+        assert_eq!(eval.eval("(2 + 3)").unwrap(), 5.0);
+        assert_eq!(eval.eval("((2 + 3))").unwrap(), 5.0);
+    }
+
+    #[test]
+    fn test_eval_operator_precedence() {
+        let eval = ExpressionEvaluator::new(HashMap::new());
+        // Multiplication should happen before addition
+        assert_eq!(eval.eval("2 + 3 * 4").unwrap(), 14.0);
+        // Division should happen before subtraction
+        assert_eq!(eval.eval("10 - 8 / 2").unwrap(), 6.0);
+    }
+
+    #[test]
+    fn test_eval_nested_parentheses() {
+        let eval = ExpressionEvaluator::new(HashMap::new());
+        assert_eq!(eval.eval("((2 + 3) * 4)").unwrap(), 20.0);
+        assert_eq!(eval.eval("(2 + (3 * 4))").unwrap(), 14.0);
+    }
+
+    #[test]
+    fn test_eval_parameter_in_expression() {
+        let mut params = HashMap::new();
+        params.insert("x".to_string(), 10.0);
+        let eval = ExpressionEvaluator::new(params);
+        assert_eq!(eval.eval("x + 5").unwrap(), 15.0);
+        assert_eq!(eval.eval("x * 2").unwrap(), 20.0);
+    }
+
+    #[test]
+    fn test_eval_negative_numbers() {
+        let eval = ExpressionEvaluator::new(HashMap::new());
+        assert_eq!(eval.eval("-5").unwrap(), -5.0);
+        assert_eq!(eval.eval("-10 + 5").unwrap(), -5.0);
+    }
+
+    #[test]
+    fn test_try_split_and_eval_with_operator() {
+        let eval = ExpressionEvaluator::new(HashMap::new());
+        assert_eq!(eval.try_split_and_eval("2 + 3", '+').unwrap(), Some(5.0));
+        assert_eq!(eval.try_split_and_eval("10 - 3", '-').unwrap(), Some(7.0));
+        assert_eq!(eval.try_split_and_eval("4 * 5", '*').unwrap(), Some(20.0));
+        assert_eq!(eval.try_split_and_eval("20 / 4", '/').unwrap(), Some(5.0));
+    }
+
+    #[test]
+    fn test_try_split_and_eval_with_parentheses() {
+        let eval = ExpressionEvaluator::new(HashMap::new());
+        // Should handle operators inside parentheses correctly
+        assert_eq!(eval.eval("(2 + 3) * 4").unwrap(), 20.0);
+    }
+
+    #[test]
+    fn test_try_split_and_eval_unknown_operator() {
+        let eval = ExpressionEvaluator::new(HashMap::new());
+        // Unknown operator should return None
+        assert_eq!(eval.try_split_and_eval("2 % 3", '%').unwrap(), None);
+    }
+
+    #[test]
+    fn test_eval_decimal_numbers() {
+        let eval = ExpressionEvaluator::new(HashMap::new());
+        assert_eq!(eval.eval("3.14").unwrap(), 3.14);
+        assert_eq!(eval.eval("0.5 + 0.5").unwrap(), 1.0);
+    }
+
+    #[test]
+    fn test_eval_parameter_trimming() {
+        let mut params = HashMap::new();
+        params.insert("W".to_string(), 100.0);
+        let eval = ExpressionEvaluator::new(params);
+        assert_eq!(eval.eval(" $W ").unwrap(), 100.0);
+        assert_eq!(eval.eval("$W ").unwrap(), 100.0);
+    }
 }

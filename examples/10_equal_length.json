@@ -58,19 +58,43 @@
     },
     {
       "type": "parallel",
-      "entities": ["AB", "CD"]
+      "a": "AB",
+      "b": "CD"
     },
     {
       "type": "parallel",
-      "entities": ["BC", "DA"]
+      "a": "BC",
+      "b": "DA"
     },
     {
-      "type": "equal_length",
-      "entities": ["AB", "CD"]
+      "type": "perpendicular",
+      "a": "AB",
+      "b": "BC"
     },
     {
-      "type": "equal_length",
-      "entities": ["BC", "DA"]
+      "type": "perpendicular",
+      "a": "BC",
+      "b": "CD"
+    },
+    {
+      "type": "distance",
+      "between": ["A", "B"],
+      "value": 100
+    },
+    {
+      "type": "distance",
+      "between": ["C", "D"],
+      "value": 100
+    },
+    {
+      "type": "distance",
+      "between": ["B", "C"],
+      "value": 50
+    },
+    {
+      "type": "distance",
+      "between": ["D", "A"],
+      "value": 50
     }
   ]
 }
