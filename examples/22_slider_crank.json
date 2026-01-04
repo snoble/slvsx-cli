@@ -1,0 +1,93 @@
+{
+  "schema": "slvs-json/1",
+  "units": "mm",
+  "parameters": {
+    "crank_length": 30.0,
+    "connecting_rod_length": 80.0,
+    "crank_angle": 45.0
+  },
+  "entities": [
+    {
+      "type": "point",
+      "id": "crank_pivot",
+      "at": [0, 0, 0]
+    },
+    {
+      "type": "point",
+      "id": "crank_end",
+      "at": [30, 0, 0]
+    },
+    {
+      "type": "point",
+      "id": "piston",
+      "at": [100, 0, 0]
+    },
+    {
+      "type": "line",
+      "id": "crank",
+      "p1": "crank_pivot",
+      "p2": "crank_end"
+    },
+    {
+      "type": "line",
+      "id": "connecting_rod",
+      "p1": "crank_end",
+      "p2": "piston"
+    },
+    {
+      "type": "point",
+      "id": "path_start",
+      "at": [0, 0, 0]
+    },
+    {
+      "type": "point",
+      "id": "path_end",
+      "at": [200, 0, 0]
+    },
+    {
+      "type": "line",
+      "id": "piston_path",
+      "p1": "path_start",
+      "p2": "path_end"
+    }
+  ],
+  "constraints": [
+    {
+      "type": "fixed",
+      "entity": "crank_pivot"
+    },
+    {
+      "type": "fixed",
+      "entity": "path_start"
+    },
+    {
+      "type": "fixed",
+      "entity": "path_end"
+    },
+    {
+      "type": "horizontal",
+      "entity": "piston_path"
+    },
+    {
+      "type": "distance",
+      "between": ["crank_pivot", "crank_end"],
+      "value": "$crank_length"
+    },
+    {
+      "type": "distance",
+      "between": ["crank_end", "piston"],
+      "value": "$connecting_rod_length"
+    },
+    {
+      "type": "angle",
+      "between": ["crank", "piston_path"],
+      "value": "$crank_angle"
+    },
+    {
+      "type": "point_on_line",
+      "point": "piston",
+      "line": "piston_path"
+    }
+  ]
+}
+
