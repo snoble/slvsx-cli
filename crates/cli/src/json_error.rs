@@ -89,6 +89,7 @@ mod tests {
     use serde::Deserialize;
     
     #[derive(Debug, Deserialize)]
+    #[serde(deny_unknown_fields)]
     struct TestStruct {
         name: String,
         value: i32,
