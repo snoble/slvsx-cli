@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-20.0 -20.0 198.3 240.0" width="800" height="800">
+  <line id="back_right_edge" x1="150.000000" y1="0.000029" x2="150.007937" y2="199.999960" stroke="black"/>
+  <line id="top_left" x1="8.324631" y1="199.826646" x2="0.007938" y2="199.999942" stroke="black"/>
+  <line id="top_right" x1="158.324588" y1="199.939559" x2="150.007937" y2="199.999960" stroke="black"/>
+  <circle id="base_front_left" cx="0.000000" cy="0.000000" r="2" fill="black"/>
+  <circle id="top_back_right" cx="150.007937" cy="199.999960" r="2" fill="black"/>
+  <circle id="roof_peak" cx="58.324616" cy="199.864284" r="2" fill="black"/>
+  <circle id="top_front_right" cx="158.324588" cy="199.939559" r="2" fill="black"/>
+  <line id="base_left" x1="0.000000" y1="0.000000" x2="0.000000" y2="0.000022" stroke="black"/>
+  <line id="base_back" x1="0.000000" y1="0.000022" x2="150.000000" y2="0.000029" stroke="black"/>
+  <circle id="top_back_left" cx="0.007938" cy="199.999942" r="2" fill="black"/>
+  <line id="roof_front_left" x1="8.324631" y1="199.826646" x2="58.324616" y2="199.864284" stroke="black"/>
+  <line id="roof_back_left" x1="0.007938" y1="199.999942" x2="58.324616" y2="199.864284" stroke="black"/>
+  <line id="roof_front_right" x1="158.324588" y1="199.939559" x2="58.324616" y2="199.864284" stroke="black"/>
+  <line id="roof_back_right" x1="150.007937" y1="199.999960" x2="58.324616" y2="199.864284" stroke="black"/>
+  <line id="front_left_edge" x1="0.000000" y1="0.000000" x2="8.324631" y2="199.826646" stroke="black"/>
+  <line id="back_left_edge" x1="0.000000" y1="0.000022" x2="0.007938" y2="199.999942" stroke="black"/>
+  <circle id="base_back_right" cx="150.000000" cy="0.000029" r="2" fill="black"/>
+  <circle id="top_front_left" cx="8.324631" cy="199.826646" r="2" fill="black"/>
+  <line id="front_right_edge" x1="149.999957" y1="0.112920" x2="158.324588" y2="199.939559" stroke="black"/>
+  <line id="base_front" x1="0.000000" y1="0.000000" x2="149.999957" y2="0.112920" stroke="black"/>
+  <circle id="base_front_right" cx="149.999957" cy="0.112920" r="2" fill="black"/>
+  <line id="top_front" x1="8.324631" y1="199.826646" x2="158.324588" y2="199.939559" stroke="black"/>
+  <line id="top_back" x1="0.007938" y1="199.999942" x2="150.007937" y2="199.999960" stroke="black"/>
+  <circle id="base_back_left" cx="0.000000" cy="0.000022" r="2" fill="black"/>
+  <line id="base_right" x1="149.999957" y1="0.112920" x2="150.000000" y2="0.000029" stroke="black"/>
+</svg>

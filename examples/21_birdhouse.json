@@ -221,17 +221,8 @@
       "value": "$roof_height"
     },
     {
-      "type": "distance",
-      "between": ["top_front_right", "roof_peak"],
-      "value": "$roof_height"
-    },
-    {
       "type": "equal_length",
-      "entities": ["roof_front_left", "roof_back_left"]
-    },
-    {
-      "type": "equal_length",
-      "entities": ["roof_front_right", "roof_back_right"]
+      "entities": ["roof_front_left", "roof_front_right", "roof_back_left", "roof_back_right"]
     },
     {
       "type": "coincident",
