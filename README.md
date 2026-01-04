@@ -47,25 +47,30 @@ See [docs/BUILDING.md](docs/BUILDING.md) for detailed build instructions.
 # Create a simple constraint problem
 cat > triangle.json << 'EOF'
 {
-  "schema_version": "0.3.0",
+  "schema": "slvs-json/1",
   "units": "mm",
-  "entities": {
-    "A": {"type": "point", "point": {"x": 0, "y": 0}},
-    "B": {"type": "point", "point": {"x": 100, "y": 0}},
-    "C": {"type": "point", "point": {"x": 50, "y": 50}}
-  },
+  "entities": [
+    {"type": "point", "id": "A", "at": [0, 0, 0]},
+    {"type": "point", "id": "B", "at": [100, 0, 0]},
+    {"type": "point", "id": "C", "at": [50, 50, 0]}
+  ],
   "constraints": [
     {"type": "fixed", "entity": "A"},
     {"type": "fixed", "entity": "B"},
-    {"type": "distance", "entities": ["A", "C"], "distance": 80},
-    {"type": "distance", "entities": ["B", "C"], "distance": 60}
+    {"type": "distance", "between": ["A", "C"], "value": 80},
+    {"type": "distance", "between": ["B", "C"], "value": 60}
   ]
 }
 EOF
 
 # Solve it
 slvsx solve triangle.json
+
+# Export to SVG
+slvsx export -f svg triangle.json > triangle.svg
 ```
+
+See [docs/USAGE_EXAMPLES.md](docs/USAGE_EXAMPLES.md) for more examples and patterns.
 
 ### Commands
 
