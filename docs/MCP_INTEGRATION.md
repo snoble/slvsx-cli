@@ -21,18 +21,23 @@ curl -L https://github.com/snoble/slvsx-cli/releases/latest/download/slvsx-macos
 sudo mv slvsx /usr/local/bin/
 ```
 
-### Option 2: NPM Package (Coming Soon)
+### Option 2: NPM Package ✅ Available
 ```bash
-npm install -g slvsx-cli
+npx slvsx solve geometry.json
+# Or install globally
+npm install -g slvsx
 ```
 
 ## Current Status
 
 ✅ **Working**: Direct CLI invocation via subprocess  
-🚧 **In Progress**: Native MCP server implementation  
-📦 **Planned**: NPM package for easy installation
+✅ **Working**: Native MCP server implementation (`slvsx mcp-server`)  
+✅ **Working**: NPM package (`npx slvsx`)
 
-AI agents can currently use SLVSX through subprocess calls to the CLI binary.
+AI agents can use SLVSX through:
+1. Direct CLI subprocess calls (simplest)
+2. MCP server mode (for Claude Desktop and other MCP clients)
+3. NPM package (for Node.js environments)
 
 ## Quick Start for AI Agents
 

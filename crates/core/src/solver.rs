@@ -280,3 +280,36 @@ impl Solver {
         });
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_solver_config_default() {
+        let config = SolverConfig::default();
+        assert_eq!(config.tolerance, 1e-6);
+        assert_eq!(config.max_iterations, 1000);
+        assert_eq!(config.timeout_ms, None);
+    }
+
+    #[test]
+    fn test_solver_config_custom() {
+        let config = SolverConfig {
+            tolerance: 1e-8,
+            max_iterations: 500,
+            timeout_ms: Some(5000),
+        };
+        assert_eq!(config.tolerance, 1e-8);
+        assert_eq!(config.max_iterations, 500);
+        assert_eq!(config.timeout_ms, Some(5000));
+    }
+
+    #[test]
+    fn test_solver_new() {
+        let config = SolverConfig::default();
+        let solver = Solver::new(config);
+        // Just verify it can be created
+        assert!(std::mem::size_of_val(&solver) > 0);
+    }
+}

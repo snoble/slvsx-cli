@@ -18,7 +18,7 @@ struct Cli {
     command: Commands,
 }
 
-#[derive(Clone, ValueEnum)]
+#[derive(Clone, Debug, PartialEq, ValueEnum)]
 enum ExportFormat {
     Svg,
     Dxf,
@@ -26,7 +26,7 @@ enum ExportFormat {
     Stl,
 }
 
-#[derive(Clone, ValueEnum)]
+#[derive(Clone, Debug, PartialEq, ValueEnum)]
 enum ViewPlane {
     Xy,
     Xz,
@@ -179,9 +179,97 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_cli_parse() {
-        // Test that CLI parsing works
+    fn test_cli_parse_capabilities() {
         let cli = Cli::parse_from(["slvsx", "capabilities"]);
         matches!(cli.command, Commands::Capabilities);
+    }
+
+    #[test]
+    fn test_cli_parse_validate() {
+        let cli = Cli::parse_from(["slvsx", "validate", "file.json"]);
+        match cli.command {
+            Commands::Validate { file } => assert_eq!(file, "file.json"),
+            _ => panic!("Expected Validate command"),
+        }
+    }
+
+    #[test]
+    fn test_cli_parse_solve() {
+        let cli = Cli::parse_from(["slvsx", "solve", "-"]);
+        match cli.command {
+            Commands::Solve { file } => assert_eq!(file, "-"),
+            _ => panic!("Expected Solve command"),
+        }
+    }
+
+    #[test]
+    fn test_cli_parse_export_defaults() {
+        let cli = Cli::parse_from(["slvsx", "export", "file.json"]);
+        match cli.command {
+            Commands::Export { format, view, .. } => {
+                assert_eq!(format, ExportFormat::Svg);
+                assert_eq!(view, ViewPlane::Xy);
+            }
+            _ => panic!("Expected Export command"),
+        }
+    }
+
+    #[test]
+    fn test_cli_parse_export_with_format() {
+        let cli = Cli::parse_from(["slvsx", "export", "-f", "dxf", "file.json"]);
+        match cli.command {
+            Commands::Export { format, .. } => {
+                assert_eq!(format, ExportFormat::Dxf);
+            }
+            _ => panic!("Expected Export command"),
+        }
+    }
+
+    #[test]
+    fn test_cli_parse_export_with_view() {
+        let cli = Cli::parse_from(["slvsx", "export", "-v", "xz", "file.json"]);
+        match cli.command {
+            Commands::Export { view, .. } => {
+                assert_eq!(view, ViewPlane::Xz);
+            }
+            _ => panic!("Expected Export command"),
+        }
+    }
+
+    #[test]
+    fn test_cli_parse_export_with_output() {
+        let cli = Cli::parse_from(["slvsx", "export", "--output", "out.svg", "file.json"]);
+        match cli.command {
+            Commands::Export { output, .. } => {
+                assert_eq!(output, Some("out.svg".to_string()));
+            }
+            _ => panic!("Expected Export command"),
+        }
+    }
+
+
+    #[test]
+    fn test_read_input_stdin() {
+        // This would require mocking stdin, which is complex
+        // Instead, we test it through integration tests
+    }
+
+    #[test]
+    fn test_read_input_file() {
+        use tempfile::NamedTempFile;
+        use std::fs;
+        
+        let tmp_file = NamedTempFile::new().unwrap();
+        fs::write(tmp_file.path(), "test content").unwrap();
+        
+        let result = read_input(tmp_file.path().to_str().unwrap());
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), "test content");
+    }
+
+    #[test]
+    fn test_read_input_nonexistent_file() {
+        let result = read_input("nonexistent_file_12345.json");
+        assert!(result.is_err());
     }
 }
