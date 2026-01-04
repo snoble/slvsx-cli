@@ -1,4 +1,4 @@
-use crate::io::{create_input_reader, create_output_writer, ErrorWriter, InputReader, OutputWriter, StderrWriter};
+use crate::io::{ErrorWriter, InputReader, OutputWriter};
 use crate::json_error::parse_json_with_context;
 use anyhow::Result;
 use slvsx_core::{

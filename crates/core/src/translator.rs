@@ -249,7 +249,7 @@ mod tests {
     #[test]
     fn test_translator_default() {
         let translator = Translator::default();
-        // Just verify it can be created
-        assert!(std::mem::size_of_val(&translator) > 0);
+        // Translator is a unit struct, so size is 0, but we can verify it can be created
+        let _ = translator;
     }
 }
