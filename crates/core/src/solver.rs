@@ -40,7 +40,7 @@ impl Solver {
         let mut entity_id_map = HashMap::new();
         let mut next_id = 1;
 
-        for entity in &doc.entities {
+        for (entity_idx, entity) in doc.entities.iter().enumerate() {
             match entity {
                 crate::ir::Entity::Point { id, at } => {
                     // Evaluate expressions for point coordinates
