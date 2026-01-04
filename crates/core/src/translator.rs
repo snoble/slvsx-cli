@@ -179,4 +179,77 @@ mod tests {
             vec!["p1", "l1", "l2"]
         );
     }
+
+    #[test]
+    fn test_get_constraint_refs_all_variants() {
+        use crate::ir::ExprOrNumber;
+        let translator = Translator::new();
+
+        // Test all constraint variants
+        let constraints = vec![
+            Constraint::Fixed { entity: "p1".to_string() },
+            Constraint::Distance {
+                between: vec!["p1".to_string(), "p2".to_string()],
+                value: ExprOrNumber::Number(10.0),
+            },
+            Constraint::Angle {
+                between: vec!["l1".to_string(), "l2".to_string()],
+                value: ExprOrNumber::Number(90.0),
+            },
+            Constraint::Perpendicular {
+                a: "l1".to_string(),
+                b: "l2".to_string(),
+            },
+            Constraint::Parallel {
+                entities: vec!["l1".to_string(), "l2".to_string()],
+            },
+            Constraint::Horizontal { a: "l1".to_string() },
+            Constraint::Vertical { a: "l1".to_string() },
+            Constraint::EqualLength {
+                entities: vec!["l1".to_string(), "l2".to_string()],
+            },
+            Constraint::EqualRadius {
+                a: "c1".to_string(),
+                b: "c2".to_string(),
+            },
+            Constraint::Tangent {
+                a: "c1".to_string(),
+                b: "c2".to_string(),
+            },
+            Constraint::PointOnLine {
+                point: "p1".to_string(),
+                line: "l1".to_string(),
+            },
+            Constraint::PointOnCircle {
+                point: "p1".to_string(),
+                circle: "c1".to_string(),
+            },
+            Constraint::Symmetric {
+                a: "p1".to_string(),
+                b: "p2".to_string(),
+                about: "l1".to_string(),
+            },
+            Constraint::Midpoint {
+                point: "p1".to_string(),
+                of: "p2".to_string(),
+            },
+            Constraint::Coincident {
+                data: CoincidentData::TwoEntities {
+                    entities: vec!["p1".to_string(), "p2".to_string()],
+                },
+            },
+        ];
+
+        for constraint in constraints {
+            let refs = translator.get_constraint_refs(&constraint);
+            assert!(!refs.is_empty(), "Constraint should have at least one reference");
+        }
+    }
+
+    #[test]
+    fn test_translator_default() {
+        let translator = Translator::default();
+        // Just verify it can be created
+        assert!(std::mem::size_of_val(&translator) > 0);
+    }
 }

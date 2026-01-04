@@ -290,6 +290,57 @@ mod tests {
     }
 
     #[test]
+    fn test_expr_or_number_as_f64() {
+        assert_eq!(ExprOrNumber::Number(42.5).as_f64(), Some(42.5));
+        assert_eq!(ExprOrNumber::Expression("x".to_string()).as_f64(), None);
+    }
+
+    #[test]
+    fn test_expr_or_number_as_expr() {
+        assert_eq!(ExprOrNumber::Number(42.5).as_expr(), None);
+        assert_eq!(ExprOrNumber::Expression("x".to_string()).as_expr(), Some("x"));
+    }
+
+    #[test]
+    fn test_expr_or_number_default() {
+        let default = ExprOrNumber::default();
+        assert_eq!(default.as_f64(), Some(0.0));
+    }
+
+    #[test]
+    fn test_entity_id_all_variants() {
+        let point = Entity::Point {
+            id: "p1".to_string(),
+            at: vec![ExprOrNumber::Number(0.0)],
+        };
+        assert_eq!(point.id(), "p1");
+
+        let line = Entity::Line {
+            id: "l1".to_string(),
+            p1: "p1".to_string(),
+            p2: "p2".to_string(),
+        };
+        assert_eq!(line.id(), "l1");
+
+        let circle = Entity::Circle {
+            id: "c1".to_string(),
+            center: vec![ExprOrNumber::Number(0.0)],
+            diameter: ExprOrNumber::Number(10.0),
+        };
+        assert_eq!(circle.id(), "c1");
+    }
+
+    #[test]
+    fn test_resolved_entity_serialization() {
+        use serde_json;
+        let point = ResolvedEntity::Point { at: vec![1.0, 2.0, 3.0] };
+        let json = serde_json::to_string(&point).unwrap();
+        assert!(json.contains("1"));
+        assert!(json.contains("2"));
+        assert!(json.contains("3"));
+    }
+
+    #[test]
     fn test_solve_result_skip_empty() {
         let result = SolveResult {
             status: "ok".into(),

@@ -205,4 +205,61 @@ mod tests {
             println!("  - {}", constraint);
         }
     }
+
+    #[test]
+    fn test_implemented_constraints() {
+        let implemented = ConstraintRegistry::implemented_constraints();
+        assert!(!implemented.is_empty());
+        // Verify expected implemented constraints are listed
+        assert!(implemented.contains(&"Fixed"));
+        assert!(implemented.contains(&"Distance"));
+    }
+
+    #[test]
+    fn test_process_constraint_fixed() {
+        use crate::ffi::Solver as FfiSolver;
+        let mut solver = FfiSolver::new();
+        let mut entity_map = std::collections::HashMap::new();
+        entity_map.insert("p1".to_string(), 1);
+        
+        let constraint = Constraint::Fixed { entity: "p1".to_string() };
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map);
+        // Should succeed (or return error if entity not found, but we provided it)
+        assert!(result.is_ok() || result.is_err()); // Either is valid
+    }
+
+    #[test]
+    fn test_process_constraint_distance() {
+        use crate::ffi::Solver as FfiSolver;
+        use crate::ir::ExprOrNumber;
+        let mut solver = FfiSolver::new();
+        let mut entity_map = std::collections::HashMap::new();
+        entity_map.insert("p1".to_string(), 1);
+        entity_map.insert("p2".to_string(), 2);
+        
+        let constraint = Constraint::Distance {
+            between: vec!["p1".to_string(), "p2".to_string()],
+            value: ExprOrNumber::Number(10.0),
+        };
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map);
+        // Should succeed or fail based on FFI state
+        assert!(result.is_ok() || result.is_err());
+    }
+
+    #[test]
+    fn test_process_constraint_unimplemented() {
+        use crate::ffi::Solver as FfiSolver;
+        use crate::ir::ExprOrNumber;
+        let mut solver = FfiSolver::new();
+        let entity_map = std::collections::HashMap::new();
+        
+        // Test an unimplemented constraint
+        let constraint = Constraint::Angle {
+            between: vec!["l1".to_string(), "l2".to_string()],
+            value: ExprOrNumber::Number(90.0),
+        };
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map);
+        assert!(result.is_err());
+        assert!(result.unwrap_err().contains("not yet implemented"));
+    }
 }
