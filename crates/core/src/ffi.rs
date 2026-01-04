@@ -1,5 +1,40 @@
 use std::os::raw::{c_double, c_int};
 
+/// FFI error types for better error handling
+#[derive(Debug, Clone)]
+pub enum FfiError {
+    /// System is inconsistent (overconstrained)
+    Inconsistent,
+    /// Solver didn't converge
+    DidntConverge,
+    /// Too many unknowns (underconstrained)
+    TooManyUnknowns,
+    /// Invalid system pointer
+    InvalidSystem,
+    /// Unknown error code
+    Unknown(i32),
+    /// Entity not found
+    EntityNotFound(String),
+    /// Constraint operation failed
+    ConstraintFailed(String),
+}
+
+impl std::fmt::Display for FfiError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            FfiError::Inconsistent => write!(f, "System is inconsistent (overconstrained)"),
+            FfiError::DidntConverge => write!(f, "Solver failed to converge"),
+            FfiError::TooManyUnknowns => write!(f, "System has too many unknowns (underconstrained)"),
+            FfiError::InvalidSystem => write!(f, "Invalid solver system"),
+            FfiError::Unknown(code) => write!(f, "Unknown solver error (code: {})", code),
+            FfiError::EntityNotFound(id) => write!(f, "Entity not found: {}", id),
+            FfiError::ConstraintFailed(msg) => write!(f, "Constraint operation failed: {}", msg),
+        }
+    }
+}
+
+impl std::error::Error for FfiError {}
+
 // FFI bindings to our C wrapper
 #[repr(C)]
 pub struct SolverSystem {
@@ -238,13 +273,16 @@ impl Solver {
         }
     }
 
-    pub fn solve(&mut self) -> Result<(), String> {
+    pub fn solve(&mut self) -> Result<(), FfiError> {
         unsafe {
             let result = real_slvs_solve(self.system);
-            if result == 0 {
-                Ok(())
-            } else {
-                Err(format!("Solver failed with code {}", result))
+            match result {
+                0 => Ok(()),
+                1 => Err(FfiError::Inconsistent), // Overconstrained
+                2 => Err(FfiError::DidntConverge), // Convergence failure
+                3 => Err(FfiError::TooManyUnknowns), // Underconstrained
+                -1 => Err(FfiError::InvalidSystem),
+                code => Err(FfiError::Unknown(code)),
             }
         }
     }
@@ -326,5 +364,37 @@ mod tests {
         let (cx, cy, _cz, radius) = solver.get_circle_position(2).unwrap();
         assert!((cx - 36.0).abs() < 0.001 || cy.abs() > 0.001); // Should be at distance 36
         assert_eq!(radius, 12.0);
+    }
+
+    #[test]
+    fn test_ffi_error_display() {
+        assert_eq!(
+            FfiError::Inconsistent.to_string(),
+            "System is inconsistent (overconstrained)"
+        );
+        assert_eq!(
+            FfiError::DidntConverge.to_string(),
+            "Solver failed to converge"
+        );
+        assert_eq!(
+            FfiError::TooManyUnknowns.to_string(),
+            "System has too many unknowns (underconstrained)"
+        );
+        assert_eq!(
+            FfiError::InvalidSystem.to_string(),
+            "Invalid solver system"
+        );
+        assert_eq!(
+            FfiError::Unknown(42).to_string(),
+            "Unknown solver error (code: 42)"
+        );
+        assert_eq!(
+            FfiError::EntityNotFound("p1".to_string()).to_string(),
+            "Entity not found: p1"
+        );
+        assert_eq!(
+            FfiError::ConstraintFailed("test".to_string()).to_string(),
+            "Constraint operation failed: test"
+        );
     }
 }
