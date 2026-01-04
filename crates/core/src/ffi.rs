@@ -1456,7 +1456,7 @@ mod tests {
         solver.add_line(10, 1, 2).unwrap();
 
         // Create midpoint
-        solver.add_point(3, 50.0, 50.0, 0.0).unwrap();
+        solver.add_point(3, 50.0, 50.0, 0.0, false).unwrap();
 
         // Add midpoint constraint - FFI binding should work
         let result = solver.add_midpoint_constraint(100, 3, 10);
