@@ -120,24 +120,26 @@ impl Validator {
 
     fn validate_entity_references(&self, doc: &InputDocument) -> Result<()> {
         use crate::ir::Entity;
-        let entity_ids: HashSet<&str> = doc.entities.iter().map(|e| e.id()).collect();
+        // Build set incrementally to prevent forward references
+        // This matches how the solver processes entities sequentially
+        let mut seen_entity_ids = HashSet::new();
 
         for (idx, entity) in doc.entities.iter().enumerate() {
             match entity {
                 Entity::Line { p1, p2, .. } => {
-                    if !entity_ids.contains(p1.as_str()) {
+                    if !seen_entity_ids.contains(p1.as_str()) {
                         return Err(Error::InvalidInput {
                             message: format!(
-                                "Line entity #{} references unknown point '{}'",
+                                "Line entity #{} references point '{}' that is not yet defined. Entities must be defined before they are referenced.",
                                 idx + 1, p1
                             ),
                             pointer: Some(format!("/entities/{}/p1", idx)),
                         });
                     }
-                    if !entity_ids.contains(p2.as_str()) {
+                    if !seen_entity_ids.contains(p2.as_str()) {
                         return Err(Error::InvalidInput {
                             message: format!(
-                                "Line entity #{} references unknown point '{}'",
+                                "Line entity #{} references point '{}' that is not yet defined. Entities must be defined before they are referenced.",
                                 idx + 1, p2
                             ),
                             pointer: Some(format!("/entities/{}/p2", idx)),
@@ -145,19 +147,19 @@ impl Validator {
                     }
                 }
                 Entity::Arc { start, end, .. } => {
-                    if !entity_ids.contains(start.as_str()) {
+                    if !seen_entity_ids.contains(start.as_str()) {
                         return Err(Error::InvalidInput {
                             message: format!(
-                                "Arc entity #{} references unknown point '{}'",
+                                "Arc entity #{} references point '{}' that is not yet defined. Entities must be defined before they are referenced.",
                                 idx + 1, start
                             ),
                             pointer: Some(format!("/entities/{}/start", idx)),
                         });
                     }
-                    if !entity_ids.contains(end.as_str()) {
+                    if !seen_entity_ids.contains(end.as_str()) {
                         return Err(Error::InvalidInput {
                             message: format!(
-                                "Arc entity #{} references unknown point '{}'",
+                                "Arc entity #{} references point '{}' that is not yet defined. Entities must be defined before they are referenced.",
                                 idx + 1, end
                             ),
                             pointer: Some(format!("/entities/{}/end", idx)),
@@ -166,6 +168,8 @@ impl Validator {
                 }
                 _ => {} // Points, circles, planes don't reference other entities
             }
+            // Add this entity's ID to the set after checking its references
+            seen_entity_ids.insert(entity.id());
         }
 
         Ok(())
@@ -427,7 +431,7 @@ mod tests {
         assert!(result.is_err());
         match result.unwrap_err() {
             Error::InvalidInput { message, pointer } => {
-                assert!(message.contains("unknown point"));
+                assert!(message.contains("not yet defined"));
                 assert!(message.contains("nonexistent"));
                 assert_eq!(pointer, Some("/entities/1/p2".to_string()));
             }
@@ -460,7 +464,7 @@ mod tests {
         assert!(result.is_err());
         match result.unwrap_err() {
             Error::InvalidInput { message, pointer } => {
-                assert!(message.contains("unknown point"));
+                assert!(message.contains("not yet defined"));
                 assert!(message.contains("nonexistent"));
                 assert_eq!(pointer, Some("/entities/1/p1".to_string()));
             }
@@ -494,7 +498,7 @@ mod tests {
         assert!(result.is_err());
         match result.unwrap_err() {
             Error::InvalidInput { message, pointer } => {
-                assert!(message.contains("unknown point"));
+                assert!(message.contains("not yet defined"));
                 assert!(message.contains("nonexistent"));
                 assert_eq!(pointer, Some("/entities/1/start".to_string()));
             }
@@ -528,9 +532,47 @@ mod tests {
         assert!(result.is_err());
         match result.unwrap_err() {
             Error::InvalidInput { message, pointer } => {
-                assert!(message.contains("unknown point"));
+                assert!(message.contains("not yet defined"));
                 assert!(message.contains("nonexistent"));
                 assert_eq!(pointer, Some("/entities/1/end".to_string()));
+            }
+            _ => panic!("Wrong error type"),
+        }
+    }
+
+    #[test]
+    fn test_validate_entity_references_forward_reference_rejected() {
+        use crate::ir::Entity;
+        let validator = Validator::new();
+        // Test forward reference: Line references p2 before p2 is defined
+        let doc = InputDocument {
+            schema: "slvs-json/1".to_string(),
+            units: "mm".to_string(),
+            parameters: HashMap::new(),
+            entities: vec![
+                Entity::Point {
+                    id: "p1".to_string(),
+                    at: vec![ExprOrNumber::Number(0.0)],
+                },
+                Entity::Line {
+                    id: "l1".to_string(),
+                    p1: "p1".to_string(),
+                    p2: "p2".to_string(), // p2 is defined later - forward reference!
+                },
+                Entity::Point {
+                    id: "p2".to_string(),
+                    at: vec![ExprOrNumber::Number(1.0)],
+                },
+            ],
+            constraints: vec![],
+        };
+        let result = validator.validate_entity_references(&doc);
+        assert!(result.is_err(), "Forward references should be rejected");
+        match result.unwrap_err() {
+            Error::InvalidInput { message, pointer } => {
+                assert!(message.contains("not yet defined"));
+                assert!(message.contains("p2"));
+                assert_eq!(pointer, Some("/entities/1/p2".to_string()));
             }
             _ => panic!("Wrong error type"),
         }
