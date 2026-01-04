@@ -1,0 +1,44 @@
+{
+  "schema": "slvs-json/1",
+  "units": "mm",
+  "parameters": {},
+  "entities": [
+    {
+      "type": "point",
+      "id": "p1",
+      "at": [0, 0, 0]
+    },
+    {
+      "type": "point",
+      "id": "p2",
+      "at": [10, 0, 0]
+    },
+    {
+      "type": "point",
+      "id": "p3",
+      "at": [20, 0, 0]
+    }
+  ],
+  "constraints": [
+    {
+      "type": "fixed",
+      "entity": "p1"
+    },
+    {
+      "type": "dragged",
+      "point": "p2",
+      "workplane": null
+    },
+    {
+      "type": "distance",
+      "between": ["p1", "p2"],
+      "value": 10
+    },
+    {
+      "type": "distance",
+      "between": ["p2", "p3"],
+      "value": 10
+    }
+  ]
+}
+

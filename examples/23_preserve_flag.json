@@ -1,0 +1,47 @@
+{
+  "schema": "slvs-json/1",
+  "units": "mm",
+  "parameters": {},
+  "entities": [
+    {
+      "type": "point",
+      "id": "base_corner",
+      "at": [0, 0, 0],
+      "preserve": true
+    },
+    {
+      "type": "point",
+      "id": "base_corner2",
+      "at": [100, 0, 0],
+      "preserve": true
+    },
+    {
+      "type": "point",
+      "id": "adjustable_point",
+      "at": [50, 50, 0],
+      "preserve": false
+    }
+  ],
+  "constraints": [
+    {
+      "type": "fixed",
+      "entity": "base_corner"
+    },
+    {
+      "type": "distance",
+      "between": ["base_corner", "base_corner2"],
+      "value": 100
+    },
+    {
+      "type": "distance",
+      "between": ["base_corner", "adjustable_point"],
+      "value": 80
+    },
+    {
+      "type": "distance",
+      "between": ["base_corner2", "adjustable_point"],
+      "value": 80
+    }
+  ]
+}
+

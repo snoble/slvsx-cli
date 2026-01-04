@@ -1,0 +1,73 @@
+{
+  "schema": "slvs-json/1",
+  "units": "mm",
+  "parameters": {
+    "base_width": 100,
+    "base_depth": 80,
+    "roof_height": 120
+  },
+  "entities": [
+    {
+      "type": "point",
+      "id": "base_fl",
+      "at": [0, 0, 0],
+      "preserve": true
+    },
+    {
+      "type": "point",
+      "id": "base_fr",
+      "at": ["$base_width", 0, 0],
+      "preserve": true
+    },
+    {
+      "type": "point",
+      "id": "base_bl",
+      "at": [0, "$base_depth", 0],
+      "preserve": true
+    },
+    {
+      "type": "point",
+      "id": "base_br",
+      "at": ["$base_width", "$base_depth", 0],
+      "preserve": true
+    },
+    {
+      "type": "point",
+      "id": "roof_peak",
+      "at": ["$base_width / 2", "$base_depth / 2", "$roof_height"],
+      "preserve": false
+    }
+  ],
+  "constraints": [
+    {
+      "type": "fixed",
+      "entity": "base_fl"
+    },
+    {
+      "type": "distance",
+      "between": ["base_fl", "base_fr"],
+      "value": "$base_width"
+    },
+    {
+      "type": "distance",
+      "between": ["base_fl", "base_bl"],
+      "value": "$base_depth"
+    },
+    {
+      "type": "distance",
+      "between": ["base_fr", "base_br"],
+      "value": "$base_depth"
+    },
+    {
+      "type": "distance",
+      "between": ["base_bl", "base_br"],
+      "value": "$base_width"
+    },
+    {
+      "type": "distance",
+      "between": ["base_fl", "roof_peak"],
+      "value": "$roof_height"
+    }
+  ]
+}
+
