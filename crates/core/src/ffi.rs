@@ -1,5 +1,40 @@
 use std::os::raw::{c_double, c_int};
 
+/// FFI error types for better error handling
+#[derive(Debug, Clone)]
+pub enum FfiError {
+    /// System is inconsistent (overconstrained)
+    Inconsistent,
+    /// Solver didn't converge
+    DidntConverge,
+    /// Too many unknowns (underconstrained)
+    TooManyUnknowns,
+    /// Invalid system pointer
+    InvalidSystem,
+    /// Unknown error code
+    Unknown(i32),
+    /// Entity not found
+    EntityNotFound(String),
+    /// Constraint operation failed
+    ConstraintFailed(String),
+}
+
+impl std::fmt::Display for FfiError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            FfiError::Inconsistent => write!(f, "System is inconsistent (overconstrained)"),
+            FfiError::DidntConverge => write!(f, "Solver failed to converge"),
+            FfiError::TooManyUnknowns => write!(f, "System has too many unknowns (underconstrained)"),
+            FfiError::InvalidSystem => write!(f, "Invalid solver system"),
+            FfiError::Unknown(code) => write!(f, "Unknown solver error (code: {})", code),
+            FfiError::EntityNotFound(id) => write!(f, "Entity not found: {}", id),
+            FfiError::ConstraintFailed(msg) => write!(f, "Constraint operation failed: {}", msg),
+        }
+    }
+}
+
+impl std::error::Error for FfiError {}
+
 // FFI bindings to our C wrapper
 #[repr(C)]
 pub struct SolverSystem {
@@ -238,13 +273,16 @@ impl Solver {
         }
     }
 
-    pub fn solve(&mut self) -> Result<(), String> {
+    pub fn solve(&mut self) -> Result<(), FfiError> {
         unsafe {
             let result = real_slvs_solve(self.system);
-            if result == 0 {
-                Ok(())
-            } else {
-                Err(format!("Solver failed with code {}", result))
+            match result {
+                0 => Ok(()),
+                1 => Err(FfiError::Inconsistent), // Overconstrained
+                2 => Err(FfiError::DidntConverge), // Convergence failure
+                3 => Err(FfiError::TooManyUnknowns), // Underconstrained
+                -1 => Err(FfiError::InvalidSystem),
+                code => Err(FfiError::Unknown(code)),
             }
         }
     }

@@ -63,7 +63,10 @@ impl Solver {
 
                     ffi_solver
                         .add_point(next_id, x, y, z)
-                        .map_err(|e| crate::error::Error::Ffi(e))?;
+                        .map_err(|e| crate::error::Error::InvalidInput {
+                            message: format!("Failed to add point '{}': {}", id, e),
+                            pointer: Some(format!("/entities/{}", entity_idx)),
+                        })?;
                     entity_id_map.insert(id.clone(), next_id);
                     next_id += 1;
                 }
@@ -78,7 +81,10 @@ impl Solver {
 
                     ffi_solver
                         .add_line(next_id, *point1_id, *point2_id)
-                        .map_err(|e| crate::error::Error::Ffi(e))?;
+                        .map_err(|e| crate::error::Error::InvalidInput {
+                            message: format!("Failed to add line '{}': {}", id, e),
+                            pointer: Some(format!("/entities/{}", entity_idx)),
+                        })?;
                     entity_id_map.insert(id.clone(), next_id);
                     next_id += 1;
                 }
@@ -124,7 +130,7 @@ impl Solver {
         let mut constraint_id = 100;
 
         // Process all constraints from JSON
-        for constraint in &doc.constraints {
+        for (constraint_idx, constraint) in doc.constraints.iter().enumerate() {
             match constraint {
                 crate::ir::Constraint::Fixed { entity } => {
                     let entity_id = entity_id_map.get(entity).copied().unwrap_or_else(|| {
@@ -132,7 +138,10 @@ impl Solver {
                     });
                     ffi_solver
                         .add_fixed_constraint(constraint_id, entity_id)
-                        .map_err(|e| crate::error::Error::Ffi(e))?;
+                        .map_err(|e| crate::error::Error::InvalidInput {
+                            message: format!("Failed to add fixed constraint for entity '{}': {}", entity, e),
+                            pointer: Some(format!("/constraints/{}", constraint_idx)),
+                        })?;
                     constraint_id += 1;
                 }
                 crate::ir::Constraint::Distance { between, value } => {
@@ -145,7 +154,10 @@ impl Solver {
                         };
                         ffi_solver
                             .add_distance_constraint(constraint_id, id1, id2, dist)
-                            .map_err(|e| crate::error::Error::Ffi(e))?;
+                            .map_err(|e| crate::error::Error::InvalidInput {
+                                message: format!("Failed to add distance constraint between '{}' and '{}': {}", between[0], between[1], e),
+                                pointer: Some(format!("/constraints/{}", constraint_idx)),
+                            })?;
                         constraint_id += 1;
                     }
                 }
@@ -154,7 +166,10 @@ impl Solver {
                     let line_id = entity_id_map.get(line).copied().unwrap_or(0);
                     ffi_solver
                         .add_point_on_line_constraint(constraint_id, point_id, line_id)
-                        .map_err(|e| crate::error::Error::Ffi(e))?;
+                        .map_err(|e| crate::error::Error::InvalidInput {
+                            message: format!("Failed to add point-on-line constraint: point '{}' on line '{}': {}", point, line, e),
+                            pointer: Some(format!("/constraints/{}", constraint_idx)),
+                        })?;
                     constraint_id += 1;
                 }
                 crate::ir::Constraint::Coincident { data } => {
@@ -166,7 +181,10 @@ impl Solver {
                                 let line_id = entity_id_map.get(&of[0]).copied().unwrap_or(0);
                                 ffi_solver
                                     .add_point_on_line_constraint(constraint_id, point_id, line_id)
-                                    .map_err(|e| crate::error::Error::Ffi(e))?;
+                                    .map_err(|e| crate::error::Error::InvalidInput {
+                                        message: format!("Failed to add coincident constraint: point '{}' on line '{}': {}", at, of[0], e),
+                                        pointer: Some(format!("/constraints/{}", constraint_idx)),
+                                    })?;
                                 constraint_id += 1;
                             }
                         },
@@ -178,7 +196,10 @@ impl Solver {
                                 let id2 = entity_id_map.get(&entities[1]).copied().unwrap_or(0);
                                 ffi_solver
                                     .add_distance_constraint(constraint_id, id1, id2, 0.0)
-                                    .map_err(|e| crate::error::Error::Ffi(e))?;
+                                    .map_err(|e| crate::error::Error::InvalidInput {
+                                        message: format!("Failed to add coincident constraint between '{}' and '{}': {}", entities[0], entities[1], e),
+                                        pointer: Some(format!("/constraints/{}", constraint_idx)),
+                                    })?;
                                 constraint_id += 1;
                             }
                         }
@@ -189,7 +210,10 @@ impl Solver {
                     let line2_id = entity_id_map.get(b).copied().unwrap_or(0);
                     ffi_solver
                         .add_perpendicular_constraint(constraint_id, line1_id, line2_id)
-                        .map_err(|e| crate::error::Error::Ffi(e))?;
+                        .map_err(|e| crate::error::Error::InvalidInput {
+                            message: format!("Failed to add perpendicular constraint between '{}' and '{}': {}", a, b, e),
+                            pointer: Some(format!("/constraints/{}", constraint_idx)),
+                        })?;
                     constraint_id += 1;
                 }
                 crate::ir::Constraint::Parallel { entities } => {
@@ -198,7 +222,10 @@ impl Solver {
                         let line2_id = entity_id_map.get(&entities[1]).copied().unwrap_or(0);
                         ffi_solver
                             .add_parallel_constraint(constraint_id, line1_id, line2_id)
-                            .map_err(|e| crate::error::Error::Ffi(e))?;
+                            .map_err(|e| crate::error::Error::InvalidInput {
+                                message: format!("Failed to add parallel constraint between '{}' and '{}': {}", entities[0], entities[1], e),
+                                pointer: Some(format!("/constraints/{}", constraint_idx)),
+                            })?;
                         constraint_id += 1;
                     }
                 }
@@ -209,15 +236,29 @@ impl Solver {
         }
 
         // Actually solve the constraints!
-        ffi_solver
-            .solve()
-            .map_err(|e| crate::error::Error::Ffi(e))?;
+        ffi_solver.solve().map_err(|e| match e {
+            crate::ffi::FfiError::Inconsistent => crate::error::Error::Overconstrained,
+            crate::ffi::FfiError::DidntConverge => {
+                crate::error::Error::SolverConvergence { iterations: 100 }
+            }
+            crate::ffi::FfiError::TooManyUnknowns => {
+                // Try to get DOF from solver if possible, otherwise default to 0
+                crate::error::Error::Underconstrained { dof: 0 }
+            }
+            crate::ffi::FfiError::InvalidSystem => {
+                crate::error::Error::Ffi("Invalid solver system".to_string())
+            }
+            crate::ffi::FfiError::Unknown(code) => {
+                crate::error::Error::Ffi(format!("Unknown solver error (code: {})", code))
+            }
+            e => crate::error::Error::Ffi(e.to_string()),
+        })?;
 
         // Get solved positions from libslvs
         let mut resolved_entities = HashMap::new();
 
         // Retrieve solved positions for all entities
-        for entity in &doc.entities {
+        for (entity_idx, entity) in doc.entities.iter().enumerate() {
             match entity {
                 crate::ir::Entity::Point { id, .. } => {
                     let entity_id = entity_id_map.get(id).copied().unwrap_or(0);
