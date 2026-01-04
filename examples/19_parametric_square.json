@@ -1,0 +1,90 @@
+{
+  "schema": "slvs-json/1",
+  "units": "mm",
+  "parameters": {
+    "side_length": 80.0
+  },
+  "entities": [
+    {
+      "type": "point",
+      "id": "A",
+      "at": [0, 0, 0]
+    },
+    {
+      "type": "point",
+      "id": "B",
+      "at": [80, 0, 0]
+    },
+    {
+      "type": "point",
+      "id": "C",
+      "at": [80, 80, 0]
+    },
+    {
+      "type": "point",
+      "id": "D",
+      "at": [0, 80, 0]
+    },
+    {
+      "type": "line",
+      "id": "AB",
+      "p1": "A",
+      "p2": "B"
+    },
+    {
+      "type": "line",
+      "id": "BC",
+      "p1": "B",
+      "p2": "C"
+    },
+    {
+      "type": "line",
+      "id": "CD",
+      "p1": "C",
+      "p2": "D"
+    },
+    {
+      "type": "line",
+      "id": "DA",
+      "p1": "D",
+      "p2": "A"
+    }
+  ],
+  "constraints": [
+    {
+      "type": "fixed",
+      "entity": "A"
+    },
+    {
+      "type": "horizontal",
+      "a": "AB"
+    },
+    {
+      "type": "horizontal",
+      "a": "CD"
+    },
+    {
+      "type": "vertical",
+      "a": "BC"
+    },
+    {
+      "type": "vertical",
+      "a": "DA"
+    },
+    {
+      "type": "distance",
+      "between": ["A", "B"],
+      "value": "$side_length"
+    },
+    {
+      "type": "equal_length",
+      "entities": ["AB", "BC", "CD", "DA"]
+    },
+    {
+      "type": "perpendicular",
+      "a": "AB",
+      "b": "BC"
+    }
+  ]
+}
+

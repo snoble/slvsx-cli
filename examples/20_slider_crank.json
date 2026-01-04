@@ -1,0 +1,75 @@
+{
+  "schema": "slvs-json/1",
+  "units": "mm",
+  "parameters": {
+    "crank_length": 50.0,
+    "connecting_rod_length": 120.0,
+    "crank_angle": 30.0
+  },
+  "entities": [
+    {
+      "type": "point",
+      "id": "crank_pivot",
+      "at": [0, 0, 0]
+    },
+    {
+      "type": "point",
+      "id": "crank_end",
+      "at": [50, 0, 0]
+    },
+    {
+      "type": "point",
+      "id": "piston",
+      "at": [170, 0, 0]
+    },
+    {
+      "type": "line",
+      "id": "crank",
+      "p1": "crank_pivot",
+      "p2": "crank_end"
+    },
+    {
+      "type": "line",
+      "id": "connecting_rod",
+      "p1": "crank_end",
+      "p2": "piston"
+    },
+    {
+      "type": "line",
+      "id": "ground_line",
+      "p1": "crank_pivot",
+      "p2": "piston"
+    }
+  ],
+  "constraints": [
+    {
+      "type": "fixed",
+      "entity": "crank_pivot"
+    },
+    {
+      "type": "horizontal",
+      "a": "ground_line"
+    },
+    {
+      "type": "point_on_line",
+      "point": "piston",
+      "line": "ground_line"
+    },
+    {
+      "type": "distance",
+      "between": ["crank_pivot", "crank_end"],
+      "value": "$crank_length"
+    },
+    {
+      "type": "distance",
+      "between": ["crank_end", "piston"],
+      "value": "$connecting_rod_length"
+    },
+    {
+      "type": "angle",
+      "between": ["ground_line", "crank"],
+      "value": "$crank_angle"
+    }
+  ]
+}
+
