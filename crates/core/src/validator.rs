@@ -693,11 +693,12 @@ mod tests {
                 },
                 Entity::Arc {
                     id: "a1".to_string(),
-                    center: vec![ExprOrNumber::Number(0.0)],
+                    center: "end".to_string(),
                     start: "nonexistent".to_string(), // start doesn't exist
                     end: "end".to_string(),
+                    normal: vec![ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(1.0)],
+                    workplane: None,
                     construction: false,
-                    preserve: false,
                     preserve: false,
                 },
             ],
@@ -732,11 +733,12 @@ mod tests {
                 },
                 Entity::Arc {
                     id: "a1".to_string(),
-                    center: vec![ExprOrNumber::Number(0.0)],
+                    center: "start".to_string(),
                     start: "start".to_string(),
                     end: "nonexistent".to_string(), // end doesn't exist
+                    normal: vec![ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(1.0)],
+                    workplane: None,
                     construction: false,
-                    preserve: false,
                     preserve: false,
                 },
             ],
