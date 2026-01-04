@@ -13,6 +13,9 @@ typedef struct {
     double circle_radii[1000];  // Store circle radii
 } RealSlvsSystem;
 
+// Forward declaration
+static void normal_to_quaternion(double nx, double ny, double nz, double* qw, double* qx, double* qy, double* qz);
+
 // Create a new system
 RealSlvsSystem* real_slvs_create() {
     RealSlvsSystem* s = (RealSlvsSystem*)calloc(1, sizeof(RealSlvsSystem));
