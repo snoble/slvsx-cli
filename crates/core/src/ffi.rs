@@ -67,6 +67,13 @@ extern "C" {
         point1_id: c_int,
         point2_id: c_int,
     ) -> c_int;
+    pub fn real_slvs_add_line_2d(
+        sys: *mut SolverSystem,
+        id: c_int,
+        point1_id: c_int,
+        point2_id: c_int,
+        workplane_id: c_int,
+    ) -> c_int;
     pub fn real_slvs_add_point_2d(
         sys: *mut SolverSystem,
         id: c_int,
@@ -154,11 +161,13 @@ extern "C" {
         sys: *mut SolverSystem,
         id: c_int,
         line_id: c_int,
+        workplane_id: c_int,
     ) -> c_int;
     pub fn real_slvs_add_vertical_constraint(
         sys: *mut SolverSystem,
         id: c_int,
         line_id: c_int,
+        workplane_id: c_int,
     ) -> c_int;
     pub fn real_slvs_add_equal_length_constraint(
         sys: *mut SolverSystem,
@@ -445,6 +454,17 @@ impl Solver {
         }
     }
 
+    pub fn add_line_2d(&mut self, id: i32, point1_id: i32, point2_id: i32, workplane_id: i32) -> Result<(), String> {
+        unsafe {
+            let result = real_slvs_add_line_2d(self.system, id, point1_id, point2_id, workplane_id);
+            if result == 0 {
+                Ok(())
+            } else {
+                Err(format!("Failed to add 2D line {}", id))
+            }
+        }
+    }
+
     pub fn add_point_2d(
         &mut self,
         id: i32,
@@ -643,9 +663,10 @@ impl Solver {
         &mut self,
         id: i32,
         line_id: i32,
+        workplane_id: i32,
     ) -> Result<(), FfiError> {
         unsafe {
-            let result = real_slvs_add_horizontal_constraint(self.system, id, line_id);
+            let result = real_slvs_add_horizontal_constraint(self.system, id, line_id, workplane_id);
             if result == 0 {
                 Ok(())
             } else {
@@ -658,9 +679,10 @@ impl Solver {
         &mut self,
         id: i32,
         line_id: i32,
+        workplane_id: i32,
     ) -> Result<(), FfiError> {
         unsafe {
-            let result = real_slvs_add_vertical_constraint(self.system, id, line_id);
+            let result = real_slvs_add_vertical_constraint(self.system, id, line_id, workplane_id);
             if result == 0 {
                 Ok(())
             } else {
@@ -1307,18 +1329,24 @@ mod tests {
     fn test_horizontal_constraint_ffi_binding() {
         let mut solver = Solver::new();
 
-        // Create points for a horizontal line
+        // Create a workplane first (horizontal/vertical constraints require a workplane)
+        // First create an origin point
         solver.add_point(1, 0.0, 0.0, 0.0, false).unwrap();
-        solver.add_point(2, 100.0, 10.0, 0.0, false).unwrap();
+        // Create workplane with origin point and normal vector (0,0,1) = XY plane
+        solver.add_workplane(10, 1, 0.0, 0.0, 1.0).unwrap();
 
-        // Create line
-        solver.add_line(10, 1, 2).unwrap();
+        // Create 2D points in the workplane
+        solver.add_point_2d(2, 10, 0.0, 0.0, false).unwrap();
+        solver.add_point_2d(3, 10, 100.0, 10.0, false).unwrap();
+
+        // Create 2D line in the workplane (using 2D point IDs)
+        solver.add_line_2d(20, 2, 3, 10).unwrap();
 
         // Fix first point
-        solver.add_fixed_constraint(100, 1).unwrap();
+        solver.add_fixed_constraint(100, 2).unwrap();
 
-        // Add horizontal constraint
-        let result = solver.add_horizontal_constraint(101, 10);
+        // Add horizontal constraint (requires workplane)
+        let result = solver.add_horizontal_constraint(101, 20, 10);
         assert!(result.is_ok(), "Should be able to add horizontal constraint via FFI");
 
         // Solve - should succeed
@@ -1331,18 +1359,24 @@ mod tests {
     fn test_vertical_constraint_ffi_binding() {
         let mut solver = Solver::new();
 
-        // Create points for a vertical line
+        // Create a workplane first (horizontal/vertical constraints require a workplane)
+        // First create an origin point
         solver.add_point(1, 0.0, 0.0, 0.0, false).unwrap();
-        solver.add_point(2, 10.0, 100.0, 0.0, false).unwrap();
+        // Create workplane with origin point and normal vector (0,0,1) = XY plane
+        solver.add_workplane(10, 1, 0.0, 0.0, 1.0).unwrap();
 
-        // Create line
-        solver.add_line(10, 1, 2).unwrap();
+        // Create 2D points in the workplane
+        solver.add_point_2d(2, 10, 0.0, 0.0, false).unwrap();
+        solver.add_point_2d(3, 10, 10.0, 100.0, false).unwrap();
+
+        // Create 2D line in the workplane (using 2D point IDs)
+        solver.add_line_2d(20, 2, 3, 10).unwrap();
 
         // Fix first point
-        solver.add_fixed_constraint(100, 1).unwrap();
+        solver.add_fixed_constraint(100, 2).unwrap();
 
-        // Add vertical constraint
-        let result = solver.add_vertical_constraint(101, 10);
+        // Add vertical constraint (requires workplane)
+        let result = solver.add_vertical_constraint(101, 20, 10);
         assert!(result.is_ok(), "Should be able to add vertical constraint via FFI");
 
         // Solve - should succeed

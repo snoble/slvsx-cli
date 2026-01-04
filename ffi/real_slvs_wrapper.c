@@ -117,7 +117,7 @@ int real_slvs_add_point(RealSlvsSystem* s, int id, double x, double y, double z,
     return 0;
 }
 
-// Add a line between two points
+// Add a line between two points (3D line)
 int real_slvs_add_line(RealSlvsSystem* s, int id, int point1_id, int point2_id) {
     if (!s) return -1;
     
@@ -129,6 +129,22 @@ int real_slvs_add_line(RealSlvsSystem* s, int id, int point1_id, int point2_id) 
     Slvs_hEntity p2 = 1000 + point2_id;
     s->sys.entity[s->sys.entities++] = Slvs_MakeLineSegment(line_id, g, 
         SLVS_FREE_IN_3D, p1, p2);
+    
+    return 0;
+}
+
+// Add a 2D line between two 2D points in a workplane
+int real_slvs_add_line_2d(RealSlvsSystem* s, int id, int point1_id, int point2_id, int workplane_id) {
+    if (!s) return -1;
+    
+    Slvs_hGroup g = 1;
+    
+    // Create 2D line segment entity with proper ID mapping
+    Slvs_hEntity line_id = 1000 + id;
+    Slvs_hEntity p1 = 1000 + point1_id;
+    Slvs_hEntity p2 = 1000 + point2_id;
+    Slvs_hEntity wrkpl = (workplane_id > 0) ? (1000 + workplane_id) : SLVS_FREE_IN_3D;
+    s->sys.entity[s->sys.entities++] = Slvs_MakeLineSegment(line_id, g, wrkpl, p1, p2);
     
     return 0;
 }
@@ -347,7 +363,7 @@ int real_slvs_add_angle_constraint(RealSlvsSystem* s, int id, int line1_id, int 
 }
 
 // Add horizontal constraint
-int real_slvs_add_horizontal_constraint(RealSlvsSystem* s, int id, int line_id) {
+int real_slvs_add_horizontal_constraint(RealSlvsSystem* s, int id, int line_id, int workplane_id) {
     if (!s) return -1;
     
     Slvs_hGroup g = 1;
@@ -355,16 +371,17 @@ int real_slvs_add_horizontal_constraint(RealSlvsSystem* s, int id, int line_id) 
     // Use proper ID mapping for constraint and entity
     Slvs_hConstraint constraint_id = 10000 + id;
     Slvs_hEntity line = 1000 + line_id;
+    Slvs_hEntity workplane = (workplane_id > 0) ? (1000 + workplane_id) : SLVS_FREE_IN_3D;
     
     s->sys.constraint[s->sys.constraints++] = Slvs_MakeConstraint(
-        constraint_id, g, SLVS_C_HORIZONTAL, SLVS_FREE_IN_3D,
+        constraint_id, g, SLVS_C_HORIZONTAL, workplane,
         0, 0, 0, line, 0);
     
     return 0;
 }
 
 // Add vertical constraint
-int real_slvs_add_vertical_constraint(RealSlvsSystem* s, int id, int line_id) {
+int real_slvs_add_vertical_constraint(RealSlvsSystem* s, int id, int line_id, int workplane_id) {
     if (!s) return -1;
     
     Slvs_hGroup g = 1;
@@ -372,9 +389,10 @@ int real_slvs_add_vertical_constraint(RealSlvsSystem* s, int id, int line_id) {
     // Use proper ID mapping for constraint and entity
     Slvs_hConstraint constraint_id = 10000 + id;
     Slvs_hEntity line = 1000 + line_id;
+    Slvs_hEntity workplane = (workplane_id > 0) ? (1000 + workplane_id) : SLVS_FREE_IN_3D;
     
     s->sys.constraint[s->sys.constraints++] = Slvs_MakeConstraint(
-        constraint_id, g, SLVS_C_VERTICAL, SLVS_FREE_IN_3D,
+        constraint_id, g, SLVS_C_VERTICAL, workplane,
         0, 0, 0, line, 0);
     
     return 0;

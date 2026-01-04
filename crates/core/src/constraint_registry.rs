@@ -116,12 +116,18 @@ impl ConstraintRegistry {
             }
             Constraint::Horizontal { a } => {
                 let line_id = entity_id_map.get(a).copied().unwrap_or(0);
-                solver.add_horizontal_constraint(constraint_id, line_id)
+                // Horizontal constraints require a workplane. For now, pass 0 (no workplane)
+                // which will cause SolveSpace to error with a clear message.
+                // TODO: Infer workplane from line's endpoints if they're 2D points
+                solver.add_horizontal_constraint(constraint_id, line_id, 0)
                     .map_err(|e| e.to_string())
             }
             Constraint::Vertical { a } => {
                 let line_id = entity_id_map.get(a).copied().unwrap_or(0);
-                solver.add_vertical_constraint(constraint_id, line_id)
+                // Vertical constraints require a workplane. For now, pass 0 (no workplane)
+                // which will cause SolveSpace to error with a clear message.
+                // TODO: Infer workplane from line's endpoints if they're 2D points
+                solver.add_vertical_constraint(constraint_id, line_id, 0)
                     .map_err(|e| e.to_string())
             }
             Constraint::EqualLength { entities } => {
