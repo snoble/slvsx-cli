@@ -207,6 +207,87 @@ impl ConstraintRegistry {
                 solver.add_point_line_distance_constraint(constraint_id, point_id, line_id, distance)
                     .map_err(|e| e.to_string())
             }
+            Constraint::LengthRatio { a, b, value } => {
+                let line1_id = entity_id_map.get(a).copied().unwrap_or(0);
+                let line2_id = entity_id_map.get(b).copied().unwrap_or(0);
+                let ratio = match value {
+                    crate::ir::ExprOrNumber::Number(n) => *n,
+                    crate::ir::ExprOrNumber::Expression(e) => {
+                        let evaluator = ExpressionEvaluator::new(std::collections::HashMap::new());
+                        evaluator.eval(e).unwrap_or(0.0)
+                    }
+                };
+                solver.add_length_ratio_constraint(constraint_id, line1_id, line2_id, ratio)
+                    .map_err(|e| e.to_string())
+            }
+            Constraint::EqualAngle { lines } => {
+                if lines.len() != 4 {
+                    return Err("EqualAngle constraint requires exactly 4 lines".to_string());
+                }
+                let line1_id = entity_id_map.get(&lines[0]).copied().unwrap_or(0);
+                let line2_id = entity_id_map.get(&lines[1]).copied().unwrap_or(0);
+                let line3_id = entity_id_map.get(&lines[2]).copied().unwrap_or(0);
+                let line4_id = entity_id_map.get(&lines[3]).copied().unwrap_or(0);
+                solver.add_equal_angle_constraint(constraint_id, line1_id, line2_id, line3_id, line4_id)
+                    .map_err(|e| e.to_string())
+            }
+            Constraint::SymmetricHorizontal { a, b } => {
+                let entity1_id = entity_id_map.get(a).copied().unwrap_or(0);
+                let entity2_id = entity_id_map.get(b).copied().unwrap_or(0);
+                solver.add_symmetric_horizontal_constraint(constraint_id, entity1_id, entity2_id)
+                    .map_err(|e| e.to_string())
+            }
+            Constraint::SymmetricVertical { a, b } => {
+                let entity1_id = entity_id_map.get(a).copied().unwrap_or(0);
+                let entity2_id = entity_id_map.get(b).copied().unwrap_or(0);
+                solver.add_symmetric_vertical_constraint(constraint_id, entity1_id, entity2_id)
+                    .map_err(|e| e.to_string())
+            }
+            Constraint::Diameter { circle, value } => {
+                let circle_id = entity_id_map.get(circle).copied().unwrap_or(0);
+                let diameter = match value {
+                    crate::ir::ExprOrNumber::Number(n) => *n,
+                    crate::ir::ExprOrNumber::Expression(e) => {
+                        let evaluator = ExpressionEvaluator::new(std::collections::HashMap::new());
+                        evaluator.eval(e).unwrap_or(0.0)
+                    }
+                };
+                solver.add_diameter_constraint(constraint_id, circle_id, diameter)
+                    .map_err(|e| e.to_string())
+            }
+            Constraint::SameOrientation { a, b } => {
+                let entity1_id = entity_id_map.get(a).copied().unwrap_or(0);
+                let entity2_id = entity_id_map.get(b).copied().unwrap_or(0);
+                solver.add_same_orientation_constraint(constraint_id, entity1_id, entity2_id)
+                    .map_err(|e| e.to_string())
+            }
+            Constraint::ProjectedPointDistance { a, b, plane, value } => {
+                let point1_id = entity_id_map.get(a).copied().unwrap_or(0);
+                let point2_id = entity_id_map.get(b).copied().unwrap_or(0);
+                let plane_id = entity_id_map.get(plane).copied().unwrap_or(0);
+                let distance = match value {
+                    crate::ir::ExprOrNumber::Number(n) => *n,
+                    crate::ir::ExprOrNumber::Expression(e) => {
+                        let evaluator = ExpressionEvaluator::new(std::collections::HashMap::new());
+                        evaluator.eval(e).unwrap_or(0.0)
+                    }
+                };
+                solver.add_projected_point_distance_constraint(constraint_id, point1_id, point2_id, plane_id, distance)
+                    .map_err(|e| e.to_string())
+            }
+            Constraint::LengthDifference { a, b, value } => {
+                let line1_id = entity_id_map.get(a).copied().unwrap_or(0);
+                let line2_id = entity_id_map.get(b).copied().unwrap_or(0);
+                let difference = match value {
+                    crate::ir::ExprOrNumber::Number(n) => *n,
+                    crate::ir::ExprOrNumber::Expression(e) => {
+                        let evaluator = ExpressionEvaluator::new(std::collections::HashMap::new());
+                        evaluator.eval(e).unwrap_or(0.0)
+                    }
+                };
+                solver.add_length_difference_constraint(constraint_id, line1_id, line2_id, difference)
+                    .map_err(|e| e.to_string())
+            }
             // COMPILER ERROR if a constraint variant is missing here!
             // This ensures we never forget to handle a new constraint type
         }
@@ -238,6 +319,14 @@ impl ConstraintRegistry {
             "PointInPlane",
             "PointPlaneDistance",
             "PointLineDistance",
+            "LengthRatio",
+            "EqualAngle",
+            "SymmetricHorizontal",
+            "SymmetricVertical",
+            "Diameter",
+            "SameOrientation",
+            "ProjectedPointDistance",
+            "LengthDifference",
         ]
     }
 }

@@ -639,3 +639,156 @@ int real_slvs_add_point_line_distance_constraint(RealSlvsSystem* s, int id,
     
     return 0;
 }
+
+// Add length ratio constraint
+int real_slvs_add_length_ratio_constraint(RealSlvsSystem* s, int id,
+                                          int line1_id, int line2_id,
+                                          double ratio) {
+    if (!s) return -1;
+    
+    Slvs_hGroup g = 1;
+    Slvs_hConstraint constraint_id = 10000 + id;
+    
+    Slvs_hEntity line1 = 1000 + line1_id;
+    Slvs_hEntity line2 = 1000 + line2_id;
+    
+    s->sys.constraint[s->sys.constraints++] = Slvs_MakeConstraint(
+        constraint_id, g, SLVS_C_LENGTH_RATIO, SLVS_FREE_IN_3D,
+        ratio, 0, 0, line1, line2);
+    
+    return 0;
+}
+
+// Add equal angle constraint
+int real_slvs_add_equal_angle_constraint(RealSlvsSystem* s, int id,
+                                         int line1_id, int line2_id,
+                                         int line3_id, int line4_id) {
+    if (!s) return -1;
+    
+    Slvs_hGroup g = 1;
+    Slvs_hConstraint constraint_id = 10000 + id;
+    
+    Slvs_hEntity line1 = 1000 + line1_id;
+    Slvs_hEntity line2 = 1000 + line2_id;
+    Slvs_hEntity line3 = 1000 + line3_id;
+    Slvs_hEntity line4 = 1000 + line4_id;
+    
+    Slvs_Constraint c = Slvs_MakeConstraint(
+        constraint_id, g, SLVS_C_EQUAL_ANGLE, SLVS_FREE_IN_3D,
+        0, 0, 0, line1, line2);
+    c.entityC = line3;
+    c.entityD = line4;
+    s->sys.constraint[s->sys.constraints++] = c;
+    
+    return 0;
+}
+
+// Add symmetric horizontal constraint
+int real_slvs_add_symmetric_horizontal_constraint(RealSlvsSystem* s, int id,
+                                                   int entity1_id, int entity2_id) {
+    if (!s) return -1;
+    
+    Slvs_hGroup g = 1;
+    Slvs_hConstraint constraint_id = 10000 + id;
+    
+    Slvs_hEntity entity1 = 1000 + entity1_id;
+    Slvs_hEntity entity2 = 1000 + entity2_id;
+    
+    s->sys.constraint[s->sys.constraints++] = Slvs_MakeConstraint(
+        constraint_id, g, SLVS_C_SYMMETRIC_HORIZ, SLVS_FREE_IN_3D,
+        0, entity1, entity2, 0, 0);
+    
+    return 0;
+}
+
+// Add symmetric vertical constraint
+int real_slvs_add_symmetric_vertical_constraint(RealSlvsSystem* s, int id,
+                                                 int entity1_id, int entity2_id) {
+    if (!s) return -1;
+    
+    Slvs_hGroup g = 1;
+    Slvs_hConstraint constraint_id = 10000 + id;
+    
+    Slvs_hEntity entity1 = 1000 + entity1_id;
+    Slvs_hEntity entity2 = 1000 + entity2_id;
+    
+    s->sys.constraint[s->sys.constraints++] = Slvs_MakeConstraint(
+        constraint_id, g, SLVS_C_SYMMETRIC_VERT, SLVS_FREE_IN_3D,
+        0, entity1, entity2, 0, 0);
+    
+    return 0;
+}
+
+// Add diameter constraint
+int real_slvs_add_diameter_constraint(RealSlvsSystem* s, int id,
+                                      int circle_id, double diameter) {
+    if (!s) return -1;
+    
+    Slvs_hGroup g = 1;
+    Slvs_hConstraint constraint_id = 10000 + id;
+    
+    Slvs_hEntity circle = 1000 + circle_id;
+    
+    s->sys.constraint[s->sys.constraints++] = Slvs_MakeConstraint(
+        constraint_id, g, SLVS_C_DIAMETER, SLVS_FREE_IN_3D,
+        diameter, 0, 0, circle, 0);
+    
+    return 0;
+}
+
+// Add same orientation constraint
+int real_slvs_add_same_orientation_constraint(RealSlvsSystem* s, int id,
+                                              int entity1_id, int entity2_id) {
+    if (!s) return -1;
+    
+    Slvs_hGroup g = 1;
+    Slvs_hConstraint constraint_id = 10000 + id;
+    
+    Slvs_hEntity entity1 = 1000 + entity1_id;
+    Slvs_hEntity entity2 = 1000 + entity2_id;
+    
+    s->sys.constraint[s->sys.constraints++] = Slvs_MakeConstraint(
+        constraint_id, g, SLVS_C_SAME_ORIENTATION, SLVS_FREE_IN_3D,
+        0, 0, 0, entity1, entity2);
+    
+    return 0;
+}
+
+// Add projected point distance constraint
+int real_slvs_add_projected_point_distance_constraint(RealSlvsSystem* s, int id,
+                                                       int point1_id, int point2_id,
+                                                       int workplane_id, double distance) {
+    if (!s) return -1;
+    
+    Slvs_hGroup g = 1;
+    Slvs_hConstraint constraint_id = 10000 + id;
+    
+    Slvs_hEntity point1 = 1000 + point1_id;
+    Slvs_hEntity point2 = 1000 + point2_id;
+    Slvs_hEntity wp = 1000 + workplane_id;
+    
+    s->sys.constraint[s->sys.constraints++] = Slvs_MakeConstraint(
+        constraint_id, g, SLVS_C_PROJ_PT_DISTANCE, wp,
+        distance, point1, point2, 0, 0);
+    
+    return 0;
+}
+
+// Add length difference constraint
+int real_slvs_add_length_difference_constraint(RealSlvsSystem* s, int id,
+                                                int line1_id, int line2_id,
+                                                double difference) {
+    if (!s) return -1;
+    
+    Slvs_hGroup g = 1;
+    Slvs_hConstraint constraint_id = 10000 + id;
+    
+    Slvs_hEntity line1 = 1000 + line1_id;
+    Slvs_hEntity line2 = 1000 + line2_id;
+    
+    s->sys.constraint[s->sys.constraints++] = Slvs_MakeConstraint(
+        constraint_id, g, SLVS_C_LENGTH_DIFFERENCE, SLVS_FREE_IN_3D,
+        difference, 0, 0, line1, line2);
+    
+    return 0;
+}

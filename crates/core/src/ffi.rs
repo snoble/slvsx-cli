@@ -191,6 +191,68 @@ extern "C" {
         distance: c_double,
     ) -> c_int;
 
+    pub fn real_slvs_add_length_ratio_constraint(
+        sys: *mut SolverSystem,
+        id: c_int,
+        line1_id: c_int,
+        line2_id: c_int,
+        ratio: c_double,
+    ) -> c_int;
+
+    pub fn real_slvs_add_equal_angle_constraint(
+        sys: *mut SolverSystem,
+        id: c_int,
+        line1_id: c_int,
+        line2_id: c_int,
+        line3_id: c_int,
+        line4_id: c_int,
+    ) -> c_int;
+
+    pub fn real_slvs_add_symmetric_horizontal_constraint(
+        sys: *mut SolverSystem,
+        id: c_int,
+        entity1_id: c_int,
+        entity2_id: c_int,
+    ) -> c_int;
+
+    pub fn real_slvs_add_symmetric_vertical_constraint(
+        sys: *mut SolverSystem,
+        id: c_int,
+        entity1_id: c_int,
+        entity2_id: c_int,
+    ) -> c_int;
+
+    pub fn real_slvs_add_diameter_constraint(
+        sys: *mut SolverSystem,
+        id: c_int,
+        circle_id: c_int,
+        diameter: c_double,
+    ) -> c_int;
+
+    pub fn real_slvs_add_same_orientation_constraint(
+        sys: *mut SolverSystem,
+        id: c_int,
+        entity1_id: c_int,
+        entity2_id: c_int,
+    ) -> c_int;
+
+    pub fn real_slvs_add_projected_point_distance_constraint(
+        sys: *mut SolverSystem,
+        id: c_int,
+        point1_id: c_int,
+        point2_id: c_int,
+        workplane_id: c_int,
+        distance: c_double,
+    ) -> c_int;
+
+    pub fn real_slvs_add_length_difference_constraint(
+        sys: *mut SolverSystem,
+        id: c_int,
+        line1_id: c_int,
+        line2_id: c_int,
+        difference: c_double,
+    ) -> c_int;
+
     pub fn real_slvs_solve(sys: *mut SolverSystem) -> c_int;
 
     pub fn real_slvs_get_point_position(
@@ -571,6 +633,156 @@ impl Solver {
                 Ok(())
             } else {
                 Err(FfiError::ConstraintFailed(format!("Failed to add point line distance constraint {}", id)))
+            }
+        }
+    }
+
+    pub fn add_length_ratio_constraint(
+        &mut self,
+        id: i32,
+        line1_id: i32,
+        line2_id: i32,
+        ratio: f64,
+    ) -> Result<(), FfiError> {
+        unsafe {
+            let result = real_slvs_add_length_ratio_constraint(
+                self.system, id, line1_id, line2_id, ratio
+            );
+            if result == 0 {
+                Ok(())
+            } else {
+                Err(FfiError::ConstraintFailed(format!("Failed to add length ratio constraint {}", id)))
+            }
+        }
+    }
+
+    pub fn add_equal_angle_constraint(
+        &mut self,
+        id: i32,
+        line1_id: i32,
+        line2_id: i32,
+        line3_id: i32,
+        line4_id: i32,
+    ) -> Result<(), FfiError> {
+        unsafe {
+            let result = real_slvs_add_equal_angle_constraint(
+                self.system, id, line1_id, line2_id, line3_id, line4_id
+            );
+            if result == 0 {
+                Ok(())
+            } else {
+                Err(FfiError::ConstraintFailed(format!("Failed to add equal angle constraint {}", id)))
+            }
+        }
+    }
+
+    pub fn add_symmetric_horizontal_constraint(
+        &mut self,
+        id: i32,
+        entity1_id: i32,
+        entity2_id: i32,
+    ) -> Result<(), FfiError> {
+        unsafe {
+            let result = real_slvs_add_symmetric_horizontal_constraint(
+                self.system, id, entity1_id, entity2_id
+            );
+            if result == 0 {
+                Ok(())
+            } else {
+                Err(FfiError::ConstraintFailed(format!("Failed to add symmetric horizontal constraint {}", id)))
+            }
+        }
+    }
+
+    pub fn add_symmetric_vertical_constraint(
+        &mut self,
+        id: i32,
+        entity1_id: i32,
+        entity2_id: i32,
+    ) -> Result<(), FfiError> {
+        unsafe {
+            let result = real_slvs_add_symmetric_vertical_constraint(
+                self.system, id, entity1_id, entity2_id
+            );
+            if result == 0 {
+                Ok(())
+            } else {
+                Err(FfiError::ConstraintFailed(format!("Failed to add symmetric vertical constraint {}", id)))
+            }
+        }
+    }
+
+    pub fn add_diameter_constraint(
+        &mut self,
+        id: i32,
+        circle_id: i32,
+        diameter: f64,
+    ) -> Result<(), FfiError> {
+        unsafe {
+            let result = real_slvs_add_diameter_constraint(
+                self.system, id, circle_id, diameter
+            );
+            if result == 0 {
+                Ok(())
+            } else {
+                Err(FfiError::ConstraintFailed(format!("Failed to add diameter constraint {}", id)))
+            }
+        }
+    }
+
+    pub fn add_same_orientation_constraint(
+        &mut self,
+        id: i32,
+        entity1_id: i32,
+        entity2_id: i32,
+    ) -> Result<(), FfiError> {
+        unsafe {
+            let result = real_slvs_add_same_orientation_constraint(
+                self.system, id, entity1_id, entity2_id
+            );
+            if result == 0 {
+                Ok(())
+            } else {
+                Err(FfiError::ConstraintFailed(format!("Failed to add same orientation constraint {}", id)))
+            }
+        }
+    }
+
+    pub fn add_projected_point_distance_constraint(
+        &mut self,
+        id: i32,
+        point1_id: i32,
+        point2_id: i32,
+        workplane_id: i32,
+        distance: f64,
+    ) -> Result<(), FfiError> {
+        unsafe {
+            let result = real_slvs_add_projected_point_distance_constraint(
+                self.system, id, point1_id, point2_id, workplane_id, distance
+            );
+            if result == 0 {
+                Ok(())
+            } else {
+                Err(FfiError::ConstraintFailed(format!("Failed to add projected point distance constraint {}", id)))
+            }
+        }
+    }
+
+    pub fn add_length_difference_constraint(
+        &mut self,
+        id: i32,
+        line1_id: i32,
+        line2_id: i32,
+        difference: f64,
+    ) -> Result<(), FfiError> {
+        unsafe {
+            let result = real_slvs_add_length_difference_constraint(
+                self.system, id, line1_id, line2_id, difference
+            );
+            if result == 0 {
+                Ok(())
+            } else {
+                Err(FfiError::ConstraintFailed(format!("Failed to add length difference constraint {}", id)))
             }
         }
     }

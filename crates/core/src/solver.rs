@@ -355,6 +355,118 @@ impl Solver {
                         })?;
                     constraint_id += 1;
                 }
+                crate::ir::Constraint::LengthRatio { a, b, value } => {
+                    let line1_id = entity_id_map.get(a).copied().unwrap_or(0);
+                    let line2_id = entity_id_map.get(b).copied().unwrap_or(0);
+                    let ratio = match value {
+                        crate::ir::ExprOrNumber::Number(n) => *n,
+                        crate::ir::ExprOrNumber::Expression(e) => eval.eval(&e)?,
+                    };
+                    ffi_solver
+                        .add_length_ratio_constraint(constraint_id, line1_id, line2_id, ratio)
+                        .map_err(|e| crate::error::Error::InvalidInput {
+                            message: format!("Failed to add length ratio constraint between '{}' and '{}': {}", a, b, e),
+                            pointer: Some(format!("/constraints/{}", constraint_idx)),
+                        })?;
+                    constraint_id += 1;
+                }
+                crate::ir::Constraint::EqualAngle { lines } => {
+                    if lines.len() != 4 {
+                        return Err(crate::error::Error::InvalidInput {
+                            message: format!("EqualAngle constraint requires exactly 4 lines, got {}", lines.len()),
+                            pointer: Some(format!("/constraints/{}", constraint_idx)),
+                        });
+                    }
+                    let line1_id = entity_id_map.get(&lines[0]).copied().unwrap_or(0);
+                    let line2_id = entity_id_map.get(&lines[1]).copied().unwrap_or(0);
+                    let line3_id = entity_id_map.get(&lines[2]).copied().unwrap_or(0);
+                    let line4_id = entity_id_map.get(&lines[3]).copied().unwrap_or(0);
+                    ffi_solver
+                        .add_equal_angle_constraint(constraint_id, line1_id, line2_id, line3_id, line4_id)
+                        .map_err(|e| crate::error::Error::InvalidInput {
+                            message: format!("Failed to add equal angle constraint: {}", e),
+                            pointer: Some(format!("/constraints/{}", constraint_idx)),
+                        })?;
+                    constraint_id += 1;
+                }
+                crate::ir::Constraint::SymmetricHorizontal { a, b } => {
+                    let entity1_id = entity_id_map.get(a).copied().unwrap_or(0);
+                    let entity2_id = entity_id_map.get(b).copied().unwrap_or(0);
+                    ffi_solver
+                        .add_symmetric_horizontal_constraint(constraint_id, entity1_id, entity2_id)
+                        .map_err(|e| crate::error::Error::InvalidInput {
+                            message: format!("Failed to add symmetric horizontal constraint between '{}' and '{}': {}", a, b, e),
+                            pointer: Some(format!("/constraints/{}", constraint_idx)),
+                        })?;
+                    constraint_id += 1;
+                }
+                crate::ir::Constraint::SymmetricVertical { a, b } => {
+                    let entity1_id = entity_id_map.get(a).copied().unwrap_or(0);
+                    let entity2_id = entity_id_map.get(b).copied().unwrap_or(0);
+                    ffi_solver
+                        .add_symmetric_vertical_constraint(constraint_id, entity1_id, entity2_id)
+                        .map_err(|e| crate::error::Error::InvalidInput {
+                            message: format!("Failed to add symmetric vertical constraint between '{}' and '{}': {}", a, b, e),
+                            pointer: Some(format!("/constraints/{}", constraint_idx)),
+                        })?;
+                    constraint_id += 1;
+                }
+                crate::ir::Constraint::Diameter { circle, value } => {
+                    let circle_id = entity_id_map.get(circle).copied().unwrap_or(0);
+                    let diameter = match value {
+                        crate::ir::ExprOrNumber::Number(n) => *n,
+                        crate::ir::ExprOrNumber::Expression(e) => eval.eval(&e)?,
+                    };
+                    ffi_solver
+                        .add_diameter_constraint(constraint_id, circle_id, diameter)
+                        .map_err(|e| crate::error::Error::InvalidInput {
+                            message: format!("Failed to add diameter constraint for circle '{}': {}", circle, e),
+                            pointer: Some(format!("/constraints/{}", constraint_idx)),
+                        })?;
+                    constraint_id += 1;
+                }
+                crate::ir::Constraint::SameOrientation { a, b } => {
+                    let entity1_id = entity_id_map.get(a).copied().unwrap_or(0);
+                    let entity2_id = entity_id_map.get(b).copied().unwrap_or(0);
+                    ffi_solver
+                        .add_same_orientation_constraint(constraint_id, entity1_id, entity2_id)
+                        .map_err(|e| crate::error::Error::InvalidInput {
+                            message: format!("Failed to add same orientation constraint between '{}' and '{}': {}", a, b, e),
+                            pointer: Some(format!("/constraints/{}", constraint_idx)),
+                        })?;
+                    constraint_id += 1;
+                }
+                crate::ir::Constraint::ProjectedPointDistance { a, b, plane, value } => {
+                    let point1_id = entity_id_map.get(a).copied().unwrap_or(0);
+                    let point2_id = entity_id_map.get(b).copied().unwrap_or(0);
+                    let plane_id = entity_id_map.get(plane).copied().unwrap_or(0);
+                    let distance = match value {
+                        crate::ir::ExprOrNumber::Number(n) => *n,
+                        crate::ir::ExprOrNumber::Expression(e) => eval.eval(&e)?,
+                    };
+                    ffi_solver
+                        .add_projected_point_distance_constraint(constraint_id, point1_id, point2_id, plane_id, distance)
+                        .map_err(|e| crate::error::Error::InvalidInput {
+                            message: format!("Failed to add projected point distance constraint between '{}' and '{}' on plane '{}': {}", a, b, plane, e),
+                            pointer: Some(format!("/constraints/{}", constraint_idx)),
+                        })?;
+                    constraint_id += 1;
+                }
+                crate::ir::Constraint::LengthDifference { a, b, value } => {
+                    let line1_id = entity_id_map.get(a).copied().unwrap_or(0);
+                    let line2_id = entity_id_map.get(b).copied().unwrap_or(0);
+                    let difference = match value {
+                        crate::ir::ExprOrNumber::Number(n) => *n,
+                        crate::ir::ExprOrNumber::Expression(e) => eval.eval(&e)?,
+                    };
+                    ffi_solver
+                        .add_length_difference_constraint(constraint_id, line1_id, line2_id, difference)
+                        .map_err(|e| crate::error::Error::InvalidInput {
+                            message: format!("Failed to add length difference constraint between '{}' and '{}': {}", a, b, e),
+                            pointer: Some(format!("/constraints/{}", constraint_idx)),
+                        })?;
+                    constraint_id += 1;
+                }
                 _ => {
                     // Constraint type not yet implemented - will be ignored
                 } // Handle other constraint types as needed

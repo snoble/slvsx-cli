@@ -184,6 +184,41 @@ pub enum Constraint {
         line: String,
         value: ExprOrNumber,
     },
+    LengthRatio {
+        a: String,
+        b: String,
+        value: ExprOrNumber,
+    },
+    EqualAngle {
+        lines: Vec<String>, // 4 lines: [line1, line2, line3, line4]
+    },
+    SymmetricHorizontal {
+        a: String,
+        b: String,
+    },
+    SymmetricVertical {
+        a: String,
+        b: String,
+    },
+    Diameter {
+        circle: String,
+        value: ExprOrNumber,
+    },
+    SameOrientation {
+        a: String,
+        b: String,
+    },
+    ProjectedPointDistance {
+        a: String,
+        b: String,
+        plane: String,
+        value: ExprOrNumber,
+    },
+    LengthDifference {
+        a: String,
+        b: String,
+        value: ExprOrNumber,
+    },
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, JsonSchema)]
