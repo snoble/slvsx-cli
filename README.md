@@ -152,6 +152,7 @@ See [SHOWCASE.md](SHOWCASE.md) for more impressive examples and use cases!
 
 ### Getting Started
 - [Showcase](SHOWCASE.md) - What can you build? Impressive examples
+- [Visual Gallery](docs/VISUAL_GALLERY.md) - 🎨 Cool renders and visualizations
 - [AI Agent Guide](docs/AI_GUIDE.md) - Complete guide for AI usage
 - [Examples Tutorial](examples/README.md) - Step-by-step learning
 

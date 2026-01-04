@@ -10,6 +10,7 @@ This document demonstrates the powerful capabilities of SLVSX through real, work
 
 ```bash
 slvsx solve examples/02_triangle.json
+slvsx export -f svg examples/02_triangle.json -o triangle.svg
 ```
 
 **What it demonstrates**: 
@@ -25,7 +26,10 @@ slvsx solve examples/02_triangle.json
 
 ```bash
 slvsx solve examples/08_angles.json
+slvsx export -f svg examples/08_angles.json -o hinge.svg
 ```
+
+**Visualization**: See [Visual Gallery](docs/VISUAL_GALLERY.md#angle-controlled-hinge)
 
 **What it demonstrates**:
 - Angle constraints
@@ -40,7 +44,10 @@ slvsx solve examples/08_angles.json
 
 ```bash
 slvsx solve examples/11_symmetric.json
+slvsx export -f svg examples/11_symmetric.json -o arrow.svg
 ```
+
+**Visualization**: See [Visual Gallery](docs/VISUAL_GALLERY.md#symmetric-arrowhead)
 
 **What it demonstrates**:
 - Symmetry constraints
@@ -48,6 +55,27 @@ slvsx solve examples/11_symmetric.json
 - Complex geometric relationships
 
 **Use cases**: Logo design, decorative patterns, architectural elements
+
+### 4. 3D Tetrahedron (Multiple Views!)
+
+**Problem**: Create a perfect tetrahedron with all edges equal length.
+
+```bash
+slvsx solve examples/04_3d_tetrahedron.json
+slvsx export -f svg -v xy examples/04_3d_tetrahedron.json -o tetra_top.svg
+slvsx export -f svg -v xz examples/04_3d_tetrahedron.json -o tetra_front.svg
+slvsx export -f svg -v yz examples/04_3d_tetrahedron.json -o tetra_side.svg
+```
+
+**Visualization**: See [Visual Gallery](docs/VISUAL_GALLERY.md#tetrahedron-multiple-views) for all three views!
+
+**What it demonstrates**:
+- 3D constraint solving
+- Equal-length constraints
+- Multiple viewing angles
+- Perfect geometric precision
+
+**Use cases**: 3D modeling, structural analysis, geometric visualization
 
 ## 🔧 Real-World Applications
 
@@ -284,6 +312,20 @@ Perfect for:
 - Presentations
 - Web visualization
 - Design review
+
+**Multiple View Angles** (for 3D objects):
+```bash
+# Top-down view
+slvsx export -f svg -v xy examples/04_3d_tetrahedron.json -o top.svg
+
+# Front view
+slvsx export -f svg -v xz examples/04_3d_tetrahedron.json -o front.svg
+
+# Side view
+slvsx export -f svg -v yz examples/04_3d_tetrahedron.json -o side.svg
+```
+
+See the [Visual Gallery](docs/VISUAL_GALLERY.md) for rendered examples!
 
 ### DXF Export
 ```bash
