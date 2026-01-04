@@ -26,7 +26,7 @@ enum ExportFormat {
     Stl,
 }
 
-#[derive(Clone, ValueEnum)]
+#[derive(Clone, Debug, ValueEnum)]
 enum ViewPlane {
     Xy,
     Xz,
