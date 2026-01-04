@@ -15,7 +15,7 @@ This gallery showcases SLVSX's capabilities through rendered visualizations. Eac
 
 ### Birdhouse (3D Structure)
 
-A complete 3D birdhouse with base, walls, roof, and entrance hole, shown from multiple angles:
+A complete 3D birdhouse with rectangular base, vertical walls, and symmetric pyramidal roof, shown from multiple angles:
 
 **XY View (Top-Down)**
 ![Birdhouse XY View](../examples/outputs/birdhouse_xy.svg)
@@ -31,10 +31,11 @@ A complete 3D birdhouse with base, walls, roof, and entrance hole, shown from mu
 
 **What it demonstrates**:
 - Complex 3D structure with multiple components
-- Parametric design (width, depth, height, roof height)
-- Vertical walls and sloped roof
-- Circular entrance hole
+- Parametric design (width, depth, height, roof_height)
+- Rectangular base with vertical walls
+- Symmetric pyramidal roof with equal-length edges
 - Multiple viewing angles including isometric
+- Iterative design process (built step-by-step)
 
 **Try it**:
 ```bash
