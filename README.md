@@ -55,7 +55,14 @@ slvsx solve examples/11_symmetric.json
 
 # Export to SVG for visualization
 slvsx export -f svg examples/08_angles.json -o output.svg
+
+# Export 3D objects from multiple angles
+slvsx export -f svg -v xy examples/04_3d_tetrahedron.json -o top.svg
+slvsx export -f svg -v xz examples/04_3d_tetrahedron.json -o front.svg
+slvsx export -f svg -v yz examples/04_3d_tetrahedron.json -o side.svg
 ```
+
+**🎨 See the [Visual Gallery](docs/VISUAL_GALLERY.md) for cool renders and 3D visualizations!**
 
 ### Basic Example: Triangle from Distances
 

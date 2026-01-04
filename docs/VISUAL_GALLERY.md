@@ -1,6 +1,15 @@
-# Visual Gallery: SLVSX in Action
+# Visual Gallery: SLVSX in Action 🎨
 
 This gallery showcases SLVSX's capabilities through rendered visualizations. Each example demonstrates different constraint types and geometric relationships.
+
+> **💡 Tip**: All renders are generated from actual constraint solutions - they're mathematically precise, not approximations!
+
+## 🎬 Quick Navigation
+
+- [3D Geometry](#-3d-geometry) - Tetrahedron, coordinate systems
+- [Mechanisms & Linkages](#-mechanisms--linkages) - Hinges, symmetric designs
+- [Geometric Shapes](#-geometric-shapes) - Rectangles, parallel/perpendicular
+- [Creating Visualizations](#-creating-your-own-visualizations) - How to generate your own
 
 ## 🎨 3D Geometry
 
@@ -85,6 +94,20 @@ A rectangle constructed using parallel and perpendicular constraints:
 - Geometric construction
 
 ## 🎯 Creating Your Own Visualizations
+
+### Automated Render Generation
+
+Use the provided script to generate all renders:
+
+```bash
+./scripts/generate_renders.sh
+```
+
+This will:
+- Solve all examples
+- Generate SVG renders for 2D examples
+- Create multiple views (XY, XZ, YZ) for 3D examples
+- Save everything to `examples/outputs/`
 
 ### Export from Multiple Angles
 
