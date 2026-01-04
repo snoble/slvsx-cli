@@ -252,13 +252,14 @@ jobs:
           # Generate multiple views for 3D examples
           echo "Generating 3D views..."
           
-          # Tetrahedron - all three views
+          # Tetrahedron - all views including isometric
           if [ -f "examples/04_3d_tetrahedron.json" ]; then
             "$BINARY_PATH" solve "examples/04_3d_tetrahedron.json" > /dev/null 2>&1
             "$BINARY_PATH" export -f svg -v xy "examples/04_3d_tetrahedron.json" -o "examples/outputs/tetrahedron_xy.svg" 2>&1
             "$BINARY_PATH" export -f svg -v xz "examples/04_3d_tetrahedron.json" -o "examples/outputs/tetrahedron_xz.svg" 2>&1
             "$BINARY_PATH" export -f svg -v yz "examples/04_3d_tetrahedron.json" -o "examples/outputs/tetrahedron_yz.svg" 2>&1
-            echo "  Generated tetrahedron views (XY, XZ, YZ)"
+            "$BINARY_PATH" export -f svg -v isometric "examples/04_3d_tetrahedron.json" -o "examples/outputs/tetrahedron_isometric.svg" 2>&1
+            echo "  Generated tetrahedron views (XY, XZ, YZ, Isometric)"
           fi
           
           # 3D basics - multiple views

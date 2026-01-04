@@ -26,6 +26,9 @@ A perfect tetrahedron with all edges equal length, shown from different viewing 
 **YZ View (Side)**
 ![Tetrahedron YZ View](examples/outputs/tetrahedron_yz.svg)
 
+**Isometric View (45° 3D)**
+![Tetrahedron Isometric View](examples/outputs/tetrahedron_isometric.svg)
+
 **What it demonstrates**:
 - 3D constraint solving
 - Equal-length constraints
@@ -135,9 +138,12 @@ slvsx export -f svg -v xz examples/04_3d_tetrahedron.json -o front.svg
 
 # Side view (YZ plane) - looking from the side
 slvsx export -f svg -v yz examples/04_3d_tetrahedron.json -o side.svg
+
+# Isometric view (45° 3D) - shows all three axes
+slvsx export -f svg -v isometric examples/04_3d_tetrahedron.json -o isometric.svg
 ```
 
-**Pro Tip**: Export all three views to create a comprehensive visualization showing your 3D design from every angle!
+**Pro Tip**: Export all views (XY, XZ, YZ, and Isometric) to create a comprehensive visualization showing your 3D design from every angle! The isometric view is especially useful for understanding 3D structure at a glance.
 
 ### Export to Different Formats
 

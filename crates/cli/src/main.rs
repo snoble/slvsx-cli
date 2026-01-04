@@ -31,6 +31,7 @@ enum ViewPlane {
     Xy,
     Xz,
     Yz,
+    Isometric,
 }
 
 #[derive(Subcommand)]
@@ -124,6 +125,7 @@ fn main() -> Result<()> {
                         ViewPlane::Xy => SvgViewPlane::XY,
                         ViewPlane::Xz => SvgViewPlane::XZ,
                         ViewPlane::Yz => SvgViewPlane::YZ,
+                        ViewPlane::Isometric => SvgViewPlane::Isometric,
                     };
                     let exporter = SvgExporter::new(view_plane);
                     exporter.export(&entities)?.into_bytes()

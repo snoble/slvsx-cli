@@ -11,6 +11,7 @@ pub enum ViewPlane {
     XY,
     XZ,
     YZ,
+    Isometric,
 }
 
 impl Default for SvgExporter {
@@ -140,6 +141,16 @@ impl SvgExporter {
                 point.get(1).copied().unwrap_or(0.0),
                 point.get(2).copied().unwrap_or(0.0),
             ),
+            ViewPlane::Isometric => {
+                // Isometric projection: 45-degree view showing all three axes
+                // Standard isometric projection formula:
+                // x' = x - y
+                // y' = (x + y) / 2 - z
+                let x = point.get(0).copied().unwrap_or(0.0);
+                let y = point.get(1).copied().unwrap_or(0.0);
+                let z = point.get(2).copied().unwrap_or(0.0);
+                (x - y, (x + y) / 2.0 - z)
+            }
         }
     }
 }
@@ -245,5 +256,22 @@ mod tests {
         let exporter = SvgExporter::new(ViewPlane::XY);
         assert_eq!(exporter.project_point(&[1.0]), (1.0, 0.0));
         assert_eq!(exporter.project_point(&[]), (0.0, 0.0));
+    }
+
+    #[test]
+    fn test_project_point_isometric() {
+        let exporter = SvgExporter::new(ViewPlane::Isometric);
+        // Test origin
+        assert_eq!(exporter.project_point(&[0.0, 0.0, 0.0]), (0.0, 0.0));
+        // Test point on X axis
+        assert_eq!(exporter.project_point(&[100.0, 0.0, 0.0]), (100.0, 50.0));
+        // Test point on Y axis
+        assert_eq!(exporter.project_point(&[0.0, 100.0, 0.0]), (-100.0, 50.0));
+        // Test point on Z axis
+        assert_eq!(exporter.project_point(&[0.0, 0.0, 100.0]), (0.0, -100.0));
+        // Test point in 3D space
+        let (x, y) = exporter.project_point(&[50.0, 30.0, 20.0]);
+        assert_eq!(x, 20.0); // 50 - 30
+        assert!((y - 20.0).abs() < 0.001); // (50 + 30) / 2 - 20 = 40 - 20 = 20
     }
 }
