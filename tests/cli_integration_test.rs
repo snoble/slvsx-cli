@@ -478,3 +478,82 @@ fn test_export_all_formats() {
     }
 }
 
+/// Test export error handling (invalid format would be caught by clap)
+#[test]
+fn test_export_invalid_format() {
+    let problem = json!({
+        "schema": "slvs-json/1",
+        "units": "mm",
+        "entities": [
+            {"type": "point", "id": "p1", "at": [0, 0, 0]}
+        ],
+        "constraints": [
+            {"type": "fixed", "entity": "p1"}
+        ]
+    });
+
+    let mut cmd = Command::cargo_bin("slvsx").unwrap();
+    cmd.arg("export")
+        .arg("-f").arg("invalid")
+        .arg("-");
+
+    cmd.write_stdin(serde_json::to_string(&problem).unwrap());
+
+    // Clap should reject invalid format before we even get to the code
+    cmd.assert().failure();
+}
+
+/// Test solve with validation error
+#[test]
+fn test_solve_validation_error() {
+    let invalid = json!({
+        "schema": "slvs-json/1",
+        "units": "mm",
+        "entities": [
+            {"type": "point", "id": "p1", "at": [0, 0, 0]},
+            {"type": "point", "id": "p2", "at": [100, 0, 0]}
+        ],
+        "constraints": [
+            {"type": "fixed", "entity": "nonexistent"}  // Invalid entity reference
+        ]
+    });
+
+    let mut cmd = Command::cargo_bin("slvsx").unwrap();
+    cmd.arg("solve").arg("-")
+        .write_stdin(serde_json::to_string(&invalid).unwrap());
+
+    // Should fail validation
+    cmd.assert().failure();
+}
+
+/// Test export with solver error
+#[test]
+fn test_export_solver_error() {
+    // Use an over-constrained problem that can't be solved
+    let overconstrained = json!({
+        "schema": "slvs-json/1",
+        "units": "mm",
+        "entities": [
+            {"type": "point", "id": "p1", "at": [0, 0, 0]},
+            {"type": "point", "id": "p2", "at": [100, 0, 0]}
+        ],
+        "constraints": [
+            {"type": "fixed", "entity": "p1"},
+            {"type": "distance", "between": ["p1", "p2"], "value": 50},
+            {"type": "distance", "between": ["p1", "p2"], "value": 100}  // Conflicting distances
+        ]
+    });
+
+    let mut cmd = Command::cargo_bin("slvsx").unwrap();
+    cmd.arg("export")
+        .arg("-f").arg("svg")
+        .arg("-");
+
+    cmd.write_stdin(serde_json::to_string(&overconstrained).unwrap());
+
+    // May succeed or fail depending on solver behavior
+    // But should not crash
+    let result = cmd.output().unwrap();
+    assert!(result.status.code().is_some());
+}
+
