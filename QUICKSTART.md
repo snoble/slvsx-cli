@@ -21,8 +21,11 @@ That's it! You now have `slvsx` installed.
 ## Test It Works
 
 ```bash
-# Simple point
-echo '{"entities":[{"type":"point","id":"p1","at":[0,0,0]}],"constraints":[],"units":"mm"}' | slvsx solve -
+# Simple point (requires schema field)
+echo '{"schema":"slvs-json/1","entities":[{"type":"point","id":"p1","at":[0,0,0]}],"constraints":[],"units":"mm"}' | slvsx solve -
+
+# Or validate first to check your JSON
+echo '{"schema":"slvs-json/1","entities":[{"type":"point","id":"p1","at":[0,0,0]}],"constraints":[],"units":"mm"}' | slvsx validate -
 ```
 
 ## For AI Agents (Claude, GPT, etc.)
