@@ -442,7 +442,21 @@ impl Solver {
             if result == 0 {
                 Ok(())
             } else {
-                Err(format!("Solver failed with code {}", result))
+                // Map SolveSpace error codes to descriptive messages
+                // See libslvs-static/include/slvs.h for definitions:
+                // SLVS_RESULT_OKAY = 0
+                // SLVS_RESULT_INCONSISTENT = 1
+                // SLVS_RESULT_DIDNT_CONVERGE = 2
+                // SLVS_RESULT_TOO_MANY_UNKNOWNS = 3
+                // SLVS_RESULT_REDUNDANT_OKAY = 4
+                let error_msg = match result {
+                    1 => "System is inconsistent (conflicting constraints)".to_string(),
+                    2 => "Solver did not converge (try adjusting initial guesses or constraints)".to_string(),
+                    3 => "Too many unknowns (system is underconstrained)".to_string(),
+                    4 => "System is redundant but solved".to_string(),
+                    _ => format!("Solver failed with unknown error code {}", result),
+                };
+                Err(error_msg)
             }
         }
     }
