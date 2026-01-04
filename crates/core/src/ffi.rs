@@ -159,6 +159,38 @@ extern "C" {
         line_id: c_int,
     ) -> c_int;
 
+    pub fn real_slvs_add_workplane(
+        sys: *mut SolverSystem,
+        id: c_int,
+        origin_point_id: c_int,
+        nx: c_double,
+        ny: c_double,
+        nz: c_double,
+    ) -> c_int;
+
+    pub fn real_slvs_add_point_in_plane_constraint(
+        sys: *mut SolverSystem,
+        id: c_int,
+        point_id: c_int,
+        workplane_id: c_int,
+    ) -> c_int;
+
+    pub fn real_slvs_add_point_plane_distance_constraint(
+        sys: *mut SolverSystem,
+        id: c_int,
+        point_id: c_int,
+        workplane_id: c_int,
+        distance: c_double,
+    ) -> c_int;
+
+    pub fn real_slvs_add_point_line_distance_constraint(
+        sys: *mut SolverSystem,
+        id: c_int,
+        point_id: c_int,
+        line_id: c_int,
+        distance: c_double,
+    ) -> c_int;
+
     pub fn real_slvs_solve(sys: *mut SolverSystem) -> c_int;
 
     pub fn real_slvs_get_point_position(
@@ -467,6 +499,78 @@ impl Solver {
                 Ok(())
             } else {
                 Err(FfiError::ConstraintFailed(format!("Failed to add midpoint constraint {}", id)))
+            }
+        }
+    }
+
+    pub fn add_workplane(
+        &mut self,
+        id: i32,
+        origin_point_id: i32,
+        nx: f64,
+        ny: f64,
+        nz: f64,
+    ) -> Result<(), FfiError> {
+        unsafe {
+            let result = real_slvs_add_workplane(self.system, id, origin_point_id, nx, ny, nz);
+            if result == 0 {
+                Ok(())
+            } else {
+                Err(FfiError::ConstraintFailed(format!("Failed to add workplane {}", id)))
+            }
+        }
+    }
+
+    pub fn add_point_in_plane_constraint(
+        &mut self,
+        id: i32,
+        point_id: i32,
+        workplane_id: i32,
+    ) -> Result<(), FfiError> {
+        unsafe {
+            let result = real_slvs_add_point_in_plane_constraint(self.system, id, point_id, workplane_id);
+            if result == 0 {
+                Ok(())
+            } else {
+                Err(FfiError::ConstraintFailed(format!("Failed to add point in plane constraint {}", id)))
+            }
+        }
+    }
+
+    pub fn add_point_plane_distance_constraint(
+        &mut self,
+        id: i32,
+        point_id: i32,
+        workplane_id: i32,
+        distance: f64,
+    ) -> Result<(), FfiError> {
+        unsafe {
+            let result = real_slvs_add_point_plane_distance_constraint(
+                self.system, id, point_id, workplane_id, distance
+            );
+            if result == 0 {
+                Ok(())
+            } else {
+                Err(FfiError::ConstraintFailed(format!("Failed to add point plane distance constraint {}", id)))
+            }
+        }
+    }
+
+    pub fn add_point_line_distance_constraint(
+        &mut self,
+        id: i32,
+        point_id: i32,
+        line_id: i32,
+        distance: f64,
+    ) -> Result<(), FfiError> {
+        unsafe {
+            let result = real_slvs_add_point_line_distance_constraint(
+                self.system, id, point_id, line_id, distance
+            );
+            if result == 0 {
+                Ok(())
+            } else {
+                Err(FfiError::ConstraintFailed(format!("Failed to add point line distance constraint {}", id)))
             }
         }
     }
@@ -788,5 +892,64 @@ mod tests {
             FfiError::ConstraintFailed("test".to_string()).to_string(),
             "Constraint operation failed: test"
         );
+    }
+
+    #[test]
+    fn test_workplane_ffi_binding() {
+        let mut solver = Solver::new();
+
+        // Create origin point
+        solver.add_point(1, 0.0, 0.0, 0.0).unwrap();
+
+        // Create workplane with normal pointing in Z direction
+        let result = solver.add_workplane(10, 1, 0.0, 0.0, 1.0);
+        assert!(result.is_ok(), "Should be able to add workplane via FFI");
+    }
+
+    #[test]
+    fn test_point_in_plane_constraint_ffi_binding() {
+        let mut solver = Solver::new();
+
+        // Create point and origin
+        solver.add_point(1, 0.0, 0.0, 0.0).unwrap();
+        solver.add_point(2, 10.0, 10.0, 0.0).unwrap();
+
+        // Create workplane
+        solver.add_workplane(10, 1, 0.0, 0.0, 1.0).unwrap();
+
+        // Add point in plane constraint - FFI binding should work
+        let result = solver.add_point_in_plane_constraint(100, 2, 10);
+        assert!(result.is_ok(), "Should be able to add point in plane constraint via FFI");
+    }
+
+    #[test]
+    fn test_point_plane_distance_constraint_ffi_binding() {
+        let mut solver = Solver::new();
+
+        // Create point and origin
+        solver.add_point(1, 0.0, 0.0, 0.0).unwrap();
+        solver.add_point(2, 10.0, 10.0, 5.0).unwrap();
+
+        // Create workplane
+        solver.add_workplane(10, 1, 0.0, 0.0, 1.0).unwrap();
+
+        // Add point plane distance constraint - FFI binding should work
+        let result = solver.add_point_plane_distance_constraint(100, 2, 10, 5.0);
+        assert!(result.is_ok(), "Should be able to add point plane distance constraint via FFI");
+    }
+
+    #[test]
+    fn test_point_line_distance_constraint_ffi_binding() {
+        let mut solver = Solver::new();
+
+        // Create points and line
+        solver.add_point(1, 0.0, 0.0, 0.0).unwrap();
+        solver.add_point(2, 10.0, 0.0, 0.0).unwrap();
+        solver.add_point(3, 5.0, 5.0, 0.0).unwrap();
+        solver.add_line(10, 1, 2).unwrap();
+
+        // Add point line distance constraint - FFI binding should work
+        let result = solver.add_point_line_distance_constraint(100, 3, 10, 5.0);
+        assert!(result.is_ok(), "Should be able to add point line distance constraint via FFI");
     }
 }

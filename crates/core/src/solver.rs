@@ -150,6 +150,63 @@ impl Solver {
                     entity_id_map.insert(id.clone(), next_id);
                     next_id += 1;
                 }
+                crate::ir::Entity::Plane { id, origin, normal } => {
+                    // Evaluate expressions for origin point
+                    let ox = match &origin[0] {
+                        crate::ir::ExprOrNumber::Number(n) => *n,
+                        crate::ir::ExprOrNumber::Expression(e) => eval.eval(&e)?,
+                    };
+                    let oy = match &origin[1] {
+                        crate::ir::ExprOrNumber::Number(n) => *n,
+                        crate::ir::ExprOrNumber::Expression(e) => eval.eval(&e)?,
+                    };
+                    let oz = if origin.len() > 2 {
+                        match &origin[2] {
+                            crate::ir::ExprOrNumber::Number(n) => *n,
+                            crate::ir::ExprOrNumber::Expression(e) => eval.eval(&e)?,
+                        }
+                    } else {
+                        0.0
+                    };
+
+                    // Evaluate expressions for normal vector
+                    let nx = match &normal[0] {
+                        crate::ir::ExprOrNumber::Number(n) => *n,
+                        crate::ir::ExprOrNumber::Expression(e) => eval.eval(&e)?,
+                    };
+                    let ny = match &normal[1] {
+                        crate::ir::ExprOrNumber::Number(n) => *n,
+                        crate::ir::ExprOrNumber::Expression(e) => eval.eval(&e)?,
+                    };
+                    let nz = if normal.len() > 2 {
+                        match &normal[2] {
+                            crate::ir::ExprOrNumber::Number(n) => *n,
+                            crate::ir::ExprOrNumber::Expression(e) => eval.eval(&e)?,
+                        }
+                    } else {
+                        1.0 // Default to Z-axis if not specified
+                    };
+
+                    // Create origin point first (temporary, will be used by workplane)
+                    let origin_point_id = next_id;
+                    ffi_solver
+                        .add_point(origin_point_id, ox, oy, oz)
+                        .map_err(|e| crate::error::Error::InvalidInput {
+                            message: format!("Failed to add plane origin point '{}': {}", id, e),
+                            pointer: Some(format!("/entities/{}", entity_idx)),
+                        })?;
+                    next_id += 1;
+
+                    // Create workplane
+                    ffi_solver
+                        .add_workplane(next_id, origin_point_id, nx, ny, nz)
+                        .map_err(|e| crate::error::Error::InvalidInput {
+                            message: format!("Failed to add plane '{}': {}", id, e),
+                            pointer: Some(format!("/entities/{}", entity_idx)),
+                        })?;
+                    entity_id_map.insert(id.clone(), next_id);
+                    next_id += 1;
+                }
                 _ => {} // Handle other entity types as needed
             }
         }
@@ -256,6 +313,47 @@ impl Solver {
                             })?;
                         constraint_id += 1;
                     }
+                }
+                crate::ir::Constraint::PointInPlane { point, plane } => {
+                    let point_id = entity_id_map.get(point).copied().unwrap_or(0);
+                    let plane_id = entity_id_map.get(plane).copied().unwrap_or(0);
+                    ffi_solver
+                        .add_point_in_plane_constraint(constraint_id, point_id, plane_id)
+                        .map_err(|e| crate::error::Error::InvalidInput {
+                            message: format!("Failed to add point-in-plane constraint: point '{}' in plane '{}': {}", point, plane, e),
+                            pointer: Some(format!("/constraints/{}", constraint_idx)),
+                        })?;
+                    constraint_id += 1;
+                }
+                crate::ir::Constraint::PointPlaneDistance { point, plane, value } => {
+                    let point_id = entity_id_map.get(point).copied().unwrap_or(0);
+                    let plane_id = entity_id_map.get(plane).copied().unwrap_or(0);
+                    let distance = match value {
+                        crate::ir::ExprOrNumber::Number(n) => *n,
+                        crate::ir::ExprOrNumber::Expression(e) => eval.eval(&e)?,
+                    };
+                    ffi_solver
+                        .add_point_plane_distance_constraint(constraint_id, point_id, plane_id, distance)
+                        .map_err(|e| crate::error::Error::InvalidInput {
+                            message: format!("Failed to add point-plane-distance constraint: point '{}' to plane '{}': {}", point, plane, e),
+                            pointer: Some(format!("/constraints/{}", constraint_idx)),
+                        })?;
+                    constraint_id += 1;
+                }
+                crate::ir::Constraint::PointLineDistance { point, line, value } => {
+                    let point_id = entity_id_map.get(point).copied().unwrap_or(0);
+                    let line_id = entity_id_map.get(line).copied().unwrap_or(0);
+                    let distance = match value {
+                        crate::ir::ExprOrNumber::Number(n) => *n,
+                        crate::ir::ExprOrNumber::Expression(e) => eval.eval(&e)?,
+                    };
+                    ffi_solver
+                        .add_point_line_distance_constraint(constraint_id, point_id, line_id, distance)
+                        .map_err(|e| crate::error::Error::InvalidInput {
+                            message: format!("Failed to add point-line-distance constraint: point '{}' to line '{}': {}", point, line, e),
+                            pointer: Some(format!("/constraints/{}", constraint_idx)),
+                        })?;
+                    constraint_id += 1;
                 }
                 _ => {
                     // Constraint type not yet implemented - will be ignored

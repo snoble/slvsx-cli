@@ -170,6 +170,20 @@ pub enum Constraint {
         point: String,
         of: String,
     },
+    PointInPlane {
+        point: String,
+        plane: String,
+    },
+    PointPlaneDistance {
+        point: String,
+        plane: String,
+        value: ExprOrNumber,
+    },
+    PointLineDistance {
+        point: String,
+        line: String,
+        value: ExprOrNumber,
+    },
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, JsonSchema)]

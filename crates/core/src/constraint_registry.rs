@@ -175,6 +175,38 @@ impl ConstraintRegistry {
                 solver.add_midpoint_constraint(constraint_id, point_id, line_id)
                     .map_err(|e| e.to_string())
             }
+            Constraint::PointInPlane { point, plane } => {
+                let point_id = entity_id_map.get(point).copied().unwrap_or(0);
+                let plane_id = entity_id_map.get(plane).copied().unwrap_or(0);
+                solver.add_point_in_plane_constraint(constraint_id, point_id, plane_id)
+                    .map_err(|e| e.to_string())
+            }
+            Constraint::PointPlaneDistance { point, plane, value } => {
+                let point_id = entity_id_map.get(point).copied().unwrap_or(0);
+                let plane_id = entity_id_map.get(plane).copied().unwrap_or(0);
+                let distance = match value {
+                    crate::ir::ExprOrNumber::Number(n) => *n,
+                    crate::ir::ExprOrNumber::Expression(e) => {
+                        let evaluator = ExpressionEvaluator::new(std::collections::HashMap::new());
+                        evaluator.eval(e).unwrap_or(0.0)
+                    }
+                };
+                solver.add_point_plane_distance_constraint(constraint_id, point_id, plane_id, distance)
+                    .map_err(|e| e.to_string())
+            }
+            Constraint::PointLineDistance { point, line, value } => {
+                let point_id = entity_id_map.get(point).copied().unwrap_or(0);
+                let line_id = entity_id_map.get(line).copied().unwrap_or(0);
+                let distance = match value {
+                    crate::ir::ExprOrNumber::Number(n) => *n,
+                    crate::ir::ExprOrNumber::Expression(e) => {
+                        let evaluator = ExpressionEvaluator::new(std::collections::HashMap::new());
+                        evaluator.eval(e).unwrap_or(0.0)
+                    }
+                };
+                solver.add_point_line_distance_constraint(constraint_id, point_id, line_id, distance)
+                    .map_err(|e| e.to_string())
+            }
             // COMPILER ERROR if a constraint variant is missing here!
             // This ensures we never forget to handle a new constraint type
         }
@@ -203,6 +235,9 @@ impl ConstraintRegistry {
             "Perpendicular",
             "Parallel",
             "PointOnLine",
+            "PointInPlane",
+            "PointPlaneDistance",
+            "PointLineDistance",
         ]
     }
 }
@@ -254,6 +289,20 @@ mod tests {
         test_constraint(Constraint::Midpoint {
             point: "p1".to_string(),
             of: "l1".to_string()
+        });
+        test_constraint(Constraint::PointInPlane {
+            point: "p1".to_string(),
+            plane: "wp1".to_string()
+        });
+        test_constraint(Constraint::PointPlaneDistance {
+            point: "p1".to_string(),
+            plane: "wp1".to_string(),
+            value: crate::ir::ExprOrNumber::Number(10.0)
+        });
+        test_constraint(Constraint::PointLineDistance {
+            point: "p1".to_string(),
+            line: "l1".to_string(),
+            value: crate::ir::ExprOrNumber::Number(5.0)
         });
         // ... more test cases
     }
@@ -406,6 +455,55 @@ mod tests {
         let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 102, &entity_map);
         assert!(result.is_err(), "Angle constraint with wrong entity count should fail");
         assert!(result.unwrap_err().contains("exactly 2 entities"));
+    }
+
+    #[test]
+    fn test_point_in_plane_constraint_processing() {
+        let mut solver = FfiSolver::new();
+        let mut entity_map = std::collections::HashMap::new();
+        entity_map.insert("p1".to_string(), 1);
+        entity_map.insert("wp1".to_string(), 10);
+
+        let constraint = Constraint::PointInPlane {
+            point: "p1".to_string(),
+            plane: "wp1".to_string(),
+        };
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map);
+        assert!(result.is_ok(), "PointInPlane constraint should process successfully");
+    }
+
+    #[test]
+    fn test_point_plane_distance_constraint_processing() {
+        use crate::ir::ExprOrNumber;
+        let mut solver = FfiSolver::new();
+        let mut entity_map = std::collections::HashMap::new();
+        entity_map.insert("p1".to_string(), 1);
+        entity_map.insert("wp1".to_string(), 10);
+
+        let constraint = Constraint::PointPlaneDistance {
+            point: "p1".to_string(),
+            plane: "wp1".to_string(),
+            value: ExprOrNumber::Number(10.0),
+        };
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map);
+        assert!(result.is_ok(), "PointPlaneDistance constraint should process successfully");
+    }
+
+    #[test]
+    fn test_point_line_distance_constraint_processing() {
+        use crate::ir::ExprOrNumber;
+        let mut solver = FfiSolver::new();
+        let mut entity_map = std::collections::HashMap::new();
+        entity_map.insert("p1".to_string(), 1);
+        entity_map.insert("l1".to_string(), 10);
+
+        let constraint = Constraint::PointLineDistance {
+            point: "p1".to_string(),
+            line: "l1".to_string(),
+            value: ExprOrNumber::Number(5.0),
+        };
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map);
+        assert!(result.is_ok(), "PointLineDistance constraint should process successfully");
     }
 
     #[test]

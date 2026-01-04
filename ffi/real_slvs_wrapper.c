@@ -493,3 +493,149 @@ int real_slvs_get_dof(RealSlvsSystem* s) {
     if (!s) return -1;
     return s->sys.dof;
 }
+
+// Helper function to convert a normal vector to a quaternion
+// The quaternion represents the rotation from default Z-axis (0,0,1) to the desired normal
+static void normal_to_quaternion(double nx, double ny, double nz, double* qw, double* qx, double* qy, double* qz) {
+    // Normalize the input vector
+    double len = sqrt(nx*nx + ny*ny + nz*nz);
+    if (len < 1e-10) {
+        // Default to Z-axis if zero vector
+        *qw = 1.0; *qx = 0.0; *qy = 0.0; *qz = 0.0;
+        return;
+    }
+    nx /= len;
+    ny /= len;
+    nz /= len;
+    
+    // Default Z-axis
+    double zx = 0.0, zy = 0.0, zz = 1.0;
+    
+    // If normal is already Z-axis, use identity quaternion
+    if (fabs(nx) < 1e-10 && fabs(ny) < 1e-10 && fabs(nz - 1.0) < 1e-10) {
+        *qw = 1.0; *qx = 0.0; *qy = 0.0; *qz = 0.0;
+        return;
+    }
+    
+    // If normal is opposite Z-axis, rotate 180 degrees around X-axis
+    if (fabs(nx) < 1e-10 && fabs(ny) < 1e-10 && fabs(nz + 1.0) < 1e-10) {
+        *qw = 0.0; *qx = 1.0; *qy = 0.0; *qz = 0.0;
+        return;
+    }
+    
+    // General case: compute quaternion from axis-angle representation
+    // Axis is cross product of Z-axis and normal
+    double ax = zy * nz - zz * ny;
+    double ay = zz * nx - zx * nz;
+    double az = zx * ny - zy * nx;
+    
+    double axis_len = sqrt(ax*ax + ay*ay + az*az);
+    if (axis_len < 1e-10) {
+        // Vectors are parallel, use identity
+        *qw = 1.0; *qx = 0.0; *qy = 0.0; *qz = 0.0;
+        return;
+    }
+    
+    // Angle between vectors
+    double dot = zx*nx + zy*ny + zz*nz;
+    double angle = acos(fmax(-1.0, fmin(1.0, dot)));
+    
+    // Quaternion from axis-angle: q = (cos(θ/2), sin(θ/2) * axis)
+    double half_angle = angle / 2.0;
+    *qw = cos(half_angle);
+    double sin_half = sin(half_angle);
+    *qx = (ax / axis_len) * sin_half;
+    *qy = (ay / axis_len) * sin_half;
+    *qz = (az / axis_len) * sin_half;
+}
+
+// Add a workplane (plane entity)
+// Creates a normal from the normal vector and a workplane entity
+int real_slvs_add_workplane(RealSlvsSystem* s, int id, int origin_point_id, 
+                            double nx, double ny, double nz) {
+    if (!s) return -1;
+    
+    Slvs_hGroup g = 1;
+    
+    // Convert normal vector to quaternion
+    double qw, qx, qy, qz;
+    normal_to_quaternion(nx, ny, nz, &qw, &qx, &qy, &qz);
+    
+    // Create parameters for the quaternion
+    int pqw = s->next_param++;
+    int pqx = s->next_param++;
+    int pqy = s->next_param++;
+    int pqz = s->next_param++;
+    
+    s->sys.param[s->sys.params++] = Slvs_MakeParam(pqw, g, qw);
+    s->sys.param[s->sys.params++] = Slvs_MakeParam(pqx, g, qx);
+    s->sys.param[s->sys.params++] = Slvs_MakeParam(pqy, g, qy);
+    s->sys.param[s->sys.params++] = Slvs_MakeParam(pqz, g, qz);
+    
+    // Create normal entity
+    Slvs_hEntity normal_id = 2000 + id; // Use different range to avoid conflicts
+    s->sys.entity[s->sys.entities++] = Slvs_MakeNormal3d(normal_id, g, pqw, pqx, pqy, pqz);
+    
+    // Create workplane entity
+    Slvs_hEntity wp_id = 1000 + id;
+    Slvs_hEntity origin = 1000 + origin_point_id;
+    s->sys.entity[s->sys.entities++] = Slvs_MakeWorkplane(wp_id, g, origin, normal_id);
+    
+    return 0;
+}
+
+// Add point-in-plane constraint
+int real_slvs_add_point_in_plane_constraint(RealSlvsSystem* s, int id, 
+                                            int point_id, int workplane_id) {
+    if (!s) return -1;
+    
+    Slvs_hGroup g = 1;
+    Slvs_hConstraint constraint_id = 10000 + id;
+    
+    Slvs_hEntity point = 1000 + point_id;
+    Slvs_hEntity wp = 1000 + workplane_id;
+    
+    s->sys.constraint[s->sys.constraints++] = Slvs_MakeConstraint(
+        constraint_id, g, SLVS_C_PT_IN_PLANE, wp,
+        0, point, 0, 0, 0);
+    
+    return 0;
+}
+
+// Add point-to-plane distance constraint
+int real_slvs_add_point_plane_distance_constraint(RealSlvsSystem* s, int id,
+                                                   int point_id, int workplane_id,
+                                                   double distance) {
+    if (!s) return -1;
+    
+    Slvs_hGroup g = 1;
+    Slvs_hConstraint constraint_id = 10000 + id;
+    
+    Slvs_hEntity point = 1000 + point_id;
+    Slvs_hEntity wp = 1000 + workplane_id;
+    
+    s->sys.constraint[s->sys.constraints++] = Slvs_MakeConstraint(
+        constraint_id, g, SLVS_C_PT_PLANE_DISTANCE, SLVS_FREE_IN_3D,
+        distance, point, 0, wp, 0);
+    
+    return 0;
+}
+
+// Add point-to-line distance constraint
+int real_slvs_add_point_line_distance_constraint(RealSlvsSystem* s, int id,
+                                                  int point_id, int line_id,
+                                                  double distance) {
+    if (!s) return -1;
+    
+    Slvs_hGroup g = 1;
+    Slvs_hConstraint constraint_id = 10000 + id;
+    
+    Slvs_hEntity point = 1000 + point_id;
+    Slvs_hEntity line = 1000 + line_id;
+    
+    s->sys.constraint[s->sys.constraints++] = Slvs_MakeConstraint(
+        constraint_id, g, SLVS_C_PT_LINE_DISTANCE, SLVS_FREE_IN_3D,
+        distance, point, 0, line, 0);
+    
+    return 0;
+}
