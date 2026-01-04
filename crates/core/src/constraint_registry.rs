@@ -181,6 +181,12 @@ impl ConstraintRegistry {
                 solver.add_point_in_plane_constraint(constraint_id, point_id, plane_id)
                     .map_err(|e| e.to_string())
             }
+            Constraint::Dragged { point, workplane } => {
+                let point_id = entity_id_map.get(point).copied().unwrap_or(0);
+                let workplane_id = workplane.as_ref().and_then(|wp| entity_id_map.get(wp).copied());
+                solver.add_where_dragged_constraint(constraint_id, point_id, workplane_id)
+                    .map_err(|e| e.to_string())
+            }
             Constraint::PointPlaneDistance { point, plane, value } => {
                 let point_id = entity_id_map.get(point).copied().unwrap_or(0);
                 let plane_id = entity_id_map.get(plane).copied().unwrap_or(0);
@@ -435,6 +441,7 @@ impl ConstraintRegistry {
             "ArcLineLengthRatio",
             "ArcArcLengthDifference",
             "ArcLineLengthDifference",
+            "Dragged",
         ]
     }
 }

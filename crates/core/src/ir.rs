@@ -33,6 +33,8 @@ pub enum Entity {
         at: Vec<ExprOrNumber>,
         #[serde(default)]
         construction: bool,
+        #[serde(default)]
+        preserve: bool, // Mark as dragged - minimize changes during solving
     },
     Point2D {
         id: String,
@@ -40,6 +42,8 @@ pub enum Entity {
         workplane: String,
         #[serde(default)]
         construction: bool,
+        #[serde(default)]
+        preserve: bool, // Mark as dragged - minimize changes during solving
     },
     Line {
         id: String,
@@ -47,6 +51,8 @@ pub enum Entity {
         p2: String,
         #[serde(default)]
         construction: bool,
+        #[serde(default)]
+        preserve: bool, // Mark as dragged - minimize changes during solving
     },
     Circle {
         id: String,
@@ -54,6 +60,8 @@ pub enum Entity {
         diameter: ExprOrNumber,
         #[serde(default)]
         construction: bool,
+        #[serde(default)]
+        preserve: bool, // Mark as dragged - minimize changes during solving
     },
     Arc {
         id: String,
@@ -65,6 +73,8 @@ pub enum Entity {
         workplane: Option<String>, // Optional workplane for 2D arcs
         #[serde(default)]
         construction: bool,
+        #[serde(default)]
+        preserve: bool, // Mark as dragged - minimize changes during solving
     },
     Cubic {
         id: String,
@@ -73,6 +83,8 @@ pub enum Entity {
         workplane: Option<String>, // Optional workplane for 2D cubics
         #[serde(default)]
         construction: bool,
+        #[serde(default)]
+        preserve: bool, // Mark as dragged - minimize changes during solving
     },
     Plane {
         id: String,
@@ -102,6 +114,18 @@ impl Entity {
             | Entity::Circle { construction, .. }
             | Entity::Arc { construction, .. }
             | Entity::Cubic { construction, .. } => *construction,
+            Entity::Plane { .. } => false,
+        }
+    }
+    
+    pub fn should_preserve(&self) -> bool {
+        match self {
+            Entity::Point { preserve, .. }
+            | Entity::Point2D { preserve, .. }
+            | Entity::Line { preserve, .. }
+            | Entity::Circle { preserve, .. }
+            | Entity::Arc { preserve, .. }
+            | Entity::Cubic { preserve, .. } => *preserve,
             Entity::Plane { .. } => false,
         }
     }
@@ -307,6 +331,11 @@ pub enum Constraint {
         line: String,
         value: ExprOrNumber,
     },
+    Dragged {
+        point: String,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        workplane: Option<String>, // Optional workplane for 2D points
+    },
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, JsonSchema)]
@@ -351,6 +380,7 @@ mod tests {
             id: "p1".into(),
             at: vec![ExprOrNumber::Number(0.0)],
             construction: false,
+            preserve: false,
         };
         assert_eq!(point.id(), "p1");
 
@@ -359,6 +389,7 @@ mod tests {
             p1: "p1".into(),
             p2: "p2".into(),
             construction: false,
+            preserve: false,
         };
         assert_eq!(line.id(), "l1");
 
@@ -367,8 +398,28 @@ mod tests {
             center: vec![ExprOrNumber::Number(0.0)],
             diameter: ExprOrNumber::Number(10.0),
             construction: false,
+            preserve: false,
         };
         assert_eq!(circle.id(), "c1");
+    }
+
+    #[test]
+    fn test_preserve_flag() {
+        let preserved_point = Entity::Point {
+            id: "p1".into(),
+            at: vec![ExprOrNumber::Number(0.0)],
+            construction: false,
+            preserve: true,
+        };
+        assert!(preserved_point.should_preserve());
+
+        let normal_point = Entity::Point {
+            id: "p2".into(),
+            at: vec![ExprOrNumber::Number(0.0)],
+            construction: false,
+            preserve: false,
+        };
+        assert!(!normal_point.should_preserve());
     }
 
     #[test]

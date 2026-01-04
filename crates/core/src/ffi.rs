@@ -52,6 +52,14 @@ extern "C" {
         x: c_double,
         y: c_double,
         z: c_double,
+        is_dragged: c_int, // 1 if dragged, 0 otherwise
+    ) -> c_int;
+
+    pub fn real_slvs_add_where_dragged_constraint(
+        sys: *mut SolverSystem,
+        id: c_int,
+        point_id: c_int,
+        workplane_id: c_int, // -1 for 3D, otherwise workplane ID
     ) -> c_int;
     pub fn real_slvs_add_line(
         sys: *mut SolverSystem,
@@ -65,6 +73,7 @@ extern "C" {
         workplane_id: c_int,
         u: c_double,
         v: c_double,
+        is_dragged: c_int, // 1 if dragged, 0 otherwise
     ) -> c_int;
 
     pub fn real_slvs_add_circle(
@@ -396,13 +405,31 @@ impl Solver {
         }
     }
 
-    pub fn add_point(&mut self, id: i32, x: f64, y: f64, z: f64) -> Result<(), String> {
+    pub fn add_point(&mut self, id: i32, x: f64, y: f64, z: f64, is_dragged: bool) -> Result<(), String> {
         unsafe {
-            let result = real_slvs_add_point(self.system, id, x, y, z);
+            let dragged = if is_dragged { 1 } else { 0 };
+            let result = real_slvs_add_point(self.system, id, x, y, z, dragged);
             if result == 0 {
                 Ok(())
             } else {
                 Err(format!("Failed to add point {}", id))
+            }
+        }
+    }
+
+    pub fn add_where_dragged_constraint(
+        &mut self,
+        id: i32,
+        point_id: i32,
+        workplane_id: Option<i32>, // None for 3D, Some(id) for 2D
+    ) -> Result<(), FfiError> {
+        unsafe {
+            let wp_id = workplane_id.unwrap_or(-1);
+            let result = real_slvs_add_where_dragged_constraint(self.system, id, point_id, wp_id);
+            if result == 0 {
+                Ok(())
+            } else {
+                Err(FfiError::ConstraintFailed(format!("Failed to add WHERE_DRAGGED constraint {}", id)))
             }
         }
     }
@@ -424,9 +451,11 @@ impl Solver {
         workplane_id: i32,
         u: f64,
         v: f64,
+        is_dragged: bool,
     ) -> Result<(), FfiError> {
         unsafe {
-            let result = real_slvs_add_point_2d(self.system, id, workplane_id, u, v);
+            let dragged = if is_dragged { 1 } else { 0 };
+            let result = real_slvs_add_point_2d(self.system, id, workplane_id, u, v, dragged);
             if result == 0 {
                 Ok(())
             } else {

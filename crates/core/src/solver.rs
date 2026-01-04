@@ -70,7 +70,7 @@ impl Solver {
 
         for (entity_idx, entity) in doc.entities.iter().enumerate() {
             match entity {
-                crate::ir::Entity::Point { id, at, .. } => {
+                crate::ir::Entity::Point { id, at, preserve, .. } => {
                     // Evaluate expressions for point coordinates
                     let x = match &at[0] {
                         crate::ir::ExprOrNumber::Number(n) => *n,
@@ -90,7 +90,7 @@ impl Solver {
                     };
 
                     ffi_solver
-                        .add_point(next_id, x, y, z)
+                        .add_point(next_id, x, y, z, *preserve)
                         .map_err(|e| crate::error::Error::InvalidInput {
                             message: format!("Failed to add point '{}': {}", id, e),
                             pointer: Some(format!("/entities/{}", entity_idx)),
@@ -98,7 +98,7 @@ impl Solver {
                     entity_id_map.insert(id.clone(), next_id);
                     next_id += 1;
                 }
-                crate::ir::Entity::Point2D { id, at, workplane, .. } => {
+                crate::ir::Entity::Point2D { id, at, workplane, preserve, .. } => {
                     // Evaluate expressions for 2D point coordinates
                     let u = match &at[0] {
                         crate::ir::ExprOrNumber::Number(n) => *n,
@@ -115,7 +115,7 @@ impl Solver {
                         .ok_or_else(|| crate::error::Error::EntityNotFound(workplane.clone()))?;
 
                     ffi_solver
-                        .add_point_2d(next_id, *workplane_id, u, v)
+                        .add_point_2d(next_id, *workplane_id, u, v, *preserve)
                         .map_err(|e| crate::error::Error::InvalidInput {
                             message: format!("Failed to add 2D point '{}': {}", id, e),
                             pointer: Some(format!("/entities/{}", entity_idx)),
@@ -442,6 +442,19 @@ impl Solver {
                         .add_point_in_plane_constraint(constraint_id, point_id, plane_id)
                         .map_err(|e| crate::error::Error::InvalidInput {
                             message: format!("Failed to add point-in-plane constraint: point '{}' in plane '{}': {}", point, plane, e),
+                            pointer: Some(format!("/constraints/{}", constraint_idx)),
+                        })?;
+                    constraint_id += 1;
+                }
+                crate::ir::Constraint::Dragged { point, workplane } => {
+                    let point_id = entity_id_map
+                        .get(point)
+                        .ok_or_else(|| crate::error::Error::EntityNotFound(point.clone()))?;
+                    let workplane_id = workplane.as_ref().and_then(|wp| entity_id_map.get(wp).copied());
+                    ffi_solver
+                        .add_where_dragged_constraint(constraint_id, *point_id, workplane_id)
+                        .map_err(|e| crate::error::Error::InvalidInput {
+                            message: format!("Failed to add WHERE_DRAGGED constraint for point '{}': {}", point, e),
                             pointer: Some(format!("/constraints/{}", constraint_idx)),
                         })?;
                     constraint_id += 1;

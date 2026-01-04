@@ -11,6 +11,8 @@ typedef struct {
     int next_entity;
     int next_constraint;
     double circle_radii[1000];  // Store circle radii
+    Slvs_hParam dragged_params[1000];  // Store dragged parameter handles
+    int num_dragged;
 } RealSlvsSystem;
 
 // Create a new system
@@ -35,6 +37,18 @@ RealSlvsSystem* real_slvs_create() {
     s->sys.entities = 0;
     s->sys.constraints = 0;
     s->sys.calculateFaileds = 0;
+    s->num_dragged = 0;
+    
+    // Allocate space for dragged parameters array
+    s->sys.dragged = (Slvs_hParam*)calloc(1000, sizeof(Slvs_hParam));
+    if (!s->sys.dragged) {
+        free(s->sys.param);
+        free(s->sys.entity);
+        free(s->sys.constraint);
+        free(s);
+        return NULL;
+    }
+    s->sys.ndragged = 0;
     
     // Start numbering from higher values to avoid conflicts
     // Use different ranges to prevent ID collisions
@@ -51,12 +65,54 @@ void real_slvs_destroy(RealSlvsSystem* s) {
         if (s->sys.param) free(s->sys.param);
         if (s->sys.entity) free(s->sys.entity);
         if (s->sys.constraint) free(s->sys.constraint);
+        if (s->sys.dragged) free(s->sys.dragged);
         free(s);
     }
 }
 
+// Mark a point's parameters as dragged (to minimize changes)
+int real_slvs_mark_point_dragged(RealSlvsSystem* s, int point_entity_id) {
+    if (!s) return -1;
+    
+    // Find the point entity and mark its parameters as dragged
+    Slvs_hEntity point_id = 1000 + point_entity_id;
+    
+    // Find the entity and its parameters
+    for (int i = 0; i < s->sys.entities; i++) {
+        if (s->sys.entity[i].h.v == point_id.v) {
+            Slvs_Entity* ent = &s->sys.entity[i];
+            // For POINT_IN_3D, parameters are at param[0], param[1], param[2]
+            // We need to find these parameters in the param array
+            // Actually, we need to track which params belong to which entity
+            // For now, we'll mark them when we create the point
+            // This function will be called after point creation
+            return 0;
+        }
+    }
+    
+    return -1; // Entity not found
+}
+
+// Add WHERE_DRAGGED constraint (locks point to current position)
+int real_slvs_add_where_dragged_constraint(RealSlvsSystem* s, int id,
+                                           int point_id, int workplane_id) {
+    if (!s) return -1;
+    
+    Slvs_hGroup g = 1;
+    Slvs_hConstraint constraint_id = 10000 + id;
+    
+    Slvs_hEntity point = 1000 + point_id;
+    Slvs_hEntity wrkpl = (workplane_id >= 0) ? (1000 + workplane_id) : SLVS_FREE_IN_3D;
+    
+    s->sys.constraint[s->sys.constraints++] = Slvs_MakeConstraint(
+        constraint_id, g, SLVS_C_WHERE_DRAGGED, wrkpl,
+        0, point, 0, 0, 0);
+    
+    return 0;
+}
+
 // Add a 3D point
-int real_slvs_add_point(RealSlvsSystem* s, int id, double x, double y, double z) {
+int real_slvs_add_point(RealSlvsSystem* s, int id, double x, double y, double z, int is_dragged) {
     if (!s) return -1;
     
     Slvs_hGroup g = 1;
@@ -69,6 +125,13 @@ int real_slvs_add_point(RealSlvsSystem* s, int id, double x, double y, double z)
     s->sys.param[s->sys.params++] = Slvs_MakeParam(px, g, x);
     s->sys.param[s->sys.params++] = Slvs_MakeParam(py, g, y);
     s->sys.param[s->sys.params++] = Slvs_MakeParam(pz, g, z);
+    
+    // If dragged, mark these parameters as dragged
+    if (is_dragged && s->sys.ndragged < 997) {  // Leave room for 3 params
+        s->sys.dragged[s->sys.ndragged++] = px;
+        s->sys.dragged[s->sys.ndragged++] = py;
+        s->sys.dragged[s->sys.ndragged++] = pz;
+    }
     
     // Create the point entity with 1000+ offset like working version
     Slvs_hEntity entity_id = 1000 + id;
@@ -94,7 +157,7 @@ int real_slvs_add_line(RealSlvsSystem* s, int id, int point1_id, int point2_id) 
 }
 
 // Add a 2D point in a workplane
-int real_slvs_add_point_2d(RealSlvsSystem* s, int id, int workplane_id, double u, double v) {
+int real_slvs_add_point_2d(RealSlvsSystem* s, int id, int workplane_id, double u, double v, int is_dragged) {
     if (!s) return -1;
     
     Slvs_hGroup g = 1;
@@ -105,6 +168,12 @@ int real_slvs_add_point_2d(RealSlvsSystem* s, int id, int workplane_id, double u
     
     s->sys.param[s->sys.params++] = Slvs_MakeParam(pu, g, u);
     s->sys.param[s->sys.params++] = Slvs_MakeParam(pv, g, v);
+    
+    // If dragged, mark these parameters as dragged
+    if (is_dragged && s->sys.ndragged < 1000) {
+        s->sys.dragged[s->sys.ndragged++] = pu;
+        s->sys.dragged[s->sys.ndragged++] = pv;
+    }
     
     // Create 2D point entity
     Slvs_hEntity entity_id = 1000 + id;
