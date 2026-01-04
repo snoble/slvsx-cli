@@ -88,18 +88,20 @@ A rectangle constructed using parallel and perpendicular constraints:
 
 ### Export from Multiple Angles
 
-For 3D objects, export from different viewing angles:
+For 3D objects, export from different viewing angles to see them from all sides:
 
 ```bash
-# Top-down view (XY plane)
+# Top-down view (XY plane) - looking down from above
 slvsx export -f svg -v xy examples/04_3d_tetrahedron.json -o top.svg
 
-# Front view (XZ plane)
+# Front view (XZ plane) - looking from the front
 slvsx export -f svg -v xz examples/04_3d_tetrahedron.json -o front.svg
 
-# Side view (YZ plane)
+# Side view (YZ plane) - looking from the side
 slvsx export -f svg -v yz examples/04_3d_tetrahedron.json -o side.svg
 ```
+
+**Pro Tip**: Export all three views to create a comprehensive visualization showing your 3D design from every angle!
 
 ### Export to Different Formats
 
@@ -131,7 +133,24 @@ Explore the [`examples/`](../examples/) directory for:
 
 Each example can be solved and exported to create your own visualizations!
 
+## 🎬 Animation Potential
+
+These static renders can be turned into animations by:
+1. Varying parameters (e.g., `hinge_angle` from 0° to 180°)
+2. Exporting each frame
+3. Combining into animated GIF or video
+
+Example workflow:
+```bash
+for angle in {0..180..10}; do
+  # Modify JSON with new angle value
+  slvsx solve modified.json > /dev/null
+  slvsx export -f svg modified.json -o frame_${angle}.svg
+done
+# Combine frames into animation
+```
+
 ---
 
-**Pro Tip**: Use SVG exports in documentation, presentations, or web pages. The vector format scales perfectly and looks great at any size.
+**Pro Tip**: Use SVG exports in documentation, presentations, or web pages. The vector format scales perfectly and looks great at any size. For 3D objects, export multiple views to show depth and structure!
 

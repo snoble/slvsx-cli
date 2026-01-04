@@ -368,7 +368,9 @@ One constraint definition, multiple output formats for different use cases.
 2. **Modify parameters**: Change parameter values to see how designs adapt
 3. **Create your own**: Start with a simple shape and add constraints
 4. **Export and visualize**: Use SVG export to see your designs
-5. **Integrate with AI**: Use the Python patterns above in your AI workflows
+5. **View from multiple angles**: Export 3D objects from XY, XZ, and YZ views
+6. **Check the gallery**: See [Visual Gallery](docs/VISUAL_GALLERY.md) for rendered examples
+7. **Integrate with AI**: Use the Python patterns above in your AI workflows
 
 ## 📚 Learn More
 
