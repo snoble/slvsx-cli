@@ -365,4 +365,36 @@ mod tests {
         assert!((cx - 36.0).abs() < 0.001 || cy.abs() > 0.001); // Should be at distance 36
         assert_eq!(radius, 12.0);
     }
+
+    #[test]
+    fn test_ffi_error_display() {
+        assert_eq!(
+            FfiError::Inconsistent.to_string(),
+            "System is inconsistent (overconstrained)"
+        );
+        assert_eq!(
+            FfiError::DidntConverge.to_string(),
+            "Solver failed to converge"
+        );
+        assert_eq!(
+            FfiError::TooManyUnknowns.to_string(),
+            "System has too many unknowns (underconstrained)"
+        );
+        assert_eq!(
+            FfiError::InvalidSystem.to_string(),
+            "Invalid solver system"
+        );
+        assert_eq!(
+            FfiError::Unknown(42).to_string(),
+            "Unknown solver error (code: 42)"
+        );
+        assert_eq!(
+            FfiError::EntityNotFound("p1".to_string()).to_string(),
+            "Entity not found: p1"
+        );
+        assert_eq!(
+            FfiError::ConstraintFailed("test".to_string()).to_string(),
+            "Constraint operation failed: test"
+        );
+    }
 }

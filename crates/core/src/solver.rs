@@ -29,6 +29,28 @@ impl Solver {
         Self { config }
     }
 
+    /// Map FFI errors to high-level Error types
+    /// This is public for testing purposes
+    pub fn map_ffi_error(e: crate::ffi::FfiError) -> crate::error::Error {
+        match e {
+            crate::ffi::FfiError::Inconsistent => crate::error::Error::Overconstrained,
+            crate::ffi::FfiError::DidntConverge => {
+                crate::error::Error::SolverConvergence { iterations: 100 }
+            }
+            crate::ffi::FfiError::TooManyUnknowns => {
+                // Try to get DOF from solver if possible, otherwise default to 0
+                crate::error::Error::Underconstrained { dof: 0 }
+            }
+            crate::ffi::FfiError::InvalidSystem => {
+                crate::error::Error::Ffi("Invalid solver system".to_string())
+            }
+            crate::ffi::FfiError::Unknown(code) => {
+                crate::error::Error::Ffi(format!("Unknown solver error (code: {})", code))
+            }
+            e => crate::error::Error::Ffi(e.to_string()),
+        }
+    }
+
     pub fn solve(&self, doc: &InputDocument) -> Result<SolveResult> {
         use crate::expr::ExpressionEvaluator;
         use crate::ffi::Solver as FfiSolver;
@@ -236,23 +258,7 @@ impl Solver {
         }
 
         // Actually solve the constraints!
-        ffi_solver.solve().map_err(|e| match e {
-            crate::ffi::FfiError::Inconsistent => crate::error::Error::Overconstrained,
-            crate::ffi::FfiError::DidntConverge => {
-                crate::error::Error::SolverConvergence { iterations: 100 }
-            }
-            crate::ffi::FfiError::TooManyUnknowns => {
-                // Try to get DOF from solver if possible, otherwise default to 0
-                crate::error::Error::Underconstrained { dof: 0 }
-            }
-            crate::ffi::FfiError::InvalidSystem => {
-                crate::error::Error::Ffi("Invalid solver system".to_string())
-            }
-            crate::ffi::FfiError::Unknown(code) => {
-                crate::error::Error::Ffi(format!("Unknown solver error (code: {})", code))
-            }
-            e => crate::error::Error::Ffi(e.to_string()),
-        })?;
+        ffi_solver.solve().map_err(|e| Self::map_ffi_error(e))?;
 
         // Get solved positions from libslvs
         let mut resolved_entities = HashMap::new();
