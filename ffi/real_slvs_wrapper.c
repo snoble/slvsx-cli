@@ -11,8 +11,6 @@ typedef struct {
     int next_entity;
     int next_constraint;
     double circle_radii[1000];  // Store circle radii
-    Slvs_hParam dragged_params[1000];  // Store dragged parameter handles
-    int num_dragged;
 } RealSlvsSystem;
 
 // Create a new system
@@ -37,7 +35,6 @@ RealSlvsSystem* real_slvs_create() {
     s->sys.entities = 0;
     s->sys.constraints = 0;
     s->sys.calculateFaileds = 0;
-    s->num_dragged = 0;
     
     // Allocate space for dragged parameters array
     s->sys.dragged = (Slvs_hParam*)calloc(1000, sizeof(Slvs_hParam));
@@ -68,29 +65,6 @@ void real_slvs_destroy(RealSlvsSystem* s) {
         if (s->sys.dragged) free(s->sys.dragged);
         free(s);
     }
-}
-
-// Mark a point's parameters as dragged (to minimize changes)
-int real_slvs_mark_point_dragged(RealSlvsSystem* s, int point_entity_id) {
-    if (!s) return -1;
-    
-    // Find the point entity and mark its parameters as dragged
-    Slvs_hEntity point_id = 1000 + point_entity_id;
-    
-    // Find the entity and its parameters
-    for (int i = 0; i < s->sys.entities; i++) {
-        if (s->sys.entity[i].h.v == point_id.v) {
-            Slvs_Entity* ent = &s->sys.entity[i];
-            // For POINT_IN_3D, parameters are at param[0], param[1], param[2]
-            // We need to find these parameters in the param array
-            // Actually, we need to track which params belong to which entity
-            // For now, we'll mark them when we create the point
-            // This function will be called after point creation
-            return 0;
-        }
-    }
-    
-    return -1; // Entity not found
 }
 
 // Add WHERE_DRAGGED constraint (locks point to current position)
