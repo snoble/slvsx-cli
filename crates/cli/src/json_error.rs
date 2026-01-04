@@ -12,7 +12,7 @@ where
 }
 
 /// Format a serde_json error with context
-fn format_json_error(err: JsonError, input: &str, filename: &str) -> String {
+pub fn format_json_error(err: JsonError, input: &str, filename: &str) -> String {
     let mut message = String::new();
     
     // Get line and column from error
@@ -63,7 +63,7 @@ fn format_json_error(err: JsonError, input: &str, filename: &str) -> String {
 }
 
 /// Get a helpful hint based on the error type
-fn get_helpful_hint(err: &JsonError) -> &str {
+pub fn get_helpful_hint(err: &JsonError) -> &str {
     let err_str = err.to_string();
     
     if err_str.contains("missing field") {
@@ -89,9 +89,11 @@ mod tests {
     use serde::Deserialize;
     
     #[derive(Debug, Deserialize)]
+    #[serde(deny_unknown_fields)]
     struct TestStruct {
         name: String,
         value: i32,
+        optional: Option<String>,
     }
     
     #[test]
@@ -234,5 +236,58 @@ mod tests {
         let err = result.unwrap_err().to_string();
         // Should show context even for single line
         assert!(err.contains("test.json"));
+    }
+
+    #[test]
+    fn test_format_json_error_directly() {
+        // Test format_json_error function directly
+        let json = r#"{"name": "test", "value": }"#;  // missing value
+        let err = serde_json::from_str::<TestStruct>(json).unwrap_err();
+        let formatted = format_json_error(err, json, "test.json");
+        assert!(formatted.contains("test.json"));
+        assert!(formatted.contains("line"));
+        assert!(formatted.contains("Context:"));
+    }
+
+    #[test]
+    fn test_get_helpful_hint_all_branches() {
+        // Create mock errors to test all hint branches
+        let json_missing = r#"{"name": "test"}"#;
+        let err_missing = serde_json::from_str::<TestStruct>(json_missing).unwrap_err();
+        assert!(get_helpful_hint(&err_missing).contains("required"));
+
+        let json_unknown = r#"{"name": "test", "value": 42, "extra": "field"}"#;
+        let err_unknown = serde_json::from_str::<TestStruct>(json_unknown).unwrap_err();
+        assert!(get_helpful_hint(&err_unknown).contains("recognized") || get_helpful_hint(&err_unknown).contains("schema"));
+
+        let json_type = r#"{"name": "test", "value": "string"}"#;
+        let err_type = serde_json::from_str::<TestStruct>(json_type).unwrap_err();
+        assert!(get_helpful_hint(&err_type).contains("type") || get_helpful_hint(&err_type).contains("expected"));
+
+        let json_eof = r#"{"name": "test""#;
+        let err_eof = serde_json::from_str::<TestStruct>(json_eof).unwrap_err();
+        let hint = get_helpful_hint(&err_eof);
+        assert!(hint.contains("EOF") || hint.contains("unclosed") || hint.contains("syntax"));
+    }
+
+    #[test]
+    fn test_format_json_error_with_column() {
+        let json = r#"{"name": "test", "value": }"#;
+        let err = serde_json::from_str::<TestStruct>(json).unwrap_err();
+        let formatted = format_json_error(err, json, "test.json");
+        // Should include column information
+        assert!(formatted.contains("column") || formatted.contains("line"));
+    }
+
+    #[test]
+    fn test_format_json_error_multiline_context() {
+        let json = r#"{
+  "name": "test",
+  "value": "wrong"
+}"#;
+        let err = serde_json::from_str::<TestStruct>(json).unwrap_err();
+        let formatted = format_json_error(err, json, "test.json");
+        // Should show multiple lines of context
+        assert!(formatted.contains("│") || formatted.contains("Context:"));
     }
 }
