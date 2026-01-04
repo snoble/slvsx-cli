@@ -869,9 +869,11 @@ mod tests {
                 },
                 Entity::Arc {
                     id: "a1".to_string(),
-                    center: vec![ExprOrNumber::Number(0.0)],
+                    center: "p1".to_string(),
                     start: "p1".to_string(),
                     end: "c1".to_string(), // c1 is a Circle, not a Point!
+                    normal: vec![ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(1.0)],
+                    workplane: None,
                     construction: false,
                     preserve: false,
                 },
