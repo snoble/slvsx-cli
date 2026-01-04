@@ -13,6 +13,8 @@ impl Validator {
         self.validate_schema(doc)?;
         self.validate_entity_ids(doc)?;
         self.validate_units(doc)?;
+        self.validate_entity_references(doc)?;
+        self.validate_constraint_references(doc)?;
         Ok(())
     }
 
@@ -52,6 +54,97 @@ impl Validator {
             });
         }
         Ok(())
+    }
+
+    fn validate_entity_references(&self, doc: &InputDocument) -> Result<()> {
+        use crate::ir::Entity;
+        let entity_ids: HashSet<&str> = doc.entities.iter().map(|e| e.id()).collect();
+
+        for (idx, entity) in doc.entities.iter().enumerate() {
+            match entity {
+                Entity::Line { p1, p2, .. } => {
+                    if !entity_ids.contains(p1.as_str()) {
+                        return Err(Error::InvalidInput {
+                            message: format!("Unknown entity reference '{}'", p1),
+                            pointer: Some(format!("/entities/{}/p1", idx)),
+                        });
+                    }
+                    if !entity_ids.contains(p2.as_str()) {
+                        return Err(Error::InvalidInput {
+                            message: format!("Unknown entity reference '{}'", p2),
+                            pointer: Some(format!("/entities/{}/p2", idx)),
+                        });
+                    }
+                }
+                Entity::Arc { start, end, .. } => {
+                    if !entity_ids.contains(start.as_str()) {
+                        return Err(Error::InvalidInput {
+                            message: format!("Unknown entity reference '{}'", start),
+                            pointer: Some(format!("/entities/{}/start", idx)),
+                        });
+                    }
+                    if !entity_ids.contains(end.as_str()) {
+                        return Err(Error::InvalidInput {
+                            message: format!("Unknown entity reference '{}'", end),
+                            pointer: Some(format!("/entities/{}/end", idx)),
+                        });
+                    }
+                }
+                _ => {} // Point and Circle don't reference other entities
+            }
+        }
+        Ok(())
+    }
+
+    fn validate_constraint_references(&self, doc: &InputDocument) -> Result<()> {
+        use crate::ir::{Constraint, CoincidentData};
+        let entity_ids: HashSet<&str> = doc.entities.iter().map(|e| e.id()).collect();
+
+        for (idx, constraint) in doc.constraints.iter().enumerate() {
+            let refs = self.get_constraint_refs(constraint);
+            for ref_id in refs {
+                if !entity_ids.contains(ref_id.as_str()) {
+                    return Err(Error::InvalidInput {
+                        message: format!("Unknown entity reference '{}'", ref_id),
+                        pointer: Some(format!("/constraints/{}", idx)),
+                    });
+                }
+            }
+        }
+        Ok(())
+    }
+
+    fn get_constraint_refs(&self, constraint: &crate::ir::Constraint) -> Vec<String> {
+        use crate::ir::{Constraint, CoincidentData};
+        match constraint {
+            Constraint::Coincident { data } => {
+                match data {
+                    CoincidentData::PointOnLine { at, of } => {
+                        let mut refs = vec![at.clone()];
+                        refs.extend(of.clone());
+                        refs
+                    },
+                    CoincidentData::TwoEntities { entities } => entities.clone(),
+                }
+            }
+            Constraint::Distance { between, .. } | Constraint::Angle { between, .. } => {
+                between.clone()
+            }
+            Constraint::Perpendicular { a, b }
+            | Constraint::EqualRadius { a, b }
+            | Constraint::Tangent { a, b } => vec![a.clone(), b.clone()],
+            Constraint::Parallel { entities } | Constraint::EqualLength { entities } => entities.clone(),
+            Constraint::Horizontal { a }
+            | Constraint::Vertical { a }
+            | Constraint::Fixed { entity: a } => vec![a.clone()],
+            Constraint::PointOnLine { point, line }
+            | Constraint::PointOnCircle {
+                point,
+                circle: line,
+            } => vec![point.clone(), line.clone()],
+            Constraint::Symmetric { a, b, about } => vec![a.clone(), b.clone(), about.clone()],
+            Constraint::Midpoint { point, of } => vec![point.clone(), of.clone()],
+        }
     }
 }
 
@@ -439,6 +532,7 @@ mod tests {
     #[test]
     fn test_validator_default() {
         let validator = Validator::default();
-        assert!(std::mem::size_of_val(&validator) > 0);
+        // Validator is a unit struct, so size is 0, but we can verify it can be created
+        let _ = validator;
     }
 }
