@@ -8,9 +8,16 @@ SLVSX provides the SolveSpace constraint solver (libslvs) as a tool for AI agent
 
 ### Option 1: Static Binary
 ```bash
-# Download latest release
-curl -L https://github.com/snoble/slvsx-cli/releases/latest/download/slvsx-$(uname -s)-$(uname -m) -o slvsx
-chmod +x slvsx
+# Linux (x86_64)
+curl -L https://github.com/snoble/slvsx-cli/releases/latest/download/slvsx-linux.tar.gz | tar xz
+sudo mv slvsx /usr/local/bin/
+
+# macOS (Apple Silicon)
+curl -L https://github.com/snoble/slvsx-cli/releases/latest/download/slvsx-macos-arm64.tar.gz | tar xz
+sudo mv slvsx /usr/local/bin/
+
+# macOS (Intel)
+curl -L https://github.com/snoble/slvsx-cli/releases/latest/download/slvsx-macos-x86_64.tar.gz | tar xz
 sudo mv slvsx /usr/local/bin/
 ```
 

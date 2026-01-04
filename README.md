@@ -19,9 +19,16 @@ A command-line tool that makes the SolveSpace geometric constraint solver access
 ### Download Static Binary (Recommended)
 
 ```bash
-# Linux/macOS - Download and install in one command
-curl -L https://github.com/snoble/slvsx-cli/releases/latest/download/slvsx-$(uname -s)-$(uname -m) -o slvsx
-chmod +x slvsx
+# Linux (x86_64)
+curl -L https://github.com/snoble/slvsx-cli/releases/latest/download/slvsx-linux.tar.gz | tar xz
+sudo mv slvsx /usr/local/bin/
+
+# macOS (Apple Silicon)
+curl -L https://github.com/snoble/slvsx-cli/releases/latest/download/slvsx-macos-arm64.tar.gz | tar xz
+sudo mv slvsx /usr/local/bin/
+
+# macOS (Intel)
+curl -L https://github.com/snoble/slvsx-cli/releases/latest/download/slvsx-macos-x86_64.tar.gz | tar xz
 sudo mv slvsx /usr/local/bin/
 
 # Test installation
@@ -97,8 +104,8 @@ The [`examples/`](examples/) directory contains many constraint problems:
 
 - [AI Examples](examples/ai-examples/) - Designed for AI agent use
 - [Basic Shapes](examples/01_first_point.json) - Simple geometric constructions
-- [Mechanisms](examples/four_bar_linkage.json) - Kinematic linkages
-- [Gears](examples/planetary_gears_simple.json) - Gear train positioning
+- [Mechanisms](examples/ai-examples/four_bar_linkage.json) - Kinematic linkages
+- [Gears](examples/ai-examples/gear_meshing.json) - Gear train positioning
 
 ## Documentation
 

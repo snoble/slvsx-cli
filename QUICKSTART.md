@@ -1,9 +1,19 @@
 # 🚀 Quick Start - 30 Seconds to Geometry Solving
 
-## Install in ONE Line
+## Install
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/snoble/slvsx-cli/main/install.sh | bash
+# Linux (x86_64)
+curl -L https://github.com/snoble/slvsx-cli/releases/latest/download/slvsx-linux.tar.gz | tar xz
+sudo mv slvsx /usr/local/bin/
+
+# macOS (Apple Silicon)
+curl -L https://github.com/snoble/slvsx-cli/releases/latest/download/slvsx-macos-arm64.tar.gz | tar xz
+sudo mv slvsx /usr/local/bin/
+
+# macOS (Intel)
+curl -L https://github.com/snoble/slvsx-cli/releases/latest/download/slvsx-macos-x86_64.tar.gz | tar xz
+sudo mv slvsx /usr/local/bin/
 ```
 
 That's it! You now have `slvsx` installed.
@@ -37,7 +47,7 @@ Add to your Claude Desktop config:
 {
   "mcpServers": {
     "slvsx": {
-      "command": "~/.local/bin/slvsx",
+      "command": "slvsx",
       "args": ["mcp-server"]
     }
   }
@@ -85,7 +95,7 @@ Only if you want to modify it:
 ```bash
 git clone https://github.com/snoble/slvsx-cli.git
 cd slvsx-cli
-./build.sh  # We should create this
+./build.sh
 ```
 
 ---

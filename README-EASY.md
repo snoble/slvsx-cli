@@ -27,8 +27,15 @@ docker run -i ghcr.io/snoble/slvsx solve - < geometry.json
 
 ### Option 5: Download Binary
 Go to [Releases](https://github.com/snoble/slvsx-cli/releases) and download:
-- Linux: `slvsx-linux`
-- Mac: `slvsx-macos`
+- Linux: `slvsx-linux.tar.gz`
+- Mac (Apple Silicon): `slvsx-macos-arm64.tar.gz`
+- Mac (Intel): `slvsx-macos-x86_64.tar.gz`
+
+Then extract and install:
+```bash
+tar xzf slvsx-*.tar.gz
+sudo mv slvsx /usr/local/bin/
+```
 
 ## 🎮 Use It (30 seconds)
 
