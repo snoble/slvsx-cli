@@ -39,10 +39,6 @@
       "entity": "rail_end"
     },
     {
-      "type": "fixed",
-      "entity": "target"
-    },
-    {
       "type": "point_on_line",
       "point": "slider",
       "line": "rail"

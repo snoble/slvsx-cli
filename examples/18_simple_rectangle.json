@@ -57,22 +57,6 @@
       "entity": "A"
     },
     {
-      "type": "horizontal",
-      "a": "AB"
-    },
-    {
-      "type": "horizontal",
-      "a": "CD"
-    },
-    {
-      "type": "vertical",
-      "a": "BC"
-    },
-    {
-      "type": "vertical",
-      "a": "DA"
-    },
-    {
       "type": "distance",
       "between": ["A", "B"],
       "value": "$width"

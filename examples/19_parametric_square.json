@@ -56,29 +56,24 @@
       "entity": "A"
     },
     {
-      "type": "horizontal",
-      "a": "AB"
-    },
-    {
-      "type": "horizontal",
-      "a": "CD"
-    },
-    {
-      "type": "vertical",
-      "a": "BC"
-    },
-    {
-      "type": "vertical",
-      "a": "DA"
-    },
-    {
       "type": "distance",
       "between": ["A", "B"],
       "value": "$side_length"
     },
     {
-      "type": "equal_length",
-      "entities": ["AB", "BC", "CD", "DA"]
+      "type": "distance",
+      "between": ["B", "C"],
+      "value": "$side_length"
+    },
+    {
+      "type": "distance",
+      "between": ["C", "D"],
+      "value": "$side_length"
+    },
+    {
+      "type": "distance",
+      "between": ["D", "A"],
+      "value": "$side_length"
     },
     {
       "type": "perpendicular",

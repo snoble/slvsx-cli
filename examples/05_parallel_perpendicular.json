@@ -53,12 +53,8 @@
       "entity": "A"
     },
     {
-      "type": "horizontal",
-      "entity": "AB"
-    },
-    {
-      "type": "vertical",
-      "entity": "DA"
+      "type": "fixed",
+      "entity": "B"
     },
     {
       "type": "parallel",
@@ -67,6 +63,16 @@
     {
       "type": "parallel",
       "entities": ["BC", "DA"]
+    },
+    {
+      "type": "perpendicular",
+      "a": "AB",
+      "b": "BC"
+    },
+    {
+      "type": "perpendicular",
+      "a": "BC",
+      "b": "CD"
     },
     {
       "type": "distance",

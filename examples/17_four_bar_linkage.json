@@ -82,11 +82,6 @@
       "type": "distance",
       "between": ["coupler_joint", "ground_pivot2"],
       "value": "$rocker_length"
-    },
-    {
-      "type": "angle",
-      "between": ["ground", "crank"],
-      "value": "$input_angle"
     }
   ]
 }
