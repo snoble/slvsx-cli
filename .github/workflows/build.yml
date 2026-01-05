@@ -325,3 +325,55 @@ jobs:
         with:
           name: example-svgs-${{ matrix.os }}
           path: examples/*.svg
+
+  # Test Node.js MCP server and documentation search
+  mcp-server:
+    name: Test MCP Server
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Build documentation embeddings
+        run: npm run build:docs
+        
+      - name: Verify docs.json was created
+        run: |
+          if [ -f "dist/docs.json" ]; then
+            echo "✅ Documentation index created"
+            echo "   File size: $(du -h dist/docs.json | cut -f1)"
+            echo "   Chunk count: $(grep -o '"id":' dist/docs.json | wc -l | tr -d ' ')"
+          else
+            echo "❌ dist/docs.json not found"
+            exit 1
+          fi
+          
+      - name: Validate docs.json structure
+        run: |
+          # Verify JSON is valid and has expected structure
+          node -e "
+            const data = require('./dist/docs.json');
+            console.log('Version:', data.version);
+            console.log('Model:', data.model);
+            console.log('Chunks:', data.chunks.length);
+            console.log('Created:', data.createdAt);
+            
+            // Verify chunk structure
+            const chunk = data.chunks[0];
+            if (!chunk.id || !chunk.content || !chunk.source || !chunk.embedding) {
+              console.error('Invalid chunk structure');
+              process.exit(1);
+            }
+            console.log('Embedding dimensions:', chunk.embedding.length);
+            console.log('✅ Documentation index structure is valid');
+          "
