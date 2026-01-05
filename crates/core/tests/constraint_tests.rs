@@ -345,41 +345,69 @@ fn test_parallel_constraint() {
 }
 
 #[test]
-fn test_unimplemented_constraint_ignored() {
-    // Unimplemented constraints are currently just ignored with a warning
-    // They don't cause the solver to fail
+fn test_symmetric_horizontal_constraint_with_workplane() {
+    // SymmetricHorizontal constraint - makes two points symmetric about a horizontal axis
+    // From SolveSpace: av - bv = 0 (equal Y), au + bu = 0 (opposite X)
+    // Use 2D points within a workplane
     let doc = create_test_doc(
         vec![
-            Entity::Point {
+            Entity::Plane {
+                id: "wp1".to_string(),
+                origin: vec![ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0)],
+                normal: vec![ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(1.0)],
+            },
+            Entity::Point2D {
                 id: "p1".to_string(),
-                at: vec![ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0)],
+                at: vec![ExprOrNumber::Number(-10.0), ExprOrNumber::Number(5.0)],
+                workplane: "wp1".to_string(),
                 construction: false,
                 preserve: false,
             },
-            Entity::Point {
+            Entity::Point2D {
                 id: "p2".to_string(),
-                at: vec![ExprOrNumber::Number(100.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0)],
-                construction: false,
-                preserve: false,
-            },
-            Entity::Line {
-                id: "line1".to_string(),
-                p1: "p1".to_string(),
-                p2: "p2".to_string(),
+                at: vec![ExprOrNumber::Number(15.0), ExprOrNumber::Number(8.0)],
+                workplane: "wp1".to_string(),
                 construction: false,
                 preserve: false,
             },
         ],
         vec![
-            Constraint::Horizontal {
-                a: "line1".to_string(),
+            // Fix p1 to anchor the solution
+            Constraint::Fixed { entity: "p1".to_string() },
+            // SymmetricHorizontal: p1 and p2 should have equal Y and opposite X
+            Constraint::SymmetricHorizontal {
+                a: "p1".to_string(),
+                b: "p2".to_string(),
+                workplane: "wp1".to_string(),
             },
         ],
     );
 
-    // This should succeed but ignore the Horizontal constraint
+    // This should succeed with the SymmetricHorizontal constraint
     let result = solve_and_get(doc);
-    assert!(result.is_ok(), "Solver should succeed even with unimplemented constraints");
+    assert!(result.is_ok(), "Solver should succeed with SymmetricHorizontal constraint");
+    
+    let entities = result.unwrap();
+    let p1 = match entities.get("p1") {
+        Some(ResolvedEntity::Point { at }) => at.clone(),
+        _ => panic!("p1 not found"),
+    };
+    let p2 = match entities.get("p2") {
+        Some(ResolvedEntity::Point { at }) => at.clone(),
+        _ => panic!("p2 not found"),
+    };
+    
+    // SymmetricHorizontal: Y coordinates equal, X coordinates opposite
+    // With p1 fixed at (-10, 5), p2 should move to (10, 5)
+    let y_diff = (p1[1] - p2[1]).abs();
+    let x_sum = (p1[0] + p2[0]).abs();  // Opposite X means sum should be 0
+    
+    assert!(y_diff < 1.0, 
+        "SymmetricHorizontal should make Y coordinates equal: p1.y={}, p2.y={}, diff={}", 
+        p1[1], p2[1], y_diff);
+    assert!(x_sum < 1.0, 
+        "SymmetricHorizontal should make X coordinates opposite: p1.x={}, p2.x={}, sum={}", 
+        p1[0], p2[0], x_sum);
 }
 
 /// Test that over-constrained systems fail appropriately

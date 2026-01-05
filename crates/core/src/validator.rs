@@ -75,7 +75,10 @@ impl Validator {
                 Constraint::EqualAngle { lines } => {
                     lines.iter().map(|s| s.as_str()).collect()
                 }
-                Constraint::Horizontal { a } | Constraint::Vertical { a } | Constraint::Diameter { circle: a, .. } => {
+                Constraint::Horizontal { a, workplane } | Constraint::Vertical { a, workplane } => {
+                    vec![a.as_str(), workplane.as_str()]
+                }
+                Constraint::Diameter { circle: a, .. } => {
                     vec![a.as_str()]
                 }
                 Constraint::PointOnLine { point, line } | Constraint::PointLineDistance { point, line, .. } | 
@@ -84,8 +87,8 @@ impl Validator {
                 }
                 Constraint::PointOnCircle { point, circle } => vec![point.as_str(), circle.as_str()],
                 Constraint::Symmetric { a, b, about } => vec![a.as_str(), b.as_str(), about.as_str()],
-                Constraint::SymmetricHorizontal { a, b } | Constraint::SymmetricVertical { a, b } => {
-                    vec![a.as_str(), b.as_str()]
+                Constraint::SymmetricHorizontal { a, b, workplane } | Constraint::SymmetricVertical { a, b, workplane } => {
+                    vec![a.as_str(), b.as_str(), workplane.as_str()]
                 }
                 Constraint::Midpoint { point, of } => {
                     let mut refs = vec![point.as_str()];
@@ -976,6 +979,11 @@ mod tests {
             units: "mm".to_string(),
             parameters: HashMap::new(),
             entities: vec![
+                Entity::Plane {
+                    id: "wp1".to_string(),
+                    origin: vec![ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0)],
+                    normal: vec![ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(1.0)],
+                },
                 Entity::Point {
                     id: "p1".to_string(),
                     at: vec![ExprOrNumber::Number(0.0)],
@@ -1045,9 +1053,11 @@ mod tests {
                 },
                 Constraint::Horizontal {
                     a: "l1".to_string(),
+                    workplane: "wp1".to_string(),
                 },
                 Constraint::Vertical {
                     a: "l2".to_string(),
+                    workplane: "wp1".to_string(),
                 },
                 Constraint::PointOnLine {
                     point: "p3".to_string(),

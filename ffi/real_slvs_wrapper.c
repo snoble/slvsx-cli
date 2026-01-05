@@ -476,7 +476,10 @@ int real_slvs_add_equal_radius_constraint(RealSlvsSystem* s, int id, int circle1
     return 0;
 }
 
-// Add tangent constraint (between two curves: line/circle/arc)
+// Add tangent constraint (between two curves)
+// Note: CURVE_CURVE_TANGENT only works for Arc+Arc, Arc+Cubic, Cubic+Cubic
+// For Arc+Line use SLVS_C_ARC_LINE_TANGENT
+// For Cubic+Line use SLVS_C_CUBIC_LINE_TANGENT
 int real_slvs_add_tangent_constraint(RealSlvsSystem* s, int id, int entity1_id, int entity2_id) {
     if (!s) return -1;
     
@@ -487,11 +490,59 @@ int real_slvs_add_tangent_constraint(RealSlvsSystem* s, int id, int entity1_id, 
     Slvs_hEntity entity1 = 1000 + entity1_id;
     Slvs_hEntity entity2 = 1000 + entity2_id;
     
-    // Use CURVE_CURVE_TANGENT for general curve-to-curve tangency
-    // This works for line-circle, circle-circle, arc-line, etc.
-    s->sys.constraint[s->sys.constraints++] = Slvs_MakeConstraint(
-        constraint_id, g, SLVS_C_CURVE_CURVE_TANGENT, SLVS_FREE_IN_3D,
-        0, 0, 0, entity1, entity2);
+    // Detect entity types to choose the correct constraint type
+    int entity1_type = -1, entity2_type = -1;
+    for (int i = 0; i < s->sys.entities; i++) {
+        if (s->sys.entity[i].h == entity1) entity1_type = s->sys.entity[i].type;
+        if (s->sys.entity[i].h == entity2) entity2_type = s->sys.entity[i].type;
+    }
+    
+    // Determine the correct constraint type based on entity types
+    int constraint_type;
+    Slvs_hEntity arc_entity, line_entity;
+    
+    bool is1_arc = (entity1_type == SLVS_E_ARC_OF_CIRCLE);
+    bool is2_arc = (entity2_type == SLVS_E_ARC_OF_CIRCLE);
+    bool is1_line = (entity1_type == SLVS_E_LINE_SEGMENT);
+    bool is2_line = (entity2_type == SLVS_E_LINE_SEGMENT);
+    bool is1_cubic = (entity1_type == SLVS_E_CUBIC);
+    bool is2_cubic = (entity2_type == SLVS_E_CUBIC);
+    
+    if ((is1_arc && is2_line) || (is1_line && is2_arc)) {
+        // Arc + Line: use ARC_LINE_TANGENT
+        constraint_type = SLVS_C_ARC_LINE_TANGENT;
+        if (is1_arc) {
+            arc_entity = entity1;
+            line_entity = entity2;
+        } else {
+            arc_entity = entity2;
+            line_entity = entity1;
+        }
+        // SolveSpace expects: entityA = arc, entityB = line
+        s->sys.constraint[s->sys.constraints++] = Slvs_MakeConstraint(
+            constraint_id, g, constraint_type, SLVS_FREE_IN_3D,
+            0, 0, 0, arc_entity, line_entity);
+    } else if ((is1_cubic && is2_line) || (is1_line && is2_cubic)) {
+        // Cubic + Line: use CUBIC_LINE_TANGENT
+        constraint_type = SLVS_C_CUBIC_LINE_TANGENT;
+        Slvs_hEntity cubic_entity;
+        if (is1_cubic) {
+            cubic_entity = entity1;
+            line_entity = entity2;
+        } else {
+            cubic_entity = entity2;
+            line_entity = entity1;
+        }
+        // SolveSpace expects: entityA = cubic, entityB = line
+        s->sys.constraint[s->sys.constraints++] = Slvs_MakeConstraint(
+            constraint_id, g, constraint_type, SLVS_FREE_IN_3D,
+            0, 0, 0, cubic_entity, line_entity);
+    } else {
+        // Arc+Arc, Arc+Cubic, Cubic+Cubic: use CURVE_CURVE_TANGENT
+        s->sys.constraint[s->sys.constraints++] = Slvs_MakeConstraint(
+            constraint_id, g, SLVS_C_CURVE_CURVE_TANGENT, SLVS_FREE_IN_3D,
+            0, 0, 0, entity1, entity2);
+    }
     
     return 0;
 }
@@ -616,22 +667,39 @@ int real_slvs_get_point_position(RealSlvsSystem* s, int point_id, double* x, dou
     // Find the point entity (look for internal ID with 1000+ offset)
     Slvs_hEntity internal_id = 1000 + point_id;
     for (int i = 0; i < s->sys.entities; i++) {
-        if (s->sys.entity[i].h == internal_id && 
-            s->sys.entity[i].type == SLVS_E_POINT_IN_3D) {
-            
-            // Get the parameter values
-            for (int j = 0; j < s->sys.params; j++) {
-                if (s->sys.param[j].h == s->sys.entity[i].param[0]) {
-                    *x = s->sys.param[j].val;
+        if (s->sys.entity[i].h == internal_id) {
+            if (s->sys.entity[i].type == SLVS_E_POINT_IN_3D) {
+                // 3D point - get x, y, z directly from parameters
+                for (int j = 0; j < s->sys.params; j++) {
+                    if (s->sys.param[j].h == s->sys.entity[i].param[0]) {
+                        *x = s->sys.param[j].val;
+                    }
+                    if (s->sys.param[j].h == s->sys.entity[i].param[1]) {
+                        *y = s->sys.param[j].val;
+                    }
+                    if (s->sys.param[j].h == s->sys.entity[i].param[2]) {
+                        *z = s->sys.param[j].val;
+                    }
                 }
-                if (s->sys.param[j].h == s->sys.entity[i].param[1]) {
-                    *y = s->sys.param[j].val;
+                return 0;
+            } else if (s->sys.entity[i].type == SLVS_E_POINT_IN_2D) {
+                // 2D point - get u, v from parameters, set z = 0
+                // Note: For proper 3D coordinates, we'd need to transform through the workplane
+                // For now, we return u as x, v as y, and z = 0
+                double u = 0.0, v = 0.0;
+                for (int j = 0; j < s->sys.params; j++) {
+                    if (s->sys.param[j].h == s->sys.entity[i].param[0]) {
+                        u = s->sys.param[j].val;
+                    }
+                    if (s->sys.param[j].h == s->sys.entity[i].param[1]) {
+                        v = s->sys.param[j].val;
+                    }
                 }
-                if (s->sys.param[j].h == s->sys.entity[i].param[2]) {
-                    *z = s->sys.param[j].val;
-                }
+                *x = u;
+                *y = v;
+                *z = 0.0;
+                return 0;
             }
-            return 0;
         }
     }
     
@@ -815,9 +883,11 @@ int real_slvs_add_point_in_plane_constraint(RealSlvsSystem* s, int id,
     Slvs_hEntity point = 1000 + point_id;
     Slvs_hEntity wp = 1000 + workplane_id;
     
+    // PT_IN_PLANE: point (ptA) must lie in workplane (entityA)
+    // The constraint's coordinate system is FREE_IN_3D
     s->sys.constraint[s->sys.constraints++] = Slvs_MakeConstraint(
-        constraint_id, g, SLVS_C_PT_IN_PLANE, wp,
-        0, point, 0, 0, 0);
+        constraint_id, g, SLVS_C_PT_IN_PLANE, SLVS_FREE_IN_3D,
+        0, point, 0, wp, 0);
     
     return 0;
 }
@@ -905,7 +975,8 @@ int real_slvs_add_equal_angle_constraint(RealSlvsSystem* s, int id,
 
 // Add symmetric horizontal constraint
 int real_slvs_add_symmetric_horizontal_constraint(RealSlvsSystem* s, int id,
-                                                   int entity1_id, int entity2_id) {
+                                                   int entity1_id, int entity2_id,
+                                                   int workplane_id) {
     if (!s) return -1;
     
     Slvs_hGroup g = 1;
@@ -913,9 +984,11 @@ int real_slvs_add_symmetric_horizontal_constraint(RealSlvsSystem* s, int id,
     
     Slvs_hEntity entity1 = 1000 + entity1_id;
     Slvs_hEntity entity2 = 1000 + entity2_id;
+    Slvs_hEntity wp = 1000 + workplane_id;
     
+    // SYMMETRIC_HORIZ requires a workplane
     s->sys.constraint[s->sys.constraints++] = Slvs_MakeConstraint(
-        constraint_id, g, SLVS_C_SYMMETRIC_HORIZ, SLVS_FREE_IN_3D,
+        constraint_id, g, SLVS_C_SYMMETRIC_HORIZ, wp,
         0, entity1, entity2, 0, 0);
     
     return 0;
@@ -923,7 +996,8 @@ int real_slvs_add_symmetric_horizontal_constraint(RealSlvsSystem* s, int id,
 
 // Add symmetric vertical constraint
 int real_slvs_add_symmetric_vertical_constraint(RealSlvsSystem* s, int id,
-                                                 int entity1_id, int entity2_id) {
+                                                 int entity1_id, int entity2_id,
+                                                 int workplane_id) {
     if (!s) return -1;
     
     Slvs_hGroup g = 1;
@@ -931,9 +1005,11 @@ int real_slvs_add_symmetric_vertical_constraint(RealSlvsSystem* s, int id,
     
     Slvs_hEntity entity1 = 1000 + entity1_id;
     Slvs_hEntity entity2 = 1000 + entity2_id;
+    Slvs_hEntity wp = 1000 + workplane_id;
     
+    // SYMMETRIC_VERT requires a workplane
     s->sys.constraint[s->sys.constraints++] = Slvs_MakeConstraint(
-        constraint_id, g, SLVS_C_SYMMETRIC_VERT, SLVS_FREE_IN_3D,
+        constraint_id, g, SLVS_C_SYMMETRIC_VERT, wp,
         0, entity1, entity2, 0, 0);
     
     return 0;
@@ -987,9 +1063,11 @@ int real_slvs_add_projected_point_distance_constraint(RealSlvsSystem* s, int id,
     Slvs_hEntity point2 = 1000 + point2_id;
     Slvs_hEntity wp = 1000 + workplane_id;
     
+    // PROJ_PT_DISTANCE: constrains distance between point1 and point2 
+    // when projected onto the workplane (entityA)
     s->sys.constraint[s->sys.constraints++] = Slvs_MakeConstraint(
-        constraint_id, g, SLVS_C_PROJ_PT_DISTANCE, wp,
-        distance, point1, point2, 0, 0);
+        constraint_id, g, SLVS_C_PROJ_PT_DISTANCE, SLVS_FREE_IN_3D,
+        distance, point1, point2, wp, 0);
     
     return 0;
 }

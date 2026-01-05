@@ -198,10 +198,14 @@ pub enum Constraint {
     Horizontal {
         #[serde(alias = "entity")]
         a: String,
+        /// Workplane for the horizontal constraint (required for 2D constraints)
+        workplane: String,
     },
     Vertical {
         #[serde(alias = "entity")]
         a: String,
+        /// Workplane for the vertical constraint (required for 2D constraints)
+        workplane: String,
     },
     EqualLength {
         entities: Vec<String>,
@@ -259,10 +263,14 @@ pub enum Constraint {
     SymmetricHorizontal {
         a: String,
         b: String,
+        /// Workplane for the symmetry constraint (required for 2D constraints)
+        workplane: String,
     },
     SymmetricVertical {
         a: String,
         b: String,
+        /// Workplane for the symmetry constraint (required for 2D constraints)
+        workplane: String,
     },
     Diameter {
         circle: String,
@@ -518,7 +526,7 @@ mod tests {
                 {"id": "p1", "type": "point", "at": [0, 0, 0]}
             ],
             "constraints": [
-                {"type": "horizontal", "a": "l1"}
+                {"type": "horizontal", "a": "l1", "workplane": "wp1"}
             ]
         }"#;
 

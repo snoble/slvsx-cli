@@ -113,20 +113,16 @@ impl ConstraintRegistry {
                     Err("Parallel constraint requires exactly 2 entities".to_string())
                 }
             }
-            Constraint::Horizontal { a } => {
+            Constraint::Horizontal { a, workplane } => {
                 let line_id = entity_id_map.get(a).copied().unwrap_or(0);
-                // Horizontal constraints require a workplane. For now, pass 0 (no workplane)
-                // which will cause SolveSpace to error with a clear message.
-                // TODO: Infer workplane from line's endpoints if they're 2D points
-                solver.add_horizontal_constraint(constraint_id, line_id, 0)
+                let workplane_id = entity_id_map.get(workplane).copied().unwrap_or(0);
+                solver.add_horizontal_constraint(constraint_id, line_id, workplane_id)
                     .map_err(|e| e.to_string())
             }
-            Constraint::Vertical { a } => {
+            Constraint::Vertical { a, workplane } => {
                 let line_id = entity_id_map.get(a).copied().unwrap_or(0);
-                // Vertical constraints require a workplane. For now, pass 0 (no workplane)
-                // which will cause SolveSpace to error with a clear message.
-                // TODO: Infer workplane from line's endpoints if they're 2D points
-                solver.add_vertical_constraint(constraint_id, line_id, 0)
+                let workplane_id = entity_id_map.get(workplane).copied().unwrap_or(0);
+                solver.add_vertical_constraint(constraint_id, line_id, workplane_id)
                     .map_err(|e| e.to_string())
             }
             Constraint::EqualLength { entities } => {
@@ -239,16 +235,18 @@ impl ConstraintRegistry {
                 solver.add_equal_angle_constraint(constraint_id, line1_id, line2_id, line3_id, line4_id)
                     .map_err(|e| e.to_string())
             }
-            Constraint::SymmetricHorizontal { a, b } => {
+            Constraint::SymmetricHorizontal { a, b, workplane } => {
                 let entity1_id = entity_id_map.get(a).copied().unwrap_or(0);
                 let entity2_id = entity_id_map.get(b).copied().unwrap_or(0);
-                solver.add_symmetric_horizontal_constraint(constraint_id, entity1_id, entity2_id)
+                let workplane_id = entity_id_map.get(workplane).copied().unwrap_or(0);
+                solver.add_symmetric_horizontal_constraint(constraint_id, entity1_id, entity2_id, workplane_id)
                     .map_err(|e| e.to_string())
             }
-            Constraint::SymmetricVertical { a, b } => {
+            Constraint::SymmetricVertical { a, b, workplane } => {
                 let entity1_id = entity_id_map.get(a).copied().unwrap_or(0);
                 let entity2_id = entity_id_map.get(b).copied().unwrap_or(0);
-                solver.add_symmetric_vertical_constraint(constraint_id, entity1_id, entity2_id)
+                let workplane_id = entity_id_map.get(workplane).copied().unwrap_or(0);
+                solver.add_symmetric_vertical_constraint(constraint_id, entity1_id, entity2_id, workplane_id)
                     .map_err(|e| e.to_string())
             }
             Constraint::Diameter { circle, value } => {
@@ -513,11 +511,13 @@ mod tests {
         });
         test_constraint(Constraint::SymmetricHorizontal {
             a: "p1".to_string(),
-            b: "p2".to_string()
+            b: "p2".to_string(),
+            workplane: "wp1".to_string()
         });
         test_constraint(Constraint::SymmetricVertical {
             a: "p1".to_string(),
-            b: "p2".to_string()
+            b: "p2".to_string(),
+            workplane: "wp1".to_string()
         });
         test_constraint(Constraint::Diameter {
             circle: "c1".to_string(),
@@ -864,10 +864,12 @@ mod tests {
         let mut entity_map = std::collections::HashMap::new();
         entity_map.insert("p1".to_string(), 1);
         entity_map.insert("p2".to_string(), 2);
+        entity_map.insert("wp1".to_string(), 3);
 
         let constraint = Constraint::SymmetricHorizontal {
             a: "p1".to_string(),
             b: "p2".to_string(),
+            workplane: "wp1".to_string(),
         };
         let evaluator = ExpressionEvaluator::new(std::collections::HashMap::new());
         let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map, &evaluator);
@@ -880,10 +882,12 @@ mod tests {
         let mut entity_map = std::collections::HashMap::new();
         entity_map.insert("p1".to_string(), 1);
         entity_map.insert("p2".to_string(), 2);
+        entity_map.insert("wp1".to_string(), 3);
 
         let constraint = Constraint::SymmetricVertical {
             a: "p1".to_string(),
             b: "p2".to_string(),
+            workplane: "wp1".to_string(),
         };
         let evaluator = ExpressionEvaluator::new(std::collections::HashMap::new());
         let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map, &evaluator);
@@ -1291,9 +1295,11 @@ mod tests {
             },
             Constraint::Horizontal {
                 a: "l1".to_string(),
+                workplane: "wp1".to_string(),
             },
             Constraint::Vertical {
                 a: "l1".to_string(),
+                workplane: "wp1".to_string(),
             },
             Constraint::EqualLength {
                 entities: vec!["l1".to_string(), "l2".to_string()],

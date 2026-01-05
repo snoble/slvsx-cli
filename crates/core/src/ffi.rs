@@ -261,6 +261,7 @@ extern "C" {
         id: c_int,
         entity1_id: c_int,
         entity2_id: c_int,
+        workplane_id: c_int,
     ) -> c_int;
 
     pub fn real_slvs_add_symmetric_vertical_constraint(
@@ -268,6 +269,7 @@ extern "C" {
         id: c_int,
         entity1_id: c_int,
         entity2_id: c_int,
+        workplane_id: c_int,
     ) -> c_int;
 
     pub fn real_slvs_add_diameter_constraint(
@@ -904,10 +906,11 @@ impl Solver {
         id: i32,
         entity1_id: i32,
         entity2_id: i32,
+        workplane_id: i32,
     ) -> Result<(), FfiError> {
         unsafe {
             let result = real_slvs_add_symmetric_horizontal_constraint(
-                self.system, id, entity1_id, entity2_id
+                self.system, id, entity1_id, entity2_id, workplane_id
             );
             if result == 0 {
                 Ok(())
@@ -922,10 +925,11 @@ impl Solver {
         id: i32,
         entity1_id: i32,
         entity2_id: i32,
+        workplane_id: i32,
     ) -> Result<(), FfiError> {
         unsafe {
             let result = real_slvs_add_symmetric_vertical_constraint(
-                self.system, id, entity1_id, entity2_id
+                self.system, id, entity1_id, entity2_id, workplane_id
             );
             if result == 0 {
                 Ok(())
@@ -1276,7 +1280,7 @@ mod tests {
         // Add two points representing circle centers
         solver.add_point(1, 0.0, 0.0, 0.0, false).unwrap();
         solver.add_point(2, 36.0, 0.0, 0.0, false).unwrap();
-        
+
         // Fix the first point
         solver.add_fixed_constraint(1, 1).unwrap();
 
@@ -1631,12 +1635,16 @@ mod tests {
     fn test_symmetric_horizontal_constraint_ffi_binding() {
         let mut solver = Solver::new();
 
-        // Create two points for horizontal symmetry
-        solver.add_point(1, 30.0, 50.0, 0.0, false).unwrap();
-        solver.add_point(2, 70.0, 50.0, 0.0, false).unwrap();
+        // Create workplane origin and workplane
+        solver.add_point(1, 0.0, 0.0, 0.0, false).unwrap();
+        solver.add_workplane(2, 1, 0.0, 0.0, 1.0).unwrap();
+        
+        // Create two 2D points for horizontal symmetry
+        solver.add_point_2d(3, 2, 30.0, 50.0, false).unwrap();
+        solver.add_point_2d(4, 2, 70.0, 50.0, false).unwrap();
 
         // Add symmetric horizontal constraint - FFI binding should work
-        let result = solver.add_symmetric_horizontal_constraint(100, 1, 2);
+        let result = solver.add_symmetric_horizontal_constraint(100, 3, 4, 2);
         assert!(result.is_ok(), "Should be able to add symmetric horizontal constraint via FFI");
     }
 
@@ -1644,12 +1652,16 @@ mod tests {
     fn test_symmetric_vertical_constraint_ffi_binding() {
         let mut solver = Solver::new();
 
-        // Create two points for vertical symmetry
-        solver.add_point(1, 50.0, 30.0, 0.0, false).unwrap();
-        solver.add_point(2, 50.0, 70.0, 0.0, false).unwrap();
+        // Create workplane origin and workplane
+        solver.add_point(1, 0.0, 0.0, 0.0, false).unwrap();
+        solver.add_workplane(2, 1, 0.0, 0.0, 1.0).unwrap();
+        
+        // Create two 2D points for vertical symmetry
+        solver.add_point_2d(3, 2, 50.0, 30.0, false).unwrap();
+        solver.add_point_2d(4, 2, 50.0, 70.0, false).unwrap();
 
         // Add symmetric vertical constraint - FFI binding should work
-        let result = solver.add_symmetric_vertical_constraint(100, 1, 2);
+        let result = solver.add_symmetric_vertical_constraint(100, 3, 4, 2);
         assert!(result.is_ok(), "Should be able to add symmetric vertical constraint via FFI");
     }
 
