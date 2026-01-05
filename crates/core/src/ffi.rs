@@ -90,6 +90,9 @@ extern "C" {
         cy: c_double,
         cz: c_double,
         radius: c_double,
+        nx: c_double,
+        ny: c_double,
+        nz: c_double,
     ) -> c_int;
 
     pub fn real_slvs_add_arc(
@@ -494,9 +497,12 @@ impl Solver {
         cy: f64,
         cz: f64,
         radius: f64,
+        nx: f64,
+        ny: f64,
+        nz: f64,
     ) -> Result<(), String> {
         unsafe {
-            let result = real_slvs_add_circle(self.system, id, cx, cy, cz, radius);
+            let result = real_slvs_add_circle(self.system, id, cx, cy, cz, radius, nx, ny, nz);
             if result == 0 {
                 Ok(())
             } else {
@@ -1524,8 +1530,8 @@ mod tests {
 
         // Create two circles (note: current implementation uses simplified circles)
         // This test verifies the FFI binding works correctly
-        solver.add_circle(1, 0.0, 0.0, 0.0, 10.0).unwrap();
-        solver.add_circle(2, 20.0, 0.0, 0.0, 15.0).unwrap();
+        solver.add_circle(1, 0.0, 0.0, 0.0, 10.0, 0.0, 0.0, 1.0).unwrap();
+        solver.add_circle(2, 20.0, 0.0, 0.0, 15.0, 0.0, 0.0, 1.0).unwrap();
 
         // Add equal radius constraint - FFI binding should work
         let result = solver.add_equal_radius_constraint(100, 1, 2);
@@ -1543,7 +1549,7 @@ mod tests {
         solver.add_point(1, 0.0, 0.0, 0.0, false).unwrap();
         solver.add_point(2, 100.0, 0.0, 0.0, false).unwrap();
         solver.add_line(10, 1, 2).unwrap();
-        solver.add_circle(20, 50.0, 50.0, 0.0, 25.0).unwrap();
+        solver.add_circle(20, 50.0, 50.0, 0.0, 25.0, 0.0, 0.0, 1.0).unwrap();
 
         // Add tangent constraint - FFI binding should work
         let result = solver.add_tangent_constraint(100, 10, 20);
@@ -1559,7 +1565,7 @@ mod tests {
 
         // Create a point and a circle (simplified)
         solver.add_point(1, 50.0, 50.0, 0.0, false).unwrap();
-        solver.add_circle(10, 0.0, 0.0, 0.0, 25.0).unwrap();
+        solver.add_circle(10, 0.0, 0.0, 0.0, 25.0, 0.0, 0.0, 1.0).unwrap();
 
         // Add point on circle constraint - FFI binding should work
         let result = solver.add_point_on_circle_constraint(100, 1, 10);
@@ -1770,7 +1776,7 @@ mod tests {
         let mut solver = Solver::new();
 
         // Create a circle
-        solver.add_circle(10, 0.0, 0.0, 0.0, 25.0).unwrap();
+        solver.add_circle(10, 0.0, 0.0, 0.0, 25.0, 0.0, 0.0, 1.0).unwrap();
 
         // Add diameter constraint - FFI binding should work
         let result = solver.add_diameter_constraint(100, 10, 50.0);
@@ -1783,7 +1789,7 @@ mod tests {
         let mut solver = Solver::new();
 
         // Create a circle (id=10)
-        solver.add_circle(10, 0.0, 0.0, 0.0, 25.0).unwrap();
+        solver.add_circle(10, 0.0, 0.0, 0.0, 25.0, 0.0, 0.0, 1.0).unwrap();
 
         // Add diameter constraint (constraint id=100, circle id=10, diameter=50.0)
         solver.add_diameter_constraint(100, 10, 50.0).unwrap();
@@ -1805,7 +1811,7 @@ mod tests {
         solver.add_point(1, 0.0, 0.0, 0.0, false).unwrap();
         
         // 2. Circle "circle1" -> internal id 2
-        solver.add_circle(2, 0.0, 0.0, 0.0, 7.5).unwrap(); // diameter 15 / 2 = 7.5 radius
+        solver.add_circle(2, 0.0, 0.0, 0.0, 7.5, 0.0, 0.0, 1.0).unwrap(); // diameter 15 / 2 = 7.5 radius
 
         // 3. Fixed constraint on point c1 (entity_id=1)
         solver.add_fixed_constraint(1, 1, 0).unwrap();
@@ -1826,7 +1832,7 @@ mod tests {
         let mut solver = Solver::new();
 
         // Create a circle at (10, 20, 30) with radius 15
-        solver.add_circle(5, 10.0, 20.0, 30.0, 15.0).unwrap();
+        solver.add_circle(5, 10.0, 20.0, 30.0, 15.0, 0.0, 0.0, 1.0).unwrap();
 
         // Get circle position without solving (initial values)
         let result = solver.get_circle_position(5);
@@ -1845,7 +1851,7 @@ mod tests {
         let mut solver = Solver::new();
 
         // Create a circle at origin with initial radius 10
-        solver.add_circle(3, 0.0, 0.0, 0.0, 10.0).unwrap();
+        solver.add_circle(3, 0.0, 0.0, 0.0, 10.0, 0.0, 0.0, 1.0).unwrap();
         
         // Add diameter constraint to set diameter to 30 (radius 15)
         solver.add_diameter_constraint(100, 3, 30.0).unwrap();
@@ -1881,7 +1887,7 @@ mod tests {
         let mut solver = Solver::new();
 
         // Create a circle at (-50, 100, 25) with radius 7.5
-        solver.add_circle(42, -50.0, 100.0, 25.0, 7.5).unwrap();
+        solver.add_circle(42, -50.0, 100.0, 25.0, 7.5, 0.0, 0.0, 1.0).unwrap();
 
         let (cx, cy, cz, radius) = solver.get_circle_position(42).unwrap();
         
@@ -1973,7 +1979,7 @@ mod tests {
         solver.add_point(1, 0.0, 0.0, 0.0, false).unwrap();
         solver.add_point(2, 100.0, 0.0, 0.0, false).unwrap();
         solver.add_line(10, 1, 2).unwrap();
-        solver.add_circle(20, 0.0, 0.0, 0.0, 25.0).unwrap(); // Using circle as arc for now
+        solver.add_circle(20, 0.0, 0.0, 0.0, 25.0, 0.0, 0.0, 1.0).unwrap(); // Using circle as arc for now
 
         // Add equal line-arc length constraint - FFI binding should work
         let result = solver.add_equal_line_arc_length_constraint(100, 10, 20);
@@ -2036,8 +2042,8 @@ mod tests {
         let mut solver = Solver::new();
 
         // Create two arcs (using circles for now)
-        solver.add_circle(10, 0.0, 0.0, 0.0, 25.0).unwrap();
-        solver.add_circle(20, 0.0, 0.0, 0.0, 50.0).unwrap();
+        solver.add_circle(10, 0.0, 0.0, 0.0, 25.0, 0.0, 0.0, 1.0).unwrap();
+        solver.add_circle(20, 0.0, 0.0, 0.0, 50.0, 0.0, 0.0, 1.0).unwrap();
 
         // Add arc-arc length ratio constraint - FFI binding should work
         let result = solver.add_arc_arc_length_ratio_constraint(100, 10, 20, 2.0);
@@ -2049,7 +2055,7 @@ mod tests {
         let mut solver = Solver::new();
 
         // Create arc and line
-        solver.add_circle(10, 0.0, 0.0, 0.0, 25.0).unwrap();
+        solver.add_circle(10, 0.0, 0.0, 0.0, 25.0, 0.0, 0.0, 1.0).unwrap();
         solver.add_point(1, 0.0, 0.0, 0.0, false).unwrap();
         solver.add_point(2, 100.0, 0.0, 0.0, false).unwrap();
         solver.add_line(20, 1, 2).unwrap();
@@ -2064,8 +2070,8 @@ mod tests {
         let mut solver = Solver::new();
 
         // Create two arcs (using circles for now)
-        solver.add_circle(10, 0.0, 0.0, 0.0, 25.0).unwrap();
-        solver.add_circle(20, 0.0, 0.0, 0.0, 50.0).unwrap();
+        solver.add_circle(10, 0.0, 0.0, 0.0, 25.0, 0.0, 0.0, 1.0).unwrap();
+        solver.add_circle(20, 0.0, 0.0, 0.0, 50.0, 0.0, 0.0, 1.0).unwrap();
 
         // Add arc-arc length difference constraint - FFI binding should work
         let result = solver.add_arc_arc_length_difference_constraint(100, 10, 20, 10.0);
@@ -2077,7 +2083,7 @@ mod tests {
         let mut solver = Solver::new();
 
         // Create arc and line
-        solver.add_circle(10, 0.0, 0.0, 0.0, 25.0).unwrap();
+        solver.add_circle(10, 0.0, 0.0, 0.0, 25.0, 0.0, 0.0, 1.0).unwrap();
         solver.add_point(1, 0.0, 0.0, 0.0, false).unwrap();
         solver.add_point(2, 100.0, 0.0, 0.0, false).unwrap();
         solver.add_line(20, 1, 2).unwrap();

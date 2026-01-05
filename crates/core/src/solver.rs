@@ -166,9 +166,10 @@ impl Solver {
                     id,
                     center,
                     diameter,
+                    normal,
                     ..
                 } => {
-                    // Evaluate expressions
+                    // Evaluate expressions for center
                     let cx = match &center[0] {
                         crate::ir::ExprOrNumber::Number(n) => *n,
                         crate::ir::ExprOrNumber::Expression(e) => eval.eval(&e)?,
@@ -191,8 +192,31 @@ impl Solver {
                     };
                     let radius = diam / 2.0;
 
+                    // Evaluate expressions for normal vector
+                    let nx = match normal.get(0) {
+                        Some(crate::ir::ExprOrNumber::Number(n)) => *n,
+                        Some(crate::ir::ExprOrNumber::Expression(e)) => eval.eval(&e)?,
+                        None => 0.0,
+                    };
+                    let ny = match normal.get(1) {
+                        Some(crate::ir::ExprOrNumber::Number(n)) => *n,
+                        Some(crate::ir::ExprOrNumber::Expression(e)) => eval.eval(&e)?,
+                        None => 0.0,
+                    };
+                    let nz = match normal.get(2) {
+                        Some(crate::ir::ExprOrNumber::Number(n)) => *n,
+                        Some(crate::ir::ExprOrNumber::Expression(e)) => eval.eval(&e)?,
+                        None => 1.0, // Default to Z-axis
+                    };
+
+                    // Normalize normal vector
+                    let norm_len = (nx * nx + ny * ny + nz * nz).sqrt();
+                    let nx_norm = if norm_len > 0.0 { nx / norm_len } else { 0.0 };
+                    let ny_norm = if norm_len > 0.0 { ny / norm_len } else { 0.0 };
+                    let nz_norm = if norm_len > 0.0 { nz / norm_len } else { 1.0 };
+
                     ffi_solver
-                        .add_circle(next_id, cx, cy, cz, radius)
+                        .add_circle(next_id, cx, cy, cz, radius, nx_norm, ny_norm, nz_norm)
                         .map_err(|e| crate::error::Error::Ffi(e))?;
                     entity_id_map.insert(id.clone(), next_id);
                     next_id += 1;
@@ -244,7 +268,7 @@ impl Solver {
                     // Get workplane ID if specified
                     let workplane_id = workplane.as_ref().and_then(|wp| entity_id_map.get(wp).copied());
 
-                    ffi_solver
+                        ffi_solver
                         .add_arc(next_id, *center_id, *start_id, *end_id, nx_norm, ny_norm, nz_norm, workplane_id)
                         .map_err(|e| crate::error::Error::InvalidInput {
                             message: format!("Failed to add arc '{}': {}", id, e),
@@ -346,7 +370,7 @@ impl Solver {
                     next_id += 1;
 
                     // Create workplane with normalized normal
-                    ffi_solver
+                        ffi_solver
                         .add_workplane(next_id, origin_point_id, nx_norm, ny_norm, nz_norm)
                         .map_err(|e| crate::error::Error::InvalidInput {
                             message: format!("Failed to add plane '{}': {}", id, e),

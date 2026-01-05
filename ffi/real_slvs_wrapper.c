@@ -176,15 +176,16 @@ int real_slvs_add_point_2d(RealSlvsSystem* s, int id, int workplane_id, double u
     return 0;
 }
 
-// Add a circle (simplified - just stores center point and radius)
-int real_slvs_add_circle(RealSlvsSystem* s, int id, double cx, double cy, double cz, double radius) {
+// Add a circle with explicit normal vector
+int real_slvs_add_circle(RealSlvsSystem* s, int id, double cx, double cy, double cz, double radius,
+                         double nx, double ny, double nz) {
     if (!s) return -1;
     
     Slvs_hGroup g = 1;
     
-    // Create normal entity first (default to Z-axis normal)
+    // Create normal entity from the provided normal vector
     double qw, qx, qy, qz;
-    normal_to_quaternion(0.0, 0.0, 1.0, &qw, &qx, &qy, &qz);
+    normal_to_quaternion(nx, ny, nz, &qw, &qx, &qy, &qz);
     
     int pqw = s->next_param++;
     int pqx = s->next_param++;
