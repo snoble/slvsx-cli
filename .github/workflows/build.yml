@@ -4,7 +4,8 @@ on:
   push:
     branches: [ main ]
   pull_request:
-    branches: [ main ]
+    # Run on PRs to any branch to support stacked PRs
+    branches: [ '**' ]
 
 env:
   CARGO_TERM_COLOR: always
