@@ -1708,6 +1708,78 @@ mod tests {
     }
 
     #[test]
+    fn test_get_circle_position_returns_correct_values() {
+        // Test that get_circle_position correctly retrieves center and radius
+        // from the new proper circle entity structure
+        let mut solver = Solver::new();
+
+        // Create a circle at (10, 20, 30) with radius 15
+        solver.add_circle(5, 10.0, 20.0, 30.0, 15.0).unwrap();
+
+        // Get circle position without solving (initial values)
+        let result = solver.get_circle_position(5);
+        assert!(result.is_ok(), "Should be able to get circle position");
+        
+        let (cx, cy, cz, radius) = result.unwrap();
+        assert!((cx - 10.0).abs() < 0.001, "Center X should be 10.0, got {}", cx);
+        assert!((cy - 20.0).abs() < 0.001, "Center Y should be 20.0, got {}", cy);
+        assert!((cz - 30.0).abs() < 0.001, "Center Z should be 30.0, got {}", cz);
+        assert!((radius - 15.0).abs() < 0.001, "Radius should be 15.0, got {}", radius);
+    }
+
+    #[test]
+    fn test_get_circle_position_after_solve() {
+        // Test that get_circle_position works after solving with diameter constraint
+        let mut solver = Solver::new();
+
+        // Create a circle at origin with initial radius 10
+        solver.add_circle(3, 0.0, 0.0, 0.0, 10.0).unwrap();
+        
+        // Add diameter constraint to set diameter to 30 (radius 15)
+        solver.add_diameter_constraint(100, 3, 30.0).unwrap();
+
+        // Solve
+        solver.solve().unwrap();
+
+        // Get circle position after solve
+        let (cx, cy, cz, radius) = solver.get_circle_position(3).unwrap();
+        
+        // Center should remain at origin
+        assert!((cx).abs() < 0.001, "Center X should be 0.0, got {}", cx);
+        assert!((cy).abs() < 0.001, "Center Y should be 0.0, got {}", cy);
+        assert!((cz).abs() < 0.001, "Center Z should be 0.0, got {}", cz);
+        
+        // Radius should now be 15 (diameter 30 / 2)
+        assert!((radius - 15.0).abs() < 0.001, "Radius should be 15.0 after constraint, got {}", radius);
+    }
+
+    #[test]
+    fn test_get_circle_position_not_found() {
+        // Test that get_circle_position returns error for non-existent circle
+        let solver = Solver::new();
+
+        // Try to get position of a circle that doesn't exist
+        let result = solver.get_circle_position(999);
+        assert!(result.is_err(), "Should return error for non-existent circle");
+    }
+
+    #[test]
+    fn test_circle_with_offset_center() {
+        // Test circle positioned away from origin
+        let mut solver = Solver::new();
+
+        // Create a circle at (-50, 100, 25) with radius 7.5
+        solver.add_circle(42, -50.0, 100.0, 25.0, 7.5).unwrap();
+
+        let (cx, cy, cz, radius) = solver.get_circle_position(42).unwrap();
+        
+        assert!((cx - (-50.0)).abs() < 0.001, "Center X should be -50.0, got {}", cx);
+        assert!((cy - 100.0).abs() < 0.001, "Center Y should be 100.0, got {}", cy);
+        assert!((cz - 25.0).abs() < 0.001, "Center Z should be 25.0, got {}", cz);
+        assert!((radius - 7.5).abs() < 0.001, "Radius should be 7.5, got {}", radius);
+    }
+
+    #[test]
     fn test_same_orientation_constraint_ffi_binding() {
         let mut solver = Solver::new();
 
