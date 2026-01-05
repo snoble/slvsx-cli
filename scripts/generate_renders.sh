@@ -43,6 +43,13 @@ echo "Generating SVG renders for examples..."
 for example in "$PROJECT_ROOT/examples"/*.json; do
     if [ -f "$example" ]; then
         name=$(basename "$example" .json)
+        
+        # Skip solution output files (they have a different format)
+        if [[ "$name" == *_solution ]]; then
+            echo "  Skipping $name (solution output file)"
+            continue
+        fi
+        
         echo "  Rendering $name..."
         
         # Solve first (needed for export)
