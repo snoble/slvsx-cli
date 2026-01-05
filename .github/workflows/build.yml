@@ -348,6 +348,9 @@ jobs:
       - name: Build documentation embeddings
         run: npm run build:docs
         
+      - name: Run MCP server tests
+        run: npm test
+        
       - name: Verify docs.json was created
         run: |
           if [ -f "dist/docs.json" ]; then
