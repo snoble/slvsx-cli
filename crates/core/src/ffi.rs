@@ -1332,6 +1332,105 @@ mod tests {
     }
 
     #[test]
+    fn test_angle_constraint_produces_correct_angle() {
+        // TDD test: verify angle constraint produces the requested angle
+        let mut solver = Solver::new();
+
+        // Create origin point (will be fixed)
+        solver.add_point(1, 0.0, 0.0, 0.0, false).unwrap();
+        
+        // Create point for line1 (along positive X axis)
+        solver.add_point(2, 100.0, 0.0, 0.0, false).unwrap();
+        
+        // Create point for line2 (start at 45 degrees, will be adjusted by solver)
+        solver.add_point(3, 70.0, 70.0, 0.0, false).unwrap();
+
+        // Create two lines from origin
+        solver.add_line(10, 1, 2).unwrap();
+        solver.add_line(11, 1, 3).unwrap();
+
+        // Fix origin and first endpoint to define line1 position
+        solver.add_fixed_constraint(100, 1, 0).unwrap();
+        solver.add_fixed_constraint(101, 2, 0).unwrap();
+
+        // Set length of line2
+        solver.add_distance_constraint(102, 1, 3, 100.0).unwrap();
+
+        // Add angle constraint: 90 degrees between the two lines
+        solver.add_angle_constraint(103, 10, 11, 90.0).unwrap();
+
+        // Solve
+        let solve_result = solver.solve();
+        assert!(solve_result.is_ok(), "Solver should succeed: {:?}", solve_result);
+
+        // Get the position of point 3 (end of line2)
+        let (x, y, z) = solver.get_point_position(3).unwrap();
+
+        // Calculate the angle of line2 from horizontal
+        let angle_from_horizontal = y.atan2(x).to_degrees();
+        
+        // Line1 is along X axis (0 degrees), so line2 should be at 90 degrees
+        assert!(
+            (angle_from_horizontal - 90.0).abs() < 1.0,
+            "Line2 should be at 90 degrees from horizontal, got {:.1} degrees (point at ({:.2}, {:.2}, {:.2}))",
+            angle_from_horizontal, x, y, z
+        );
+
+        // Verify distance is preserved
+        let distance = (x * x + y * y + z * z).sqrt();
+        assert!(
+            (distance - 100.0).abs() < 0.1,
+            "Distance should be 100mm, got {:.2}",
+            distance
+        );
+    }
+
+    #[test]
+    fn test_angle_constraint_45_degrees() {
+        // TDD test: verify 45 degree angle constraint
+        let mut solver = Solver::new();
+
+        // Create origin point
+        solver.add_point(1, 0.0, 0.0, 0.0, false).unwrap();
+        
+        // Create point for horizontal line
+        solver.add_point(2, 100.0, 0.0, 0.0, false).unwrap();
+        
+        // Create point for angled line (start at 30 degrees)
+        solver.add_point(3, 86.6, 50.0, 0.0, false).unwrap();
+
+        // Create two lines from origin
+        solver.add_line(10, 1, 2).unwrap();
+        solver.add_line(11, 1, 3).unwrap();
+
+        // Fix origin and horizontal line endpoint
+        solver.add_fixed_constraint(100, 1, 0).unwrap();
+        solver.add_fixed_constraint(101, 2, 0).unwrap();
+
+        // Set length of angled line
+        solver.add_distance_constraint(102, 1, 3, 100.0).unwrap();
+
+        // Add angle constraint: 45 degrees
+        solver.add_angle_constraint(103, 10, 11, 45.0).unwrap();
+
+        // Solve
+        let solve_result = solver.solve();
+        assert!(solve_result.is_ok(), "Solver should succeed: {:?}", solve_result);
+
+        // Get the position of point 3
+        let (x, y, _z) = solver.get_point_position(3).unwrap();
+
+        // Calculate the angle from horizontal
+        let angle = y.atan2(x).to_degrees();
+        
+        assert!(
+            (angle - 45.0).abs() < 1.0,
+            "Line should be at 45 degrees from horizontal, got {:.1} degrees",
+            angle
+        );
+    }
+
+    #[test]
     fn test_horizontal_constraint_ffi_binding() {
         let mut solver = Solver::new();
 

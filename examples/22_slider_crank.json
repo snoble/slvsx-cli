@@ -1,54 +1,124 @@
 {
   "schema": "slvs-json/1",
   "units": "mm",
+  "description": "Classic slider-crank mechanism demonstrating kinematic constraints. Change crank_angle_deg to see different positions.",
   "parameters": {
-    "crank_length": 30.0,
-    "connecting_rod_length": 80.0,
-    "crank_angle": 45.0
+    "crank_radius": 50.0,
+    "connecting_rod": 150.0,
+    "crank_angle_deg": 45.0
   },
   "entities": [
     {
       "type": "point",
-      "id": "crank_pivot",
+      "id": "crank_center",
       "at": [0, 0, 0]
     },
     {
       "type": "point",
-      "id": "crank_end",
-      "at": [21.21, 21.21, 0]
+      "id": "crank_pin",
+      "at": [35.36, 35.36, 0]
     },
     {
       "type": "point",
+      "id": "wrist_pin",
+      "at": [160, 0, 0]
+    },
+    {
+      "type": "point",
+      "id": "piston_front",
+      "at": [200, 0, 0]
+    },
+    {
+      "type": "point",
+      "id": "piston_back",
+      "at": [120, 0, 0]
+    },
+    {
+      "type": "point",
+      "id": "guide_left",
+      "at": [-80, 0, 0]
+    },
+    {
+      "type": "point",
+      "id": "guide_right",
+      "at": [250, 0, 0]
+    },
+    {
+      "type": "line",
+      "id": "crankshaft",
+      "p1": "crank_center",
+      "p2": "crank_pin"
+    },
+    {
+      "type": "line",
+      "id": "conrod",
+      "p1": "crank_pin",
+      "p2": "wrist_pin"
+    },
+    {
+      "type": "line",
       "id": "piston",
-      "at": [80, 0, 0]
+      "p1": "piston_back",
+      "p2": "piston_front"
     },
     {
       "type": "line",
-      "id": "crank",
-      "p1": "crank_pivot",
-      "p2": "crank_end"
+      "id": "cylinder_wall",
+      "p1": "guide_left",
+      "p2": "guide_right"
     },
     {
-      "type": "line",
-      "id": "connecting_rod",
-      "p1": "crank_end",
-      "p2": "piston"
+      "type": "circle",
+      "id": "crank_path",
+      "center": [0, 0, 0],
+      "diameter": 100
     }
   ],
   "constraints": [
     {
       "type": "fixed",
-      "entity": "crank_pivot"
+      "entity": "crank_center"
+    },
+    {
+      "type": "fixed",
+      "entity": "guide_left"
+    },
+    {
+      "type": "fixed",
+      "entity": "guide_right"
     },
     {
       "type": "distance",
-      "between": ["crank_pivot", "crank_end"],
-      "value": "$crank_length"
+      "between": ["crank_center", "crank_pin"],
+      "value": "$crank_radius"
     },
     {
       "type": "distance",
-      "between": ["crank_end", "piston"],
-      "value": "$connecting_rod_length"
+      "between": ["crank_pin", "wrist_pin"],
+      "value": "$connecting_rod"
+    },
+    {
+      "type": "point_on_line",
+      "point": "wrist_pin",
+      "line": "cylinder_wall"
+    },
+    {
+      "type": "angle",
+      "between": ["crankshaft", "cylinder_wall"],
+      "value": "$crank_angle_deg"
+    },
+    {
+      "type": "coincident",
+      "entities": ["wrist_pin", "piston_back"]
+    },
+    {
+      "type": "parallel",
+      "entities": ["piston", "cylinder_wall"]
+    },
+    {
+      "type": "distance",
+      "between": ["piston_back", "piston_front"],
+      "value": 80
     }
   ]
 }

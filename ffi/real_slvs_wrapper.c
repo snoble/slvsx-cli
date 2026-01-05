@@ -391,18 +391,15 @@ int real_slvs_add_angle_constraint(RealSlvsSystem* s, int id, int line1_id, int 
     
     Slvs_hGroup g = 1;
     
-    // Create angle parameter (in degrees)
-    int angle_param = s->next_param++;
-    s->sys.param[s->sys.params++] = Slvs_MakeParam(angle_param, g, angle);
-    
     // Use proper ID mapping for constraint and entities
     Slvs_hConstraint constraint_id = 10000 + id;
     Slvs_hEntity line1 = 1000 + line1_id;
     Slvs_hEntity line2 = 1000 + line2_id;
     
+    // Pass angle value directly (in degrees), not as a parameter ID
     s->sys.constraint[s->sys.constraints++] = Slvs_MakeConstraint(
         constraint_id, g, SLVS_C_ANGLE, SLVS_FREE_IN_3D,
-        angle_param, 0, 0, line1, line2);
+        angle, 0, 0, line1, line2);
     
     return 0;
 }
