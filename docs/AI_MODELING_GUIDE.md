@@ -199,6 +199,43 @@ Using `equal_length` with many entities (>4) can cause internal ID collisions. S
 }
 ```
 
+### 11. Circle Orientation (Normal Vector)
+
+**Problem**: Circles lie in a plane defined by their `normal` vector. If not specified, circles default to the XY plane (normal = [0,0,1]). Circles on walls or other planes **must** specify their normal or they will project incorrectly in different views.
+
+```json
+// BAD - circle on front wall uses default XY normal
+{
+  "type": "circle",
+  "id": "entrance_hole",
+  "center": [75, 0, 120],
+  "diameter": 40
+  // Missing normal! Defaults to [0,0,1] which is WRONG for a wall at Y=0
+}
+
+// GOOD - specify normal for wall-mounted circle
+{
+  "type": "circle",
+  "id": "entrance_hole", 
+  "center": [75, 0, 120],
+  "diameter": 40,
+  "normal": [0, 1, 0]  // Points along Y-axis (perpendicular to front wall)
+}
+```
+
+**How normals affect projection**:
+- Circle with `normal: [0,0,1]` (XY plane) appears as circle in XY view, line in XZ/YZ views
+- Circle with `normal: [0,1,0]` (XZ plane) appears as circle in XZ view, line in XY/YZ views
+- Circle with `normal: [1,0,0]` (YZ plane) appears as circle in YZ view, line in XY/XZ views
+
+**For cylindrical features (like dowels/perches)**:
+```python
+# Calculate normal from dowel direction
+dx, dy, dz = end.x - start.x, end.y - start.y, end.z - start.z
+length = math.sqrt(dx*dx + dy*dy + dz*dz)
+normal = (dx/length, dy/length, dz/length)  # Points along cylinder axis
+```
+
 ## Recommended Workflow
 
 ### Step 1: Start Simple
