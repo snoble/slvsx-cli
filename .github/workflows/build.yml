@@ -295,14 +295,17 @@ jobs:
           echo ""
           echo "Checking for differences from committed renders..."
           
-          # Check if there are any differences
-          if git diff --quiet examples/outputs/*.svg 2>/dev/null; then
+          # Check if there are any meaningful differences (ignore trailing whitespace/newlines)
+          if git diff --quiet --ignore-space-at-eol --ignore-blank-lines examples/outputs/*.svg 2>/dev/null; then
             echo "✅ All renders match committed versions"
           else
             echo "❌ ERROR: Generated renders differ from committed renders!"
             echo ""
             echo "Differences found:"
-            git diff --stat examples/outputs/*.svg || true
+            git diff --stat --ignore-space-at-eol --ignore-blank-lines examples/outputs/*.svg || true
+            echo ""
+            echo "Detailed diff (ignoring whitespace):"
+            git diff --ignore-space-at-eol --ignore-blank-lines examples/outputs/*.svg | head -100 || true
             echo ""
             echo "To fix this, run: ./scripts/generate_renders.sh"
             echo "Then commit the updated renders."
