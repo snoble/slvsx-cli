@@ -798,14 +798,23 @@
       ]
     },
     {
-      "type": "line",
-      "id": "perch_shaft",
-      "p1": "perch_start",
-      "p2": "perch_end"
+      "type": "circle",
+      "id": "perch_start_cap",
+      "center": [
+        75.0,
+        0,
+        90
+      ],
+      "diameter": 8,
+      "normal": [
+        0.0,
+        -1.0,
+        0.0
+      ]
     },
     {
       "type": "circle",
-      "id": "perch_cap",
+      "id": "perch_end_cap",
       "center": [
         75.0,
         -25,
@@ -817,6 +826,102 @@
         -1.0,
         0.0
       ]
+    },
+    {
+      "type": "point",
+      "id": "perch_profile_s0",
+      "at": [
+        79.0,
+        0.0,
+        90.0
+      ]
+    },
+    {
+      "type": "point",
+      "id": "perch_profile_e0",
+      "at": [
+        79.0,
+        -25.0,
+        90.0
+      ]
+    },
+    {
+      "type": "line",
+      "id": "perch_profile_line0",
+      "p1": "perch_profile_s0",
+      "p2": "perch_profile_e0"
+    },
+    {
+      "type": "point",
+      "id": "perch_profile_s1",
+      "at": [
+        75.0,
+        0.0,
+        94.0
+      ]
+    },
+    {
+      "type": "point",
+      "id": "perch_profile_e1",
+      "at": [
+        75.0,
+        -25.0,
+        94.0
+      ]
+    },
+    {
+      "type": "line",
+      "id": "perch_profile_line1",
+      "p1": "perch_profile_s1",
+      "p2": "perch_profile_e1"
+    },
+    {
+      "type": "point",
+      "id": "perch_profile_s2",
+      "at": [
+        71.0,
+        0.0,
+        90.0
+      ]
+    },
+    {
+      "type": "point",
+      "id": "perch_profile_e2",
+      "at": [
+        71.0,
+        -25.0,
+        90.0
+      ]
+    },
+    {
+      "type": "line",
+      "id": "perch_profile_line2",
+      "p1": "perch_profile_s2",
+      "p2": "perch_profile_e2"
+    },
+    {
+      "type": "point",
+      "id": "perch_profile_s3",
+      "at": [
+        75.0,
+        0.0,
+        86.0
+      ]
+    },
+    {
+      "type": "point",
+      "id": "perch_profile_e3",
+      "at": [
+        75.0,
+        -25.0,
+        86.0
+      ]
+    },
+    {
+      "type": "line",
+      "id": "perch_profile_line3",
+      "p1": "perch_profile_s3",
+      "p2": "perch_profile_e3"
     }
   ],
   "constraints": [

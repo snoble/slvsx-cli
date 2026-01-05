@@ -348,23 +348,73 @@ class GeometryBuilder:
                   end: Point3D,
                   diameter: float,
                   fixed: bool = False) -> dict:
-        """Add a cylindrical dowel (line with circle at end)"""
+        """Add a cylindrical dowel with circles at both ends and profile lines"""
         start_id = self.add_point(f"{prefix}_start", start, fixed)
         end_id = self.add_point(f"{prefix}_end", end, fixed)
-        line_id = self.add_line(f"{prefix}_shaft", start_id, end_id)
         
-        # Calculate direction for circle normal (perpendicular to dowel axis)
+        # Calculate direction for circle normal (along dowel axis)
         dx = end.x - start.x
         dy = end.y - start.y
         dz = end.z - start.z
         length = math.sqrt(dx*dx + dy*dy + dz*dz)
         if length > 0:
-            normal = (dx/length, dy/length, dz/length)
+            axis = (dx/length, dy/length, dz/length)
         else:
-            normal = (0.0, 0.0, 1.0)
+            axis = (0.0, 0.0, 1.0)
         
-        cap_id = self.add_circle(f"{prefix}_cap", end, diameter, normal)
-        return {'start': start_id, 'end': end_id, 'line': line_id, 'cap': cap_id}
+        # Add circles at both ends (cap faces point along axis)
+        start_cap_id = self.add_circle(f"{prefix}_start_cap", start, diameter, axis)
+        end_cap_id = self.add_circle(f"{prefix}_end_cap", end, diameter, axis)
+        
+        # Add profile lines along the cylinder (top and bottom edges)
+        # Calculate perpendicular vectors for the profile
+        radius = diameter / 2
+        
+        # Find two perpendicular vectors to the axis
+        if abs(axis[2]) < 0.9:
+            # Use Z-axis to find perpendicular
+            perp1 = (-axis[1], axis[0], 0.0)
+        else:
+            # Use X-axis to find perpendicular
+            perp1 = (0.0, -axis[2], axis[1])
+        
+        # Normalize perp1
+        perp_len = math.sqrt(perp1[0]**2 + perp1[1]**2 + perp1[2]**2)
+        if perp_len > 0:
+            perp1 = (perp1[0]/perp_len, perp1[1]/perp_len, perp1[2]/perp_len)
+        
+        # Cross product for second perpendicular
+        perp2 = (
+            axis[1]*perp1[2] - axis[2]*perp1[1],
+            axis[2]*perp1[0] - axis[0]*perp1[2],
+            axis[0]*perp1[1] - axis[1]*perp1[0]
+        )
+        
+        # Add 4 profile points at start and end (at 0, 90, 180, 270 degrees)
+        profile_points_start = []
+        profile_points_end = []
+        for i, angle in enumerate([0, 90, 180, 270]):
+            rad = math.radians(angle)
+            offset_x = radius * (math.cos(rad) * perp1[0] + math.sin(rad) * perp2[0])
+            offset_y = radius * (math.cos(rad) * perp1[1] + math.sin(rad) * perp2[1])
+            offset_z = radius * (math.cos(rad) * perp1[2] + math.sin(rad) * perp2[2])
+            
+            start_pt = self.add_point(f"{prefix}_profile_s{i}", start.offset(offset_x, offset_y, offset_z))
+            end_pt = self.add_point(f"{prefix}_profile_e{i}", end.offset(offset_x, offset_y, offset_z))
+            profile_points_start.append(start_pt)
+            profile_points_end.append(end_pt)
+            
+            # Add profile line along the cylinder
+            self.add_line(f"{prefix}_profile_line{i}", start_pt, end_pt)
+        
+        return {
+            'start': start_id, 
+            'end': end_id, 
+            'start_cap': start_cap_id, 
+            'end_cap': end_cap_id,
+            'profile_start': profile_points_start,
+            'profile_end': profile_points_end
+        }
     
     # ========================================================================
     # Output
