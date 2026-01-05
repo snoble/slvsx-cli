@@ -17,9 +17,86 @@ import { execSync, spawn } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
+import { fileURLToPath } from 'url';
+
+// Get directory of this script
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Check if slvsx binary exists
 const SLVSX_BINARY = process.env.SLVSX_BINARY || './target/release/slvsx';
+
+// Load documentation embeddings if available
+let docsIndex = null;
+let embedder = null;
+
+const DOCS_INDEX_PATH = path.join(__dirname, 'dist', 'docs.json');
+
+async function loadDocsIndex() {
+  if (fs.existsSync(DOCS_INDEX_PATH)) {
+    try {
+      const data = fs.readFileSync(DOCS_INDEX_PATH, 'utf-8');
+      docsIndex = JSON.parse(data);
+      console.error(`Loaded ${docsIndex.chunks.length} documentation chunks`);
+    } catch (e) {
+      console.error('Warning: Failed to load docs index:', e.message);
+    }
+  } else {
+    console.error('Note: docs.json not found. Run "npm run build:docs" to enable documentation search.');
+  }
+}
+
+async function getEmbedder() {
+  if (!embedder) {
+    const { pipeline } = await import('@xenova/transformers');
+    embedder = await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2');
+  }
+  return embedder;
+}
+
+function cosineSimilarity(a, b) {
+  let dotProduct = 0;
+  let normA = 0;
+  let normB = 0;
+  for (let i = 0; i < a.length; i++) {
+    dotProduct += a[i] * b[i];
+    normA += a[i] * a[i];
+    normB += b[i] * b[i];
+  }
+  return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
+}
+
+async function searchDocumentation(query, topK = 3) {
+  if (!docsIndex) {
+    return { error: 'Documentation index not loaded. Run "npm run build:docs" first.' };
+  }
+
+  try {
+    const embed = await getEmbedder();
+    const output = await embed(query, { pooling: 'mean', normalize: true });
+    const queryEmbedding = Array.from(output.data);
+
+    // Calculate similarities
+    const results = docsIndex.chunks.map(chunk => ({
+      ...chunk,
+      similarity: cosineSimilarity(queryEmbedding, chunk.embedding),
+    }));
+
+    // Sort by similarity and take top K
+    results.sort((a, b) => b.similarity - a.similarity);
+    const topResults = results.slice(0, topK);
+
+    return {
+      results: topResults.map(r => ({
+        source: r.source,
+        content: r.content,
+        score: r.similarity.toFixed(4),
+      })),
+    };
+  } catch (e) {
+    return { error: `Search failed: ${e.message}` };
+  }
+}
 
 class SlvsxServer {
   constructor() {
@@ -124,6 +201,20 @@ class SlvsxServer {
             },
             required: ['type'],
           },
+        },
+        {
+          name: 'search_documentation',
+          description: 'Search SLVSX documentation for relevant information about using the constraint solver, JSON schema, examples, and best practices',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              query: {
+                type: 'string',
+                description: 'Search query to find relevant documentation',
+              }
+            },
+            required: ['query'],
+          },
         }
       ],
     }));
@@ -148,6 +239,9 @@ class SlvsxServer {
           
           case 'create_example':
             return await this.createExample(args.type);
+          
+          case 'search_documentation':
+            return await this.searchDocs(args.query);
           
           default:
             throw new Error(`Unknown tool: ${name}`);
@@ -441,7 +535,39 @@ class SlvsxServer {
     };
   }
 
+  async searchDocs(query) {
+    const result = await searchDocumentation(query, 3);
+    
+    if (result.error) {
+      return {
+        content: [
+          {
+            type: 'text',
+            text: result.error,
+          },
+        ],
+      };
+    }
+
+    // Format results as readable text
+    const formatted = result.results.map((r, i) => 
+      `--- Result ${i + 1} (${r.source}, score: ${r.score}) ---\n${r.content}`
+    ).join('\n\n');
+
+    return {
+      content: [
+        {
+          type: 'text',
+          text: formatted || 'No results found.',
+        },
+      ],
+    };
+  }
+
   async run() {
+    // Load documentation index for search
+    await loadDocsIndex();
+    
     const transport = new StdioServerTransport();
     await this.server.connect(transport);
     console.error('SLVSX MCP Server running on stdio');
