@@ -141,6 +141,27 @@ impl Solver {
                     entity_id_map.insert(id.clone(), next_id);
                     next_id += 1;
                 }
+                crate::ir::Entity::Line2D { id, p1, p2, workplane, .. } => {
+                    // Look up the point entity IDs (must be Point2D)
+                    let point1_id = entity_id_map
+                        .get(p1)
+                        .ok_or_else(|| crate::error::Error::EntityNotFound(p1.clone()))?;
+                    let point2_id = entity_id_map
+                        .get(p2)
+                        .ok_or_else(|| crate::error::Error::EntityNotFound(p2.clone()))?;
+                    let workplane_id = entity_id_map
+                        .get(workplane)
+                        .ok_or_else(|| crate::error::Error::EntityNotFound(workplane.clone()))?;
+
+                    ffi_solver
+                        .add_line_2d(next_id, *point1_id, *point2_id, *workplane_id)
+                        .map_err(|e| crate::error::Error::InvalidInput {
+                            message: format!("Failed to add 2D line '{}': {}", id, e),
+                            pointer: Some(format!("/entities/{}", entity_idx)),
+                        })?;
+                    entity_id_map.insert(id.clone(), next_id);
+                    next_id += 1;
+                }
                 crate::ir::Entity::Circle {
                     id,
                     center,
@@ -373,7 +394,8 @@ impl Solver {
                         );
                     }
                 }
-                crate::ir::Entity::Line { id, p1, p2, .. } => {
+                crate::ir::Entity::Line { id, p1, p2, .. }
+                | crate::ir::Entity::Line2D { id, p1, p2, .. } => {
                     // Lines are defined by their endpoints, get the actual coordinates
                     let p1_id = entity_id_map
                         .get(p1)

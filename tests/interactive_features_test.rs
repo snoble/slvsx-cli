@@ -25,7 +25,7 @@ fn test_preserve_flag_on_point() {
             },
         ],
         constraints: vec![
-            Constraint::Fixed { entity: "p1".to_string() },
+            Constraint::Fixed { entity: "p1".to_string(), workplane: None },
             Constraint::Distance {
                 between: vec!["p1".to_string(), "p2".to_string()],
                 value: ExprOrNumber::Number(20.0),  // Change distance - p1 should try to stay fixed
@@ -61,7 +61,7 @@ fn test_where_dragged_constraint() {
             },
         ],
         constraints: vec![
-            Constraint::Fixed { entity: "p1".to_string() },
+            Constraint::Fixed { entity: "p1".to_string(), workplane: None },
             Constraint::Dragged {
                 point: "p2".to_string(),
                 workplane: None,  // 3D point
@@ -110,7 +110,7 @@ fn test_preserve_in_iterative_refinement() {
             },
         ],
         constraints: vec![
-            Constraint::Fixed { entity: "base_fl".to_string() },
+            Constraint::Fixed { entity: "base_fl".to_string(), workplane: None },
             Constraint::Distance {
                 between: vec!["base_fl".to_string(), "base_fr".to_string()],
                 value: ExprOrNumber::Number(100.0),
@@ -223,7 +223,7 @@ fn test_preserve_flag_affects_solving() {
             },
         ],
         constraints: vec![
-            Constraint::Fixed { entity: "p1".to_string() },
+            Constraint::Fixed { entity: "p1".to_string(), workplane: None },
             Constraint::Distance {
                 between: vec!["p1".to_string(), "p2".to_string()],
                 value: ExprOrNumber::Number(15.0),
@@ -299,7 +299,7 @@ fn test_preserve_on_all_entity_types() {
             },
         ],
         constraints: vec![
-            Constraint::Fixed { entity: "p1".to_string() },
+            Constraint::Fixed { entity: "p1".to_string(), workplane: None },
         ],
     };
 

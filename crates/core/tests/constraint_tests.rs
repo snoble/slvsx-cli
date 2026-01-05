@@ -35,9 +35,7 @@ fn test_fixed_constraint() {
             },
         ],
         vec![
-            Constraint::Fixed {
-                entity: "p1".to_string(),
-            },
+            Constraint::Fixed { entity: "p1".to_string(), workplane: None },
         ],
     );
 
@@ -70,9 +68,7 @@ fn test_distance_constraint() {
             },
         ],
         vec![
-            Constraint::Fixed {
-                entity: "p1".to_string(),
-            },
+            Constraint::Fixed { entity: "p1".to_string(), workplane: None },
             Constraint::Distance {
                 between: vec!["p1".to_string(), "p2".to_string()],
                 value: ExprOrNumber::Number(50.0),
@@ -125,12 +121,8 @@ fn test_point_on_line_constraint() {
             },
         ],
         vec![
-            Constraint::Fixed {
-                entity: "p1".to_string(),
-            },
-            Constraint::Fixed {
-                entity: "p2".to_string(),
-            },
+            Constraint::Fixed { entity: "p1".to_string(), workplane: None },
+            Constraint::Fixed { entity: "p2".to_string(), workplane: None },
             Constraint::PointOnLine {
                 point: "p3".to_string(),
                 line: "line1".to_string(),
@@ -182,12 +174,8 @@ fn test_coincident_constraint() {
             },
         ],
         vec![
-            Constraint::Fixed {
-                entity: "p1".to_string(),
-            },
-            Constraint::Fixed {
-                entity: "p2".to_string(),
-            },
+            Constraint::Fixed { entity: "p1".to_string(), workplane: None },
+            Constraint::Fixed { entity: "p2".to_string(), workplane: None },
             Constraint::Coincident {
                 data: slvsx_core::ir::CoincidentData::PointOnLine {
                     at: "p3".to_string(),
@@ -245,9 +233,7 @@ fn test_perpendicular_constraint() {
             },
         ],
         vec![
-            Constraint::Fixed {
-                entity: "origin".to_string(),
-            },
+            Constraint::Fixed { entity: "origin".to_string(), workplane: None },
             Constraint::Distance {
                 between: vec!["origin".to_string(), "p1".to_string()],
                 value: ExprOrNumber::Number(100.0),
@@ -319,15 +305,9 @@ fn test_parallel_constraint() {
             },
         ],
         vec![
-            Constraint::Fixed {
-                entity: "p1".to_string(),
-            },
-            Constraint::Fixed {
-                entity: "p2".to_string(),
-            },
-            Constraint::Fixed {
-                entity: "p3".to_string(),
-            },
+            Constraint::Fixed { entity: "p1".to_string(), workplane: None },
+            Constraint::Fixed { entity: "p2".to_string(), workplane: None },
+            Constraint::Fixed { entity: "p3".to_string(), workplane: None },
             Constraint::Parallel {
                 entities: vec!["line1".to_string(), "line2".to_string()],
             },
@@ -373,7 +353,7 @@ fn test_symmetric_horizontal_constraint_with_workplane() {
         ],
         vec![
             // Fix p1 to anchor the solution
-            Constraint::Fixed { entity: "p1".to_string() },
+            Constraint::Fixed { entity: "p1".to_string(), workplane: None },
             // SymmetricHorizontal: p1 and p2 should have equal Y and opposite X
             Constraint::SymmetricHorizontal {
                 a: "p1".to_string(),
@@ -429,12 +409,8 @@ fn test_over_constrained_system_fails() {
             },
         ],
         vec![
-            Constraint::Fixed {
-                entity: "p1".to_string(),
-            },
-            Constraint::Fixed {
-                entity: "p2".to_string(),
-            },
+            Constraint::Fixed { entity: "p1".to_string(), workplane: None },
+            Constraint::Fixed { entity: "p2".to_string(), workplane: None },
             Constraint::Distance {
                 between: vec!["p1".to_string(), "p2".to_string()],
                 value: ExprOrNumber::Number(50.0), // Inconsistent with fixed positions!

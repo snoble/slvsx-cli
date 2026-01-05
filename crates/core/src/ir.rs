@@ -54,6 +54,16 @@ pub enum Entity {
         #[serde(default)]
         preserve: bool, // Mark as dragged - minimize changes during solving
     },
+    Line2D {
+        id: String,
+        p1: String, // Point2D entity ID
+        p2: String, // Point2D entity ID
+        workplane: String, // Workplane/Plane entity ID
+        #[serde(default)]
+        construction: bool,
+        #[serde(default)]
+        preserve: bool, // Mark as dragged - minimize changes during solving
+    },
     Circle {
         id: String,
         center: Vec<ExprOrNumber>,
@@ -99,6 +109,7 @@ impl Entity {
             Entity::Point { id, .. }
             | Entity::Point2D { id, .. }
             | Entity::Line { id, .. }
+            | Entity::Line2D { id, .. }
             | Entity::Circle { id, .. }
             | Entity::Arc { id, .. }
             | Entity::Cubic { id, .. }
@@ -111,6 +122,7 @@ impl Entity {
             Entity::Point { construction, .. }
             | Entity::Point2D { construction, .. }
             | Entity::Line { construction, .. }
+            | Entity::Line2D { construction, .. }
             | Entity::Circle { construction, .. }
             | Entity::Arc { construction, .. }
             | Entity::Cubic { construction, .. } => *construction,
@@ -123,6 +135,7 @@ impl Entity {
             Entity::Point { preserve, .. }
             | Entity::Point2D { preserve, .. }
             | Entity::Line { preserve, .. }
+            | Entity::Line2D { preserve, .. }
             | Entity::Circle { preserve, .. }
             | Entity::Arc { preserve, .. }
             | Entity::Cubic { preserve, .. } => *preserve,
@@ -198,13 +211,13 @@ pub enum Constraint {
     Horizontal {
         #[serde(alias = "entity")]
         a: String,
-        /// Workplane for the horizontal constraint (required for 2D constraints)
+        /// Workplane defining the coordinate system for "horizontal" (required by SolveSpace)
         workplane: String,
     },
     Vertical {
         #[serde(alias = "entity")]
         a: String,
-        /// Workplane for the vertical constraint (required for 2D constraints)
+        /// Workplane defining the coordinate system for "vertical" (required by SolveSpace)
         workplane: String,
     },
     EqualLength {
@@ -228,6 +241,9 @@ pub enum Constraint {
     },
     Fixed {
         entity: String,
+        /// Workplane for 2D points (required for Point2D, omit for 3D Point)
+        #[serde(skip_serializing_if = "Option::is_none")]
+        workplane: Option<String>,
     },
     Symmetric {
         a: String,

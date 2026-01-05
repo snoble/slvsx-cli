@@ -39,12 +39,8 @@ fn test_point_on_line_constraint() {
             },
         ],
         constraints: vec![
-            Constraint::Fixed {
-                entity: "p1".to_string(),
-            },
-            Constraint::Fixed {
-                entity: "p2".to_string(),
-            },
+            Constraint::Fixed { entity: "p1".to_string(), workplane: None },
+            Constraint::Fixed { entity: "p2".to_string(), workplane: None },
             Constraint::PointOnLine {
                 point: "p3".to_string(),
                 line: "line1".to_string(),
@@ -108,12 +104,8 @@ fn test_coincident_constraint_point_on_line() {
             },
         ],
         constraints: vec![
-            Constraint::Fixed {
-                entity: "p1".to_string(),
-            },
-            Constraint::Fixed {
-                entity: "p2".to_string(),
-            },
+            Constraint::Fixed { entity: "p1".to_string(), workplane: None },
+            Constraint::Fixed { entity: "p2".to_string(), workplane: None },
             Constraint::Coincident {
                 data: slvsx_core::ir::CoincidentData::PointOnLine {
                     at: "p3".to_string(),

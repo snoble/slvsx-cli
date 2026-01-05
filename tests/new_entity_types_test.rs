@@ -68,9 +68,9 @@ fn test_proper_arc_entity() {
             },
         ],
         constraints: vec![
-            slvsx_core::ir::Constraint::Fixed { entity: "center".to_string() },
-            slvsx_core::ir::Constraint::Fixed { entity: "start".to_string() },
-            slvsx_core::ir::Constraint::Fixed { entity: "end".to_string() },
+            slvsx_core::ir::Constraint::Fixed { entity: "center".to_string(), workplane: None },
+            slvsx_core::ir::Constraint::Fixed { entity: "start".to_string(), workplane: None },
+            slvsx_core::ir::Constraint::Fixed { entity: "end".to_string(), workplane: None },
         ],
     };
 
@@ -117,10 +117,10 @@ fn test_cubic_bezier_entity() {
             },
         ],
         constraints: vec![
-            slvsx_core::ir::Constraint::Fixed { entity: "p0".to_string() },
-            slvsx_core::ir::Constraint::Fixed { entity: "p1".to_string() },
-            slvsx_core::ir::Constraint::Fixed { entity: "p2".to_string() },
-            slvsx_core::ir::Constraint::Fixed { entity: "p3".to_string() },
+            slvsx_core::ir::Constraint::Fixed { entity: "p0".to_string(), workplane: None },
+            slvsx_core::ir::Constraint::Fixed { entity: "p1".to_string(), workplane: None },
+            slvsx_core::ir::Constraint::Fixed { entity: "p2".to_string(), workplane: None },
+            slvsx_core::ir::Constraint::Fixed { entity: "p3".to_string(), workplane: None },
         ],
     };
 
@@ -156,8 +156,8 @@ fn test_construction_geometry() {
             },
         ],
         constraints: vec![
-            slvsx_core::ir::Constraint::Fixed { entity: "p1".to_string() },
-            slvsx_core::ir::Constraint::Fixed { entity: "p2".to_string() },
+            slvsx_core::ir::Constraint::Fixed { entity: "p1".to_string(), workplane: None },
+            slvsx_core::ir::Constraint::Fixed { entity: "p2".to_string(), workplane: None },
         ],
     };
 
@@ -208,9 +208,9 @@ fn test_arc_with_workplane() {
             },
         ],
         constraints: vec![
-            slvsx_core::ir::Constraint::Fixed { entity: "center".to_string() },
-            slvsx_core::ir::Constraint::Fixed { entity: "start".to_string() },
-            slvsx_core::ir::Constraint::Fixed { entity: "end".to_string() },
+            slvsx_core::ir::Constraint::Fixed { entity: "center".to_string(), workplane: None },
+            slvsx_core::ir::Constraint::Fixed { entity: "start".to_string(), workplane: None },
+            slvsx_core::ir::Constraint::Fixed { entity: "end".to_string(), workplane: None },
         ],
     };
 

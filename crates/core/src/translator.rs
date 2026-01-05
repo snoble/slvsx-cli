@@ -71,7 +71,7 @@ impl Translator {
             Constraint::Horizontal { a, workplane } | Constraint::Vertical { a, workplane } => {
                 vec![a.clone(), workplane.clone()]
             }
-            Constraint::Fixed { entity: a }
+            Constraint::Fixed { entity: a, .. }
             | Constraint::Diameter { circle: a, .. } => vec![a.clone()],
             Constraint::PointOnLine { point, line }
             | Constraint::PointLineDistance { point, line, .. }
@@ -248,7 +248,7 @@ mod tests {
 
         // Test all constraint variants
         let constraints = vec![
-            Constraint::Fixed { entity: "p1".to_string() },
+            Constraint::Fixed { entity: "p1".to_string(), workplane: None },
             Constraint::Distance {
                 between: vec!["p1".to_string(), "p2".to_string()],
                 value: ExprOrNumber::Number(10.0),

@@ -119,9 +119,9 @@ fn test_angle_constraint_changes_solution() {
     ];
 
     let base_constraints = vec![
-        Constraint::Fixed { entity: "p1".to_string() },
-        Constraint::Fixed { entity: "p2".to_string() },
-        Constraint::Fixed { entity: "p3".to_string() },
+        Constraint::Fixed { entity: "p1".to_string(), workplane: None },
+        Constraint::Fixed { entity: "p2".to_string(), workplane: None },
+        Constraint::Fixed { entity: "p3".to_string(), workplane: None },
     ];
 
     // Solve without angle constraint
@@ -189,7 +189,7 @@ fn test_horizontal_constraint_changes_solution() {
     ];
 
     let base_constraints = vec![
-        Constraint::Fixed { entity: "p1_2d".to_string() },
+        Constraint::Fixed { entity: "p1_2d".to_string(), workplane: None },
     ];
 
     // Solve without horizontal constraint
@@ -262,7 +262,7 @@ fn test_vertical_constraint_changes_solution() {
     ];
 
     let base_constraints = vec![
-        Constraint::Fixed { entity: "p1_2d".to_string() },
+        Constraint::Fixed { entity: "p1_2d".to_string(), workplane: None },
     ];
 
     let doc_without = create_test_doc(base_entities.clone(), base_constraints.clone());
@@ -337,9 +337,9 @@ fn test_equal_length_constraint_changes_solution() {
     ];
 
     let base_constraints = vec![
-        Constraint::Fixed { entity: "p1".to_string() },
-        Constraint::Fixed { entity: "p2".to_string() },
-        Constraint::Fixed { entity: "p3".to_string() },
+        Constraint::Fixed { entity: "p1".to_string(), workplane: None },
+        Constraint::Fixed { entity: "p2".to_string(), workplane: None },
+        Constraint::Fixed { entity: "p3".to_string(), workplane: None },
     ];
 
     let doc_without = create_test_doc(base_entities.clone(), base_constraints.clone());
@@ -431,8 +431,8 @@ fn test_equal_radius_constraint_changes_solution() {
     ];
 
     let base_constraints = vec![
-        Constraint::Fixed { entity: "c1".to_string() },
-        Constraint::Fixed { entity: "c2".to_string() },
+        Constraint::Fixed { entity: "c1".to_string(), workplane: None },
+        Constraint::Fixed { entity: "c2".to_string(), workplane: None },
     ];
 
     let doc_without = create_test_doc(base_entities.clone(), base_constraints.clone());
@@ -534,11 +534,11 @@ fn test_tangent_constraint_changes_solution() {
 
     // Fix arc center and line position to make the geometry well-constrained
     let base_constraints = vec![
-        Constraint::Fixed { entity: "arc_center".to_string() },
-        Constraint::Fixed { entity: "arc_start".to_string() },
-        Constraint::Fixed { entity: "arc_end".to_string() },
-        Constraint::Fixed { entity: "p1".to_string() },
-        Constraint::Fixed { entity: "p2".to_string() },
+        Constraint::Fixed { entity: "arc_center".to_string(), workplane: None },
+        Constraint::Fixed { entity: "arc_start".to_string(), workplane: None },
+        Constraint::Fixed { entity: "arc_end".to_string(), workplane: None },
+        Constraint::Fixed { entity: "p1".to_string(), workplane: None },
+        Constraint::Fixed { entity: "p2".to_string(), workplane: None },
     ];
 
     // First solve without tangent - should succeed
@@ -610,7 +610,7 @@ fn test_tangent_constraint_circle_line_workaround() {
 
     // Only fix circle center, let line adjust
     let base_constraints = vec![
-        Constraint::Fixed { entity: "c1".to_string() },
+        Constraint::Fixed { entity: "c1".to_string(), workplane: None },
     ];
 
     let doc_without = create_test_doc(base_entities.clone(), base_constraints.clone());
@@ -693,7 +693,7 @@ fn test_point_on_circle_constraint_changes_solution() {
     ];
 
     let base_constraints = vec![
-        Constraint::Fixed { entity: "c1".to_string() },
+        Constraint::Fixed { entity: "c1".to_string(), workplane: None },
     ];
 
     let doc_without = create_test_doc(base_entities.clone(), base_constraints.clone());
@@ -758,7 +758,7 @@ fn test_symmetric_constraint_changes_solution() {
     ];
 
     let base_constraints = vec![
-        Constraint::Fixed { entity: "p1".to_string() },
+        Constraint::Fixed { entity: "p1".to_string(), workplane: None },
     ];
 
     let doc_without = create_test_doc(base_entities.clone(), base_constraints.clone());
@@ -830,8 +830,8 @@ fn test_midpoint_constraint_changes_solution() {
     ];
 
     let base_constraints = vec![
-        Constraint::Fixed { entity: "p1".to_string() },
-        Constraint::Fixed { entity: "p2".to_string() },
+        Constraint::Fixed { entity: "p1".to_string(), workplane: None },
+        Constraint::Fixed { entity: "p2".to_string(), workplane: None },
     ];
 
     let doc_without = create_test_doc(base_entities.clone(), base_constraints.clone());
@@ -994,8 +994,8 @@ fn test_point_line_distance_constraint_changes_solution() {
     ];
 
     let base_constraints = vec![
-        Constraint::Fixed { entity: "p1".to_string() },
-        Constraint::Fixed { entity: "p2".to_string() },
+        Constraint::Fixed { entity: "p1".to_string(), workplane: None },
+        Constraint::Fixed { entity: "p2".to_string(), workplane: None },
     ];
 
     let doc_without = create_test_doc(base_entities.clone(), base_constraints.clone());
@@ -1089,9 +1089,9 @@ fn test_length_ratio_constraint_changes_solution() {
     ];
 
     let base_constraints = vec![
-        Constraint::Fixed { entity: "p1".to_string() },
-        Constraint::Fixed { entity: "p2".to_string() },
-        Constraint::Fixed { entity: "p3".to_string() },
+        Constraint::Fixed { entity: "p1".to_string(), workplane: None },
+        Constraint::Fixed { entity: "p2".to_string(), workplane: None },
+        Constraint::Fixed { entity: "p3".to_string(), workplane: None },
     ];
 
     let doc_without = create_test_doc(base_entities.clone(), base_constraints.clone());
@@ -1172,7 +1172,7 @@ fn test_diameter_constraint_changes_solution() {
     ];
 
     let base_constraints = vec![
-        Constraint::Fixed { entity: "c1".to_string() },
+        Constraint::Fixed { entity: "c1".to_string(), workplane: None },
     ];
 
     let doc_without = create_test_doc(base_entities.clone(), base_constraints.clone());
@@ -1243,9 +1243,9 @@ fn test_length_difference_constraint_changes_solution() {
     ];
 
     let base_constraints = vec![
-        Constraint::Fixed { entity: "p1".to_string() },
-        Constraint::Fixed { entity: "p2".to_string() },
-        Constraint::Fixed { entity: "p3".to_string() },
+        Constraint::Fixed { entity: "p1".to_string(), workplane: None },
+        Constraint::Fixed { entity: "p2".to_string(), workplane: None },
+        Constraint::Fixed { entity: "p3".to_string(), workplane: None },
     ];
 
     let doc_without = create_test_doc(base_entities.clone(), base_constraints.clone());
@@ -1396,13 +1396,13 @@ fn test_equal_angle_constraint_changes_solution() {
 
     // Fix all points except p8, which should move to satisfy the constraint
     let base_constraints = vec![
-        Constraint::Fixed { entity: "p1".to_string() },
-        Constraint::Fixed { entity: "p2".to_string() },
-        Constraint::Fixed { entity: "p3".to_string() },
-        Constraint::Fixed { entity: "p4".to_string() },
-        Constraint::Fixed { entity: "p5".to_string() },
-        Constraint::Fixed { entity: "p6".to_string() },
-        Constraint::Fixed { entity: "p7".to_string() },
+        Constraint::Fixed { entity: "p1".to_string(), workplane: None },
+        Constraint::Fixed { entity: "p2".to_string(), workplane: None },
+        Constraint::Fixed { entity: "p3".to_string(), workplane: None },
+        Constraint::Fixed { entity: "p4".to_string(), workplane: None },
+        Constraint::Fixed { entity: "p5".to_string(), workplane: None },
+        Constraint::Fixed { entity: "p6".to_string(), workplane: None },
+        Constraint::Fixed { entity: "p7".to_string(), workplane: None },
     ];
 
     let doc_without = create_test_doc(base_entities.clone(), base_constraints.clone());
@@ -1601,9 +1601,9 @@ fn test_same_orientation_constraint_changes_solution() {
     ];
 
     let base_constraints = vec![
-        Constraint::Fixed { entity: "p1".to_string() },
-        Constraint::Fixed { entity: "p2".to_string() },
-        Constraint::Fixed { entity: "p3".to_string() },
+        Constraint::Fixed { entity: "p1".to_string(), workplane: None },
+        Constraint::Fixed { entity: "p2".to_string(), workplane: None },
+        Constraint::Fixed { entity: "p3".to_string(), workplane: None },
     ];
 
     let doc_without = create_test_doc(base_entities.clone(), base_constraints.clone());
@@ -1671,9 +1671,9 @@ fn test_projected_point_distance_constraint_changes_solution() {
     ];
 
     let base_constraints = vec![
-        Constraint::Fixed { entity: "line_p1".to_string() },
-        Constraint::Fixed { entity: "line_p2".to_string() },
-        Constraint::Fixed { entity: "p1".to_string() },
+        Constraint::Fixed { entity: "line_p1".to_string(), workplane: None },
+        Constraint::Fixed { entity: "line_p2".to_string(), workplane: None },
+        Constraint::Fixed { entity: "p1".to_string(), workplane: None },
     ];
 
     let doc_without = create_test_doc(base_entities.clone(), base_constraints.clone());
@@ -1737,7 +1737,7 @@ fn test_point_on_face_constraint_changes_solution() {
     ];
 
     let base_constraints = vec![
-        Constraint::Fixed { entity: "origin".to_string() },
+        Constraint::Fixed { entity: "origin".to_string(), workplane: None },
     ];
 
     let doc_without = create_test_doc(base_entities.clone(), base_constraints.clone());
@@ -1796,7 +1796,7 @@ fn test_point_face_distance_constraint_changes_solution() {
     ];
 
     let base_constraints = vec![
-        Constraint::Fixed { entity: "origin".to_string() },
+        Constraint::Fixed { entity: "origin".to_string(), workplane: None },
     ];
 
     let doc_without = create_test_doc(base_entities.clone(), base_constraints.clone());
@@ -1880,10 +1880,10 @@ fn test_equal_line_arc_length_constraint_changes_solution() {
     ];
 
     let base_constraints = vec![
-        Constraint::Fixed { entity: "center".to_string() },
-        Constraint::Fixed { entity: "start".to_string() },
-        Constraint::Fixed { entity: "end".to_string() },
-        Constraint::Fixed { entity: "p1".to_string() },
+        Constraint::Fixed { entity: "center".to_string(), workplane: None },
+        Constraint::Fixed { entity: "start".to_string(), workplane: None },
+        Constraint::Fixed { entity: "end".to_string(), workplane: None },
+        Constraint::Fixed { entity: "p1".to_string(), workplane: None },
     ];
 
     let doc_without = create_test_doc(base_entities.clone(), base_constraints.clone());
@@ -1947,7 +1947,7 @@ fn test_dragged_constraint_changes_solution() {
     ];
 
     let base_constraints = vec![
-        Constraint::Fixed { entity: "p3".to_string() },
+        Constraint::Fixed { entity: "p3".to_string(), workplane: None },
         Constraint::Distance {
             between: vec!["p1".to_string(), "p2".to_string()],
             value: ExprOrNumber::Number(10.0),
@@ -2034,10 +2034,10 @@ fn test_equal_length_point_line_distance_constraint_changes_solution() {
     ];
 
     let base_constraints = vec![
-        Constraint::Fixed { entity: "p1".to_string() },
-        Constraint::Fixed { entity: "p2".to_string() },
-        Constraint::Fixed { entity: "p4".to_string() },
-        Constraint::Fixed { entity: "p5".to_string() },
+        Constraint::Fixed { entity: "p1".to_string(), workplane: None },
+        Constraint::Fixed { entity: "p2".to_string(), workplane: None },
+        Constraint::Fixed { entity: "p4".to_string(), workplane: None },
+        Constraint::Fixed { entity: "p5".to_string(), workplane: None },
     ];
 
     let doc_without = create_test_doc(base_entities.clone(), base_constraints.clone());
@@ -2133,10 +2133,10 @@ fn test_equal_point_line_distances_constraint_changes_solution() {
     ];
 
     let base_constraints = vec![
-        Constraint::Fixed { entity: "p1".to_string() },
-        Constraint::Fixed { entity: "p2".to_string() },
-        Constraint::Fixed { entity: "p3".to_string() },
-        Constraint::Fixed { entity: "p4".to_string() },
+        Constraint::Fixed { entity: "p1".to_string(), workplane: None },
+        Constraint::Fixed { entity: "p2".to_string(), workplane: None },
+        Constraint::Fixed { entity: "p3".to_string(), workplane: None },
+        Constraint::Fixed { entity: "p4".to_string(), workplane: None },
     ];
 
     let doc_without = create_test_doc(base_entities.clone(), base_constraints.clone());
@@ -2234,11 +2234,11 @@ fn test_cubic_line_tangent_constraint_changes_solution() {
 
     // Fix control points and one line endpoint - the other can move
     let base_constraints = vec![
-        Constraint::Fixed { entity: "cp0".to_string() },
-        Constraint::Fixed { entity: "cp1".to_string() },
-        Constraint::Fixed { entity: "cp2".to_string() },
-        Constraint::Fixed { entity: "cp3".to_string() },
-        Constraint::Fixed { entity: "p1".to_string() },
+        Constraint::Fixed { entity: "cp0".to_string(), workplane: None },
+        Constraint::Fixed { entity: "cp1".to_string(), workplane: None },
+        Constraint::Fixed { entity: "cp2".to_string(), workplane: None },
+        Constraint::Fixed { entity: "cp3".to_string(), workplane: None },
+        Constraint::Fixed { entity: "p1".to_string(), workplane: None },
     ];
 
     let doc_without = create_test_doc(base_entities.clone(), base_constraints.clone());
@@ -2335,11 +2335,11 @@ fn test_arc_arc_length_ratio_constraint_changes_solution() {
     ];
 
     let base_constraints = vec![
-        Constraint::Fixed { entity: "c1".to_string() },
-        Constraint::Fixed { entity: "s1".to_string() },
-        Constraint::Fixed { entity: "e1".to_string() },
-        Constraint::Fixed { entity: "c2".to_string() },
-        Constraint::Fixed { entity: "s2".to_string() },
+        Constraint::Fixed { entity: "c1".to_string(), workplane: None },
+        Constraint::Fixed { entity: "s1".to_string(), workplane: None },
+        Constraint::Fixed { entity: "e1".to_string(), workplane: None },
+        Constraint::Fixed { entity: "c2".to_string(), workplane: None },
+        Constraint::Fixed { entity: "s2".to_string(), workplane: None },
     ];
 
     let doc_without = create_test_doc(base_entities.clone(), base_constraints.clone());
@@ -2425,10 +2425,10 @@ fn test_arc_line_length_ratio_constraint_changes_solution() {
     ];
 
     let base_constraints = vec![
-        Constraint::Fixed { entity: "c1".to_string() },
-        Constraint::Fixed { entity: "s1".to_string() },
-        Constraint::Fixed { entity: "e1".to_string() },
-        Constraint::Fixed { entity: "p1".to_string() },
+        Constraint::Fixed { entity: "c1".to_string(), workplane: None },
+        Constraint::Fixed { entity: "s1".to_string(), workplane: None },
+        Constraint::Fixed { entity: "e1".to_string(), workplane: None },
+        Constraint::Fixed { entity: "p1".to_string(), workplane: None },
     ];
 
     let doc_without = create_test_doc(base_entities.clone(), base_constraints.clone());
@@ -2519,11 +2519,11 @@ fn test_arc_arc_length_difference_constraint_changes_solution() {
     ];
 
     let base_constraints = vec![
-        Constraint::Fixed { entity: "c1".to_string() },
-        Constraint::Fixed { entity: "s1".to_string() },
-        Constraint::Fixed { entity: "e1".to_string() },
-        Constraint::Fixed { entity: "c2".to_string() },
-        Constraint::Fixed { entity: "s2".to_string() },
+        Constraint::Fixed { entity: "c1".to_string(), workplane: None },
+        Constraint::Fixed { entity: "s1".to_string(), workplane: None },
+        Constraint::Fixed { entity: "e1".to_string(), workplane: None },
+        Constraint::Fixed { entity: "c2".to_string(), workplane: None },
+        Constraint::Fixed { entity: "s2".to_string(), workplane: None },
     ];
 
     let doc_without = create_test_doc(base_entities.clone(), base_constraints.clone());
@@ -2605,10 +2605,10 @@ fn test_arc_line_length_difference_constraint_changes_solution() {
     ];
 
     let base_constraints = vec![
-        Constraint::Fixed { entity: "c1".to_string() },
-        Constraint::Fixed { entity: "s1".to_string() },
-        Constraint::Fixed { entity: "e1".to_string() },
-        Constraint::Fixed { entity: "p1".to_string() },
+        Constraint::Fixed { entity: "c1".to_string(), workplane: None },
+        Constraint::Fixed { entity: "s1".to_string(), workplane: None },
+        Constraint::Fixed { entity: "e1".to_string(), workplane: None },
+        Constraint::Fixed { entity: "p1".to_string(), workplane: None },
     ];
 
     let doc_without = create_test_doc(base_entities.clone(), base_constraints.clone());

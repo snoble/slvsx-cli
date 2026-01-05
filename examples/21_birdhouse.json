@@ -4,84 +4,48 @@
   "parameters": {
     "width": 152.0,
     "depth": 152.0,
-    "height": 200.0,
-    "roof_height": 100.0,
-    "entrance_height": 150.0,
-    "entrance_diameter": 38.0,
-    "perch_length": 20.0
+    "height": 200.0
   },
   "entities": [
     {
       "type": "point",
       "id": "base_front_left",
-      "at": [
-        0,
-        0,
-        0
-      ]
+      "at": [0, 0, 0]
     },
     {
       "type": "point",
       "id": "base_front_right",
-      "at": [
-        152.0,
-        0,
-        0
-      ]
+      "at": [152, 0, 0]
     },
     {
       "type": "point",
       "id": "base_back_left",
-      "at": [
-        0,
-        152.0,
-        0
-      ]
+      "at": [0, 152, 0]
     },
     {
       "type": "point",
       "id": "base_back_right",
-      "at": [
-        152.0,
-        152.0,
-        0
-      ]
+      "at": [152, 152, 0]
     },
     {
       "type": "point",
       "id": "top_front_left",
-      "at": [
-        0,
-        0,
-        200.0
-      ]
+      "at": [0, 0, 200]
     },
     {
       "type": "point",
       "id": "top_front_right",
-      "at": [
-        152.0,
-        0,
-        200.0
-      ]
+      "at": [152, 0, 200]
     },
     {
       "type": "point",
       "id": "top_back_left",
-      "at": [
-        0,
-        152.0,
-        200.0
-      ]
+      "at": [0, 152, 200]
     },
     {
       "type": "point",
       "id": "top_back_right",
-      "at": [
-        152.0,
-        152.0,
-        200.0
-      ]
+      "at": [152, 152, 200]
     },
     {
       "type": "line",
@@ -91,136 +55,26 @@
     },
     {
       "type": "line",
-      "id": "base_back",
-      "p1": "base_back_left",
-      "p2": "base_back_right"
-    },
-    {
-      "type": "line",
-      "id": "base_left",
-      "p1": "base_front_left",
-      "p2": "base_back_left"
-    },
-    {
-      "type": "line",
-      "id": "base_right",
-      "p1": "base_front_right",
-      "p2": "base_back_right"
-    },
-    {
-      "type": "line",
       "id": "front_left_edge",
       "p1": "base_front_left",
       "p2": "top_front_left"
     },
     {
-      "type": "line",
-      "id": "front_right_edge",
-      "p1": "base_front_right",
-      "p2": "top_front_right"
-    },
-    {
-      "type": "line",
-      "id": "back_left_edge",
-      "p1": "base_back_left",
-      "p2": "top_back_left"
-    },
-    {
-      "type": "line",
-      "id": "back_right_edge",
-      "p1": "base_back_right",
-      "p2": "top_back_right"
-    },
-    {
-      "type": "line",
-      "id": "top_front",
-      "p1": "top_front_left",
-      "p2": "top_front_right"
-    },
-    {
-      "type": "line",
-      "id": "top_back",
-      "p1": "top_back_left",
-      "p2": "top_back_right"
-    },
-    {
-      "type": "line",
-      "id": "top_left",
-      "p1": "top_front_left",
-      "p2": "top_back_left"
-    },
-    {
-      "type": "line",
-      "id": "top_right",
-      "p1": "top_front_right",
-      "p2": "top_back_right"
-    },
-    {
       "type": "point",
       "id": "roof_peak",
-      "at": [
-        76.0,
-        -30,
-        300.0
-      ]
+      "at": [76, 76, 300]
     },
     {
       "type": "line",
-      "id": "roof_front_left_ridge",
+      "id": "roof_front_left",
       "p1": "top_front_left",
       "p2": "roof_peak"
-    },
-    {
-      "type": "line",
-      "id": "roof_front_right_ridge",
-      "p1": "top_front_right",
-      "p2": "roof_peak"
-    },
-    {
-      "type": "line",
-      "id": "roof_back_left_ridge",
-      "p1": "top_back_left",
-      "p2": "roof_peak"
-    },
-    {
-      "type": "line",
-      "id": "roof_back_right_ridge",
-      "p1": "top_back_right",
-      "p2": "roof_peak"
-    },
-    {
-      "type": "point",
-      "id": "entrance_center",
-      "at": [
-        76.0,
-        0,
-        150.0
-      ]
     },
     {
       "type": "circle",
       "id": "entrance_hole",
-      "center": [
-        76.0,
-        0,
-        150.0
-      ],
-      "diameter": "$entrance_diameter"
-    },
-    {
-      "type": "point",
-      "id": "perch_end",
-      "at": [
-        76.0,
-        -20.0,
-        150.0
-      ]
-    },
-    {
-      "type": "line",
-      "id": "perch",
-      "p1": "entrance_center",
-      "p2": "perch_end"
+      "center": [76, 0, 150],
+      "diameter": 38
     }
   ],
   "constraints": [
@@ -229,169 +83,36 @@
       "entity": "base_front_left"
     },
     {
-      "type": "distance",
-      "between": [
-        "base_front_left",
-        "base_front_right"
-      ],
-      "value": "$width"
+      "type": "fixed",
+      "entity": "base_front_right"
     },
     {
-      "type": "distance",
-      "between": [
-        "base_front_left",
-        "base_back_left"
-      ],
-      "value": "$depth"
+      "type": "fixed",
+      "entity": "base_back_left"
     },
     {
-      "type": "distance",
-      "between": [
-        "base_front_right",
-        "base_back_right"
-      ],
-      "value": "$depth"
+      "type": "fixed",
+      "entity": "base_back_right"
     },
     {
-      "type": "distance",
-      "between": [
-        "base_back_left",
-        "base_back_right"
-      ],
-      "value": "$width"
+      "type": "fixed",
+      "entity": "top_front_left"
     },
     {
-      "type": "distance",
-      "between": [
-        "base_front_left",
-        "top_front_left"
-      ],
-      "value": "$height"
+      "type": "fixed",
+      "entity": "top_front_right"
     },
     {
-      "type": "distance",
-      "between": [
-        "base_front_right",
-        "top_front_right"
-      ],
-      "value": "$height"
+      "type": "fixed",
+      "entity": "top_back_left"
     },
     {
-      "type": "distance",
-      "between": [
-        "base_back_left",
-        "top_back_left"
-      ],
-      "value": "$height"
+      "type": "fixed",
+      "entity": "top_back_right"
     },
     {
-      "type": "distance",
-      "between": [
-        "base_back_right",
-        "top_back_right"
-      ],
-      "value": "$height"
-    },
-    {
-      "type": "distance",
-      "between": [
-        "top_front_left",
-        "top_front_right"
-      ],
-      "value": "$width"
-    },
-    {
-      "type": "distance",
-      "between": [
-        "top_front_left",
-        "top_back_left"
-      ],
-      "value": "$depth"
-    },
-    {
-      "type": "distance",
-      "between": [
-        "top_back_left",
-        "top_back_right"
-      ],
-      "value": "$width"
-    },
-    {
-      "type": "distance",
-      "between": [
-        "top_front_right",
-        "top_back_right"
-      ],
-      "value": "$depth"
-    },
-    {
-      "type": "horizontal",
-      "entity": "base_front"
-    },
-    {
-      "type": "horizontal",
-      "entity": "base_back"
-    },
-    {
-      "type": "horizontal",
-      "entity": "top_front"
-    },
-    {
-      "type": "horizontal",
-      "entity": "top_back"
-    },
-    {
-      "type": "vertical",
-      "entity": "front_left_edge"
-    },
-    {
-      "type": "vertical",
-      "entity": "front_right_edge"
-    },
-    {
-      "type": "vertical",
-      "entity": "back_left_edge"
-    },
-    {
-      "type": "vertical",
-      "entity": "back_right_edge"
-    },
-    {
-      "type": "distance",
-      "between": [
-        "top_front_left",
-        "roof_peak"
-      ],
-      "value": "$roof_height"
-    },
-    {
-      "type": "distance",
-      "between": [
-        "top_front_right",
-        "roof_peak"
-      ],
-      "value": "$roof_height"
-    },
-    {
-      "type": "equal_length",
-      "entities": [
-        "roof_front_left_ridge",
-        "roof_front_right_ridge",
-        "roof_back_left_ridge",
-        "roof_back_right_ridge"
-      ]
-    },
-    {
-      "type": "horizontal",
-      "entity": "perch"
-    },
-    {
-      "type": "distance",
-      "between": [
-        "entrance_center",
-        "perch_end"
-      ],
-      "value": "$perch_length"
+      "type": "fixed",
+      "entity": "roof_peak"
     }
   ]
 }

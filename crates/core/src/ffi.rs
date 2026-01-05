@@ -118,6 +118,7 @@ extern "C" {
         sys: *mut SolverSystem,
         id: c_int,
         entity_id: c_int,
+        workplane_id: c_int, // -1 or 0 for 3D, otherwise workplane ID for 2D points
     ) -> c_int;
     pub fn real_slvs_add_distance_constraint(
         sys: *mut SolverSystem,
@@ -551,9 +552,9 @@ impl Solver {
         }
     }
 
-    pub fn add_fixed_constraint(&mut self, id: i32, entity_id: i32) -> Result<(), String> {
+    pub fn add_fixed_constraint(&mut self, id: i32, entity_id: i32, workplane_id: i32) -> Result<(), String> {
         unsafe {
-            let result = real_slvs_add_fixed_constraint(self.system, id, entity_id);
+            let result = real_slvs_add_fixed_constraint(self.system, id, entity_id, workplane_id);
             if result == 0 {
                 Ok(())
             } else {
@@ -1282,7 +1283,7 @@ mod tests {
         solver.add_point(2, 36.0, 0.0, 0.0, false).unwrap();
 
         // Fix the first point
-        solver.add_fixed_constraint(1, 1).unwrap();
+        solver.add_fixed_constraint(1, 1, 0).unwrap();
 
         // Add distance constraint between points
         solver.add_distance_constraint(100, 1, 2, 36.0).unwrap();
@@ -1312,7 +1313,7 @@ mod tests {
         solver.add_line(11, 1, 3).unwrap(); // arm2: pivot to arm2_end
 
         // Fix the pivot point
-        solver.add_fixed_constraint(100, 1).unwrap();
+        solver.add_fixed_constraint(100, 1, 0).unwrap();
 
         // Add distance constraints to set arm lengths
         solver.add_distance_constraint(101, 1, 2, 80.0).unwrap();
@@ -1348,7 +1349,7 @@ mod tests {
         solver.add_line_2d(20, 2, 3, 10).unwrap();
 
         // Fix first point
-        solver.add_fixed_constraint(100, 2).unwrap();
+        solver.add_fixed_constraint(100, 2, 0).unwrap();
 
         // Add horizontal constraint (requires workplane)
         let result = solver.add_horizontal_constraint(101, 20, 10);
@@ -1378,7 +1379,7 @@ mod tests {
         solver.add_line_2d(20, 2, 3, 10).unwrap();
 
         // Fix first point
-        solver.add_fixed_constraint(100, 2).unwrap();
+        solver.add_fixed_constraint(100, 2, 0).unwrap();
 
         // Add vertical constraint (requires workplane)
         let result = solver.add_vertical_constraint(101, 20, 10);
@@ -1405,8 +1406,8 @@ mod tests {
         solver.add_line(11, 3, 4).unwrap();
 
         // Fix first point of each line
-        solver.add_fixed_constraint(100, 1).unwrap();
-        solver.add_fixed_constraint(101, 3).unwrap();
+        solver.add_fixed_constraint(100, 1, 0).unwrap();
+        solver.add_fixed_constraint(101, 3, 0).unwrap();
 
         // Add equal length constraint
         let result = solver.add_equal_length_constraint(102, 10, 11);
@@ -1708,7 +1709,7 @@ mod tests {
         solver.add_circle(2, 0.0, 0.0, 0.0, 7.5).unwrap(); // diameter 15 / 2 = 7.5 radius
 
         // 3. Fixed constraint on point c1 (entity_id=1)
-        solver.add_fixed_constraint(1, 1).unwrap();
+        solver.add_fixed_constraint(1, 1, 0).unwrap();
         
         // 4. Diameter constraint on circle1 (entity_id=2, diameter=25.0)
         solver.add_diameter_constraint(2, 2, 25.0).unwrap();

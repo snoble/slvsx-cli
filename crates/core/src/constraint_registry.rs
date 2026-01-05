@@ -41,9 +41,13 @@ impl ConstraintRegistry {
         evaluator: &ExpressionEvaluator,
     ) -> Result<(), String> {
         match constraint {
-            Constraint::Fixed { entity } => {
+            Constraint::Fixed { entity, workplane } => {
                 let entity_id = entity_id_map.get(entity).copied().unwrap_or(0);
-                solver.add_fixed_constraint(constraint_id, entity_id)
+                let workplane_id = workplane
+                    .as_ref()
+                    .and_then(|wp| entity_id_map.get(wp).copied())
+                    .unwrap_or(0); // 0 means 3D (FREE_IN_3D)
+                solver.add_fixed_constraint(constraint_id, entity_id, workplane_id)
             }
             Constraint::Distance { between, value } => {
                 if between.len() == 2 {
@@ -454,7 +458,7 @@ mod tests {
         };
 
         // Test that we can handle all constraint types (compilation test)
-        test_constraint(Constraint::Fixed { entity: "p1".to_string() });
+        test_constraint(Constraint::Fixed { entity: "p1".to_string(), workplane: None });
         test_constraint(Constraint::Distance { 
             between: vec!["p1".to_string(), "p2".to_string()],
             value: crate::ir::ExprOrNumber::Number(10.0)
@@ -1228,7 +1232,7 @@ mod tests {
         let mut entity_map = std::collections::HashMap::new();
         entity_map.insert("p1".to_string(), 1);
         
-        let constraint = Constraint::Fixed { entity: "p1".to_string() };
+        let constraint = Constraint::Fixed { entity: "p1".to_string(), workplane: None };
         let evaluator = ExpressionEvaluator::new(std::collections::HashMap::new());
         let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map, &evaluator);
         // Should succeed (or return error if entity not found, but we provided it)

@@ -233,8 +233,8 @@ int real_slvs_add_circle(RealSlvsSystem* s, int id, double cx, double cy, double
     Slvs_hEntity radius_id = 4000 + id; // Use different range for distance
     s->sys.entity[s->sys.entities++] = Slvs_MakeDistance(radius_id, g, SLVS_FREE_IN_3D, pr);
     
-    // Create circle entity
-    Slvs_hEntity circle_id = 1000 + id;
+    // Create circle entity (use high offset to avoid collision with regular entities)
+    Slvs_hEntity circle_id = 8000 + id;
     s->sys.entity[s->sys.entities++] = Slvs_MakeCircle(circle_id, g, workplane_id, center_id, normal_id, radius_id);
     
     // Store radius for later retrieval (for backward compatibility)
@@ -327,20 +327,23 @@ int real_slvs_add_distance_constraint(RealSlvsSystem* s, int id, int entity1, in
 }
 
 // Add a fixed constraint
-int real_slvs_add_fixed_constraint(RealSlvsSystem* s, int id, int entity_id) {
+// For 3D points, pass workplane_id <= 0 to use FREE_IN_3D
+// For 2D points, pass the workplane ID
+int real_slvs_add_fixed_constraint(RealSlvsSystem* s, int id, int entity_id, int workplane_id) {
     if (!s) return -1;
     
     Slvs_hGroup g = 1;
     
     // Convert entity ID to internal ID with 1000+ offset
     Slvs_hEntity e = 1000 + entity_id;
+    Slvs_hEntity workplane = (workplane_id > 0) ? (1000 + workplane_id) : SLVS_FREE_IN_3D;
     
     // Use a unique constraint ID with large offset
     Slvs_hConstraint constraint_id = 10000 + id;
     
     // Where the point is constrained to be
     s->sys.constraint[s->sys.constraints++] = Slvs_MakeConstraint(
-        constraint_id, g, SLVS_C_WHERE_DRAGGED, SLVS_FREE_IN_3D,
+        constraint_id, g, SLVS_C_WHERE_DRAGGED, workplane,
         0, e, 0, 0, 0);
     
     return 0;
@@ -466,8 +469,8 @@ int real_slvs_add_equal_radius_constraint(RealSlvsSystem* s, int id, int circle1
     
     // Use proper ID mapping for constraint and entities
     Slvs_hConstraint constraint_id = 10000 + id;
-    Slvs_hEntity circle1 = 1000 + circle1_id;
-    Slvs_hEntity circle2 = 1000 + circle2_id;
+    Slvs_hEntity circle1 = 8000 + circle1_id;
+    Slvs_hEntity circle2 = 8000 + circle2_id;
     
     s->sys.constraint[s->sys.constraints++] = Slvs_MakeConstraint(
         constraint_id, g, SLVS_C_EQUAL_RADIUS, SLVS_FREE_IN_3D,
@@ -556,7 +559,7 @@ int real_slvs_add_point_on_circle_constraint(RealSlvsSystem* s, int id, int poin
     // Use proper ID mapping for constraint and entities
     Slvs_hConstraint constraint_id = 10000 + id;
     Slvs_hEntity point = 1000 + point_id;
-    Slvs_hEntity circle = 1000 + circle_id;
+    Slvs_hEntity circle = 8000 + circle_id;
     
     s->sys.constraint[s->sys.constraints++] = Slvs_MakeConstraint(
         constraint_id, g, SLVS_C_PT_ON_CIRCLE, SLVS_FREE_IN_3D,
@@ -716,7 +719,7 @@ int real_slvs_get_circle_position(RealSlvsSystem* s, int circle_id, double* cx, 
     // - Workplane at 5000 + id
     // - 2D center point at 2000 + id (relative to workplane, always 0,0)
     // - Distance (radius) at 4000 + id
-    // - Circle at 1000 + id
+    // - Circle at 8000 + id
     
     Slvs_hEntity origin_id = 6000 + circle_id;  // Origin point is the 3D center
     Slvs_hEntity radius_entity_id = 4000 + circle_id;  // Distance entity for radius
@@ -1023,7 +1026,7 @@ int real_slvs_add_diameter_constraint(RealSlvsSystem* s, int id,
     Slvs_hGroup g = 1;
     Slvs_hConstraint constraint_id = 10000 + id;
     
-    Slvs_hEntity circle = 1000 + circle_id;
+    Slvs_hEntity circle = 8000 + circle_id;  // Match circle entity ID offset
     
     s->sys.constraint[s->sys.constraints++] = Slvs_MakeConstraint(
         constraint_id, g, SLVS_C_DIAMETER, SLVS_FREE_IN_3D,

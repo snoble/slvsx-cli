@@ -26,7 +26,7 @@ fn test_simple_point_distance_constraint() {
             },
         ],
         constraints: vec![
-            Constraint::Fixed { entity: "p1".to_string() },
+            Constraint::Fixed { entity: "p1".to_string(), workplane: None },
             Constraint::Distance {
                 between: vec!["p1".to_string(), "p2".to_string()],
                 value: ExprOrNumber::Number(15.0),
@@ -65,7 +65,7 @@ fn test_circle_constraint() {
             },
         ],
         constraints: vec![
-            Constraint::Fixed { entity: "c1".to_string() },
+            Constraint::Fixed { entity: "c1".to_string(), workplane: None },
         ],
     };
 
