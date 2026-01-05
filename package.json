@@ -9,7 +9,8 @@
   "main": "mcp-server.js",
   "scripts": {
     "start": "node mcp-server.js",
-    "build:docs": "npx tsx scripts/build-docs.ts"
+    "build:docs": "npx tsx scripts/build-docs.ts",
+    "test": "node tests/mcp-server.test.js"
   },
   "dependencies": {
     "@langchain/textsplitters": "^0.1.0",
