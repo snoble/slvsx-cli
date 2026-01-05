@@ -1,0 +1,131 @@
+{
+  "schema": "slvs-json/1",
+  "units": "mm",
+  "description": "Chebyshev Linkage - produces approximately straight-line motion at point P. Change driver_angle to animate.",
+  "parameters": {
+    "L": 100.0,
+    "driver_angle": 45.0
+  },
+  "entities": [
+    {
+      "type": "point",
+      "id": "A",
+      "at": [-50, 0, 0]
+    },
+    {
+      "type": "point",
+      "id": "B",
+      "at": [50, 0, 0]
+    },
+    {
+      "type": "point",
+      "id": "C",
+      "at": [-100, 80, 0]
+    },
+    {
+      "type": "point",
+      "id": "D",
+      "at": [100, 80, 0]
+    },
+    {
+      "type": "point",
+      "id": "P",
+      "at": [0, 80, 0]
+    },
+    {
+      "type": "line",
+      "id": "ground",
+      "p1": "A",
+      "p2": "B"
+    },
+    {
+      "type": "line",
+      "id": "link_AC",
+      "p1": "A",
+      "p2": "C"
+    },
+    {
+      "type": "line",
+      "id": "link_CP",
+      "p1": "C",
+      "p2": "P"
+    },
+    {
+      "type": "line",
+      "id": "link_PD",
+      "p1": "P",
+      "p2": "D"
+    },
+    {
+      "type": "line",
+      "id": "link_DB",
+      "p1": "D",
+      "p2": "B"
+    },
+    {
+      "type": "circle",
+      "id": "pivot_A",
+      "center": [-50, 0, 0],
+      "diameter": 8
+    },
+    {
+      "type": "circle",
+      "id": "pivot_B",
+      "center": [50, 0, 0],
+      "diameter": 8
+    },
+    {
+      "type": "circle",
+      "id": "joint_C",
+      "center": [-100, 80, 0],
+      "diameter": 6
+    },
+    {
+      "type": "circle",
+      "id": "joint_D",
+      "center": [100, 80, 0],
+      "diameter": 6
+    },
+    {
+      "type": "circle",
+      "id": "tracer_P",
+      "center": [0, 80, 0],
+      "diameter": 10
+    }
+  ],
+  "constraints": [
+    {
+      "type": "fixed",
+      "entity": "A"
+    },
+    {
+      "type": "fixed",
+      "entity": "B"
+    },
+    {
+      "type": "distance",
+      "between": ["A", "C"],
+      "value": "$L"
+    },
+    {
+      "type": "distance",
+      "between": ["C", "P"],
+      "value": 50
+    },
+    {
+      "type": "distance",
+      "between": ["P", "D"],
+      "value": 50
+    },
+    {
+      "type": "distance",
+      "between": ["D", "B"],
+      "value": "$L"
+    },
+    {
+      "type": "angle",
+      "between": ["link_AC", "ground"],
+      "value": "$driver_angle"
+    }
+  ]
+}

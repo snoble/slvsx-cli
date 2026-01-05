@@ -278,14 +278,11 @@ jobs:
             echo "  Generated 3D basics views (XY, XZ, Isometric)"
           fi
           
-          # Birdhouse - all views including isometric
-          if [ -f "examples/21_birdhouse.json" ]; then
-            "$BINARY_PATH" solve "examples/21_birdhouse.json" > /dev/null 2>&1
-            "$BINARY_PATH" export -f svg -v xy "examples/21_birdhouse.json" -o "examples/outputs/birdhouse_xy.svg" 2>&1
-            "$BINARY_PATH" export -f svg -v xz "examples/21_birdhouse.json" -o "examples/outputs/birdhouse_xz.svg" 2>&1
-            "$BINARY_PATH" export -f svg -v yz "examples/21_birdhouse.json" -o "examples/outputs/birdhouse_yz.svg" 2>&1
-            "$BINARY_PATH" export -f svg -v isometric "examples/21_birdhouse.json" -o "examples/outputs/birdhouse_isometric.svg" 2>&1
-            echo "  Generated birdhouse views (XY, XZ, YZ, Isometric)"
+          # Chebyshev Linkage
+          if [ -f "examples/21_chebyshev_linkage.json" ]; then
+            "$BINARY_PATH" solve "examples/21_chebyshev_linkage.json" > /dev/null 2>&1
+            "$BINARY_PATH" export -f svg "examples/21_chebyshev_linkage.json" -o "examples/outputs/21_chebyshev_linkage.svg" 2>&1
+            echo "  Generated Chebyshev linkage"
           fi
           
           echo ""

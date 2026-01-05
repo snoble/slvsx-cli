@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-123.0 -24.0 262.4 129.0" width="800" height="800">
+  <circle id="A" cx="-50.000000" cy="0.000000" r="2" fill="black"/>
+  <circle id="B" cx="50.000000" cy="0.000000" r="2" fill="black"/>
+  <circle id="C" cx="20.710678" cy="70.710678" r="2" fill="black"/>
+  <circle id="D" cx="119.354667" cy="72.041170" r="2" fill="black"/>
+  <circle id="P" cx="70.142981" cy="63.197528" r="2" fill="black"/>
+  <line id="ground" x1="-50.000000" y1="0.000000" x2="50.000000" y2="0.000000" stroke="black"/>
+  <circle id="joint_C" cx="-100.000000" cy="80.000000" r="3.000000" fill="none" stroke="black"/>
+  <circle id="joint_D" cx="100.000000" cy="80.000000" r="3.000000" fill="none" stroke="black"/>
+  <line id="link_AC" x1="-50.000000" y1="0.000000" x2="20.710678" y2="70.710678" stroke="black"/>
+  <line id="link_CP" x1="20.710678" y1="70.710678" x2="70.142981" y2="63.197528" stroke="black"/>
+  <line id="link_DB" x1="119.354667" y1="72.041170" x2="50.000000" y2="0.000000" stroke="black"/>
+  <line id="link_PD" x1="70.142981" y1="63.197528" x2="119.354667" y2="72.041170" stroke="black"/>
+  <circle id="pivot_A" cx="-50.000000" cy="0.000000" r="4.000000" fill="none" stroke="black"/>
+  <circle id="pivot_B" cx="50.000000" cy="0.000000" r="4.000000" fill="none" stroke="black"/>
+  <circle id="tracer_P" cx="0.000000" cy="80.000000" r="5.000000" fill="none" stroke="black"/>
+</svg>
