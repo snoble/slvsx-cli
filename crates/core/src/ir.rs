@@ -19,6 +19,14 @@ fn default_units() -> String {
     "mm".to_string()
 }
 
+fn default_circle_normal() -> Vec<ExprOrNumber> {
+    vec![
+        ExprOrNumber::Number(0.0),
+        ExprOrNumber::Number(0.0),
+        ExprOrNumber::Number(1.0),
+    ]
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, JsonSchema)]
 pub struct Parameter {
     pub name: String,
@@ -68,6 +76,10 @@ pub enum Entity {
         id: String,
         center: Vec<ExprOrNumber>,
         diameter: ExprOrNumber,
+        /// Normal vector defining the plane of the circle [nx, ny, nz]
+        /// Defaults to [0, 0, 1] (XY plane) if not specified
+        #[serde(default = "default_circle_normal")]
+        normal: Vec<ExprOrNumber>,
         #[serde(default)]
         construction: bool,
         #[serde(default)]
@@ -385,7 +397,7 @@ pub struct Diagnostics {
 #[serde(untagged)]
 pub enum ResolvedEntity {
     Point { at: Vec<f64> },
-    Circle { center: Vec<f64>, diameter: f64 },
+    Circle { center: Vec<f64>, diameter: f64, normal: Vec<f64> },
     Line { p1: Vec<f64>, p2: Vec<f64> },
 }
 
@@ -421,6 +433,7 @@ mod tests {
             id: "c1".into(),
             center: vec![ExprOrNumber::Number(0.0)],
             diameter: ExprOrNumber::Number(10.0),
+            normal: vec![ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(1.0)],
             construction: false,
             preserve: false,
         };
@@ -467,6 +480,7 @@ mod tests {
             id: "c1".into(),
             center: vec![ExprOrNumber::Number(0.0)],
             diameter: ExprOrNumber::Number(10.0),
+            normal: vec![ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(1.0)],
             construction: false,
             preserve: true,
         };
@@ -620,6 +634,7 @@ mod tests {
             id: "c1".to_string(),
             center: vec![ExprOrNumber::Number(0.0)],
             diameter: ExprOrNumber::Number(10.0),
+            normal: vec![ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(1.0)],
             construction: false,
             preserve: false,
         };

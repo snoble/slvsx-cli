@@ -396,24 +396,388 @@
       "p2": "inner_roof_ridge_back"
     },
     {
-      "type": "circle",
-      "id": "entrance_outer",
-      "center": [
-        75.0,
+      "type": "point",
+      "id": "entrance_outer_p0",
+      "at": [
+        95.0,
         0,
-        120
-      ],
-      "diameter": 40
+        120.0
+      ]
     },
     {
-      "type": "circle",
-      "id": "entrance_inner",
-      "center": [
+      "type": "point",
+      "id": "entrance_inner_p0",
+      "at": [
+        95.0,
+        10,
+        120.0
+      ]
+    },
+    {
+      "type": "point",
+      "id": "entrance_outer_p1",
+      "at": [
+        92.32050807568878,
+        0,
+        130.0
+      ]
+    },
+    {
+      "type": "point",
+      "id": "entrance_inner_p1",
+      "at": [
+        92.32050807568878,
+        10,
+        130.0
+      ]
+    },
+    {
+      "type": "point",
+      "id": "entrance_outer_p2",
+      "at": [
+        85.0,
+        0,
+        137.32050807568876
+      ]
+    },
+    {
+      "type": "point",
+      "id": "entrance_inner_p2",
+      "at": [
+        85.0,
+        10,
+        137.32050807568876
+      ]
+    },
+    {
+      "type": "point",
+      "id": "entrance_outer_p3",
+      "at": [
+        75.0,
+        0,
+        140.0
+      ]
+    },
+    {
+      "type": "point",
+      "id": "entrance_inner_p3",
+      "at": [
         75.0,
         10,
-        120
-      ],
-      "diameter": 40
+        140.0
+      ]
+    },
+    {
+      "type": "point",
+      "id": "entrance_outer_p4",
+      "at": [
+        65.0,
+        0,
+        137.32050807568876
+      ]
+    },
+    {
+      "type": "point",
+      "id": "entrance_inner_p4",
+      "at": [
+        65.0,
+        10,
+        137.32050807568876
+      ]
+    },
+    {
+      "type": "point",
+      "id": "entrance_outer_p5",
+      "at": [
+        57.67949192431122,
+        0,
+        130.0
+      ]
+    },
+    {
+      "type": "point",
+      "id": "entrance_inner_p5",
+      "at": [
+        57.67949192431122,
+        10,
+        130.0
+      ]
+    },
+    {
+      "type": "point",
+      "id": "entrance_outer_p6",
+      "at": [
+        55.0,
+        0,
+        120.0
+      ]
+    },
+    {
+      "type": "point",
+      "id": "entrance_inner_p6",
+      "at": [
+        55.0,
+        10,
+        120.0
+      ]
+    },
+    {
+      "type": "point",
+      "id": "entrance_outer_p7",
+      "at": [
+        57.67949192431122,
+        0,
+        110.0
+      ]
+    },
+    {
+      "type": "point",
+      "id": "entrance_inner_p7",
+      "at": [
+        57.67949192431122,
+        10,
+        110.0
+      ]
+    },
+    {
+      "type": "point",
+      "id": "entrance_outer_p8",
+      "at": [
+        64.99999999999999,
+        0,
+        102.67949192431124
+      ]
+    },
+    {
+      "type": "point",
+      "id": "entrance_inner_p8",
+      "at": [
+        64.99999999999999,
+        10,
+        102.67949192431124
+      ]
+    },
+    {
+      "type": "point",
+      "id": "entrance_outer_p9",
+      "at": [
+        75.0,
+        0,
+        100.0
+      ]
+    },
+    {
+      "type": "point",
+      "id": "entrance_inner_p9",
+      "at": [
+        75.0,
+        10,
+        100.0
+      ]
+    },
+    {
+      "type": "point",
+      "id": "entrance_outer_p10",
+      "at": [
+        85.0,
+        0,
+        102.67949192431124
+      ]
+    },
+    {
+      "type": "point",
+      "id": "entrance_inner_p10",
+      "at": [
+        85.0,
+        10,
+        102.67949192431124
+      ]
+    },
+    {
+      "type": "point",
+      "id": "entrance_outer_p11",
+      "at": [
+        92.32050807568876,
+        0,
+        109.99999999999999
+      ]
+    },
+    {
+      "type": "point",
+      "id": "entrance_inner_p11",
+      "at": [
+        92.32050807568876,
+        10,
+        109.99999999999999
+      ]
+    },
+    {
+      "type": "line",
+      "id": "entrance_outer_edge0",
+      "p1": "entrance_outer_p0",
+      "p2": "entrance_outer_p1"
+    },
+    {
+      "type": "line",
+      "id": "entrance_inner_edge0",
+      "p1": "entrance_inner_p0",
+      "p2": "entrance_inner_p1"
+    },
+    {
+      "type": "line",
+      "id": "entrance_outer_edge1",
+      "p1": "entrance_outer_p1",
+      "p2": "entrance_outer_p2"
+    },
+    {
+      "type": "line",
+      "id": "entrance_inner_edge1",
+      "p1": "entrance_inner_p1",
+      "p2": "entrance_inner_p2"
+    },
+    {
+      "type": "line",
+      "id": "entrance_outer_edge2",
+      "p1": "entrance_outer_p2",
+      "p2": "entrance_outer_p3"
+    },
+    {
+      "type": "line",
+      "id": "entrance_inner_edge2",
+      "p1": "entrance_inner_p2",
+      "p2": "entrance_inner_p3"
+    },
+    {
+      "type": "line",
+      "id": "entrance_outer_edge3",
+      "p1": "entrance_outer_p3",
+      "p2": "entrance_outer_p4"
+    },
+    {
+      "type": "line",
+      "id": "entrance_inner_edge3",
+      "p1": "entrance_inner_p3",
+      "p2": "entrance_inner_p4"
+    },
+    {
+      "type": "line",
+      "id": "entrance_outer_edge4",
+      "p1": "entrance_outer_p4",
+      "p2": "entrance_outer_p5"
+    },
+    {
+      "type": "line",
+      "id": "entrance_inner_edge4",
+      "p1": "entrance_inner_p4",
+      "p2": "entrance_inner_p5"
+    },
+    {
+      "type": "line",
+      "id": "entrance_outer_edge5",
+      "p1": "entrance_outer_p5",
+      "p2": "entrance_outer_p6"
+    },
+    {
+      "type": "line",
+      "id": "entrance_inner_edge5",
+      "p1": "entrance_inner_p5",
+      "p2": "entrance_inner_p6"
+    },
+    {
+      "type": "line",
+      "id": "entrance_outer_edge6",
+      "p1": "entrance_outer_p6",
+      "p2": "entrance_outer_p7"
+    },
+    {
+      "type": "line",
+      "id": "entrance_inner_edge6",
+      "p1": "entrance_inner_p6",
+      "p2": "entrance_inner_p7"
+    },
+    {
+      "type": "line",
+      "id": "entrance_outer_edge7",
+      "p1": "entrance_outer_p7",
+      "p2": "entrance_outer_p8"
+    },
+    {
+      "type": "line",
+      "id": "entrance_inner_edge7",
+      "p1": "entrance_inner_p7",
+      "p2": "entrance_inner_p8"
+    },
+    {
+      "type": "line",
+      "id": "entrance_outer_edge8",
+      "p1": "entrance_outer_p8",
+      "p2": "entrance_outer_p9"
+    },
+    {
+      "type": "line",
+      "id": "entrance_inner_edge8",
+      "p1": "entrance_inner_p8",
+      "p2": "entrance_inner_p9"
+    },
+    {
+      "type": "line",
+      "id": "entrance_outer_edge9",
+      "p1": "entrance_outer_p9",
+      "p2": "entrance_outer_p10"
+    },
+    {
+      "type": "line",
+      "id": "entrance_inner_edge9",
+      "p1": "entrance_inner_p9",
+      "p2": "entrance_inner_p10"
+    },
+    {
+      "type": "line",
+      "id": "entrance_outer_edge10",
+      "p1": "entrance_outer_p10",
+      "p2": "entrance_outer_p11"
+    },
+    {
+      "type": "line",
+      "id": "entrance_inner_edge10",
+      "p1": "entrance_inner_p10",
+      "p2": "entrance_inner_p11"
+    },
+    {
+      "type": "line",
+      "id": "entrance_outer_edge11",
+      "p1": "entrance_outer_p11",
+      "p2": "entrance_outer_p0"
+    },
+    {
+      "type": "line",
+      "id": "entrance_inner_edge11",
+      "p1": "entrance_inner_p11",
+      "p2": "entrance_inner_p0"
+    },
+    {
+      "type": "line",
+      "id": "entrance_tunnel0",
+      "p1": "entrance_outer_p0",
+      "p2": "entrance_inner_p0"
+    },
+    {
+      "type": "line",
+      "id": "entrance_tunnel3",
+      "p1": "entrance_outer_p3",
+      "p2": "entrance_inner_p3"
+    },
+    {
+      "type": "line",
+      "id": "entrance_tunnel6",
+      "p1": "entrance_outer_p6",
+      "p2": "entrance_inner_p6"
+    },
+    {
+      "type": "line",
+      "id": "entrance_tunnel9",
+      "p1": "entrance_outer_p9",
+      "p2": "entrance_inner_p9"
     },
     {
       "type": "point",
@@ -447,7 +811,12 @@
         -25,
         90
       ],
-      "diameter": 8
+      "diameter": 8,
+      "normal": [
+        0.0,
+        -1.0,
+        0.0
+      ]
     }
   ],
   "constraints": [

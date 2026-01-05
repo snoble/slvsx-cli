@@ -40,7 +40,7 @@ impl SvgExporter {
 
         for entity in entities.values() {
             match entity {
-                ResolvedEntity::Circle { center, diameter } => {
+                ResolvedEntity::Circle { center, diameter, .. } => {
                     let (cx, cy) = self.project_point(center);
                     let r = diameter / 2.0;
                     min_x = min_x.min(cx - r);
@@ -107,12 +107,35 @@ impl SvgExporter {
                     ));
                     svg.push('\n');
                 }
-                ResolvedEntity::Circle { center, diameter } => {
+                ResolvedEntity::Circle { center, diameter, normal } => {
                     let (cx, cy) = self.project_point(center);
-                    svg.push_str(&format!(
-                        r#"  <circle id="{}" cx="{:.p$}" cy="{:.p$}" r="{:.p$}" fill="none" stroke="black"/>"#,
-                        id, cx, cy, diameter / 2.0, p = self.precision
-                    ));
+                    // Project circle as ellipse based on normal and viewing angle
+                    let (rx, ry, rotation) = self.project_circle_as_ellipse(*diameter / 2.0, normal);
+                    
+                    if (rx - ry).abs() < 0.001 {
+                        // Circle appears as circle (no significant distortion)
+                        svg.push_str(&format!(
+                            r#"  <circle id="{}" cx="{:.p$}" cy="{:.p$}" r="{:.p$}" fill="none" stroke="black"/>"#,
+                            id, cx, cy, rx, p = self.precision
+                        ));
+                    } else if rx.abs() < 0.001 || ry.abs() < 0.001 {
+                        // Circle appears as line (edge-on view)
+                        // Draw as a line representing the circle's edge
+                        let half_len = rx.max(ry);
+                        let angle_rad = rotation.to_radians();
+                        let dx = half_len * angle_rad.cos();
+                        let dy = half_len * angle_rad.sin();
+                        svg.push_str(&format!(
+                            r#"  <line id="{}" x1="{:.p$}" y1="{:.p$}" x2="{:.p$}" y2="{:.p$}" stroke="black"/>"#,
+                            id, cx - dx, cy - dy, cx + dx, cy + dy, p = self.precision
+                        ));
+                    } else {
+                        // Circle appears as ellipse
+                        svg.push_str(&format!(
+                            r#"  <ellipse id="{}" cx="{:.p$}" cy="{:.p$}" rx="{:.p$}" ry="{:.p$}" transform="rotate({:.1} {:.p$} {:.p$})" fill="none" stroke="black"/>"#,
+                            id, cx, cy, rx, ry, rotation, cx, cy, p = self.precision
+                        ));
+                    }
                     svg.push('\n');
                 }
                 ResolvedEntity::Line { p1, p2 } => {
@@ -154,6 +177,83 @@ impl SvgExporter {
                 let y = point.get(1).copied().unwrap_or(0.0);
                 let z = point.get(2).copied().unwrap_or(0.0);
                 (x - y, (x + y) / 2.0 - z)
+            }
+        }
+    }
+
+    /// Project a 3D circle as an ellipse based on view angle and circle normal.
+    /// Returns (rx, ry, rotation_degrees) for the ellipse.
+    fn project_circle_as_ellipse(&self, radius: f64, normal: &[f64]) -> (f64, f64, f64) {
+        let nx = normal.get(0).copied().unwrap_or(0.0);
+        let ny = normal.get(1).copied().unwrap_or(0.0);
+        let nz = normal.get(2).copied().unwrap_or(1.0);
+        
+        // Normalize the normal vector
+        let len = (nx * nx + ny * ny + nz * nz).sqrt();
+        let (nx, ny, nz) = if len > 0.0001 {
+            (nx / len, ny / len, nz / len)
+        } else {
+            (0.0, 0.0, 1.0)
+        };
+
+        // Get the view direction based on view plane
+        let (view_x, view_y, view_z) = match self.view_plane {
+            ViewPlane::XY => (0.0, 0.0, 1.0),   // Looking along +Z
+            ViewPlane::XZ => (0.0, 1.0, 0.0),   // Looking along +Y
+            ViewPlane::YZ => (1.0, 0.0, 0.0),   // Looking along +X
+            ViewPlane::Isometric => {
+                // Isometric view direction (normalized)
+                let d = 1.0 / 3.0_f64.sqrt();
+                (d, d, d)
+            }
+        };
+
+        // Calculate the dot product between view direction and circle normal
+        // This gives us cos(angle) between view and circle plane
+        let dot = nx * view_x + ny * view_y + nz * view_z;
+        let cos_angle = dot.abs(); // Absolute value since we don't care about facing direction
+        
+        // The minor axis of the projected ellipse is radius * cos(angle)
+        // When viewing perpendicular to circle plane: cos_angle = 0, ellipse is full circle
+        // When viewing edge-on: cos_angle = 1, ellipse is a line
+        
+        // Actually, it's the opposite:
+        // - cos_angle = 1 means view is parallel to normal (perpendicular to circle) -> full circle
+        // - cos_angle = 0 means view is perpendicular to normal (edge-on) -> line
+        
+        let rx = radius; // Major axis is always the full radius
+        let ry = radius * cos_angle; // Minor axis depends on viewing angle
+        
+        // Calculate rotation angle for the ellipse in the 2D view
+        // This depends on which direction the circle is tilted
+        let rotation = self.calculate_ellipse_rotation(nx, ny, nz);
+        
+        (rx, ry, rotation)
+    }
+
+    /// Calculate the rotation angle (in degrees) for the projected ellipse
+    fn calculate_ellipse_rotation(&self, nx: f64, ny: f64, nz: f64) -> f64 {
+        match self.view_plane {
+            ViewPlane::XY => {
+                // In XY view, rotation depends on how the normal tilts in XY
+                // If normal is [1,0,0], the circle is in YZ plane, appears as vertical line
+                // If normal is [0,1,0], the circle is in XZ plane, appears as horizontal line
+                ny.atan2(nx).to_degrees()
+            }
+            ViewPlane::XZ => {
+                // In XZ view, rotation depends on X and Z components of normal
+                nz.atan2(nx).to_degrees()
+            }
+            ViewPlane::YZ => {
+                // In YZ view, rotation depends on Y and Z components of normal
+                nz.atan2(ny).to_degrees()
+            }
+            ViewPlane::Isometric => {
+                // For isometric, calculate based on projection of normal onto view plane
+                // This is more complex; for now use a simplified approximation
+                let projected_x = nx - ny;
+                let projected_y = (nx + ny) / 2.0 - nz;
+                projected_y.atan2(projected_x).to_degrees()
             }
         }
     }
@@ -211,6 +311,7 @@ mod tests {
             ResolvedEntity::Circle {
                 center: vec![0.0, 0.0, 0.0],
                 diameter: 50.0,
+                normal: vec![0.0, 0.0, 1.0],
             },
         );
 

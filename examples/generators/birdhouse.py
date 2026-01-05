@@ -73,14 +73,23 @@ class LineEntity(Entity):
 class CircleEntity(Entity):
     center: Point3D
     diameter: float
+    normal: Tuple[float, float, float]  # Direction the circle faces
     
-    def __init__(self, id: str, center: Point3D, diameter: float):
+    def __init__(self, id: str, center: Point3D, diameter: float, 
+                 normal: Tuple[float, float, float] = (0.0, 0.0, 1.0)):
         super().__init__("circle", id)
         self.center = center
         self.diameter = diameter
+        self.normal = normal
     
     def to_dict(self) -> dict:
-        return {"type": "circle", "id": self.id, "center": self.center.to_list(), "diameter": self.diameter}
+        return {
+            "type": "circle", 
+            "id": self.id, 
+            "center": self.center.to_list(), 
+            "diameter": self.diameter,
+            "normal": list(self.normal)
+        }
 
 
 @dataclass
@@ -156,9 +165,10 @@ class GeometryBuilder:
         self.entities.append(LineEntity(id, p1, p2))
         return id
     
-    def add_circle(self, id: str, center: Point3D, diameter: float) -> str:
-        """Add a circle"""
-        self.entities.append(CircleEntity(id, center, diameter))
+    def add_circle(self, id: str, center: Point3D, diameter: float,
+                   normal: Tuple[float, float, float] = (0.0, 0.0, 1.0)) -> str:
+        """Add a circle with orientation normal"""
+        self.entities.append(CircleEntity(id, center, diameter, normal))
         return id
     
     # ========================================================================
@@ -291,14 +301,47 @@ class GeometryBuilder:
     def add_hole(self, prefix: str,
                  outer_pos: Point3D,
                  inner_pos: Point3D,
-                 diameter: float) -> dict:
+                 diameter: float,
+                 segments: int = 12) -> dict:
         """
         Add a hole that goes through a wall.
-        Creates circles on both outer and inner surfaces.
+        Creates a polygonal approximation on both surfaces that renders
+        correctly from all viewing angles.
+        
+        The hole is assumed to be in the XZ plane (on a wall facing Y direction).
         """
-        outer_id = self.add_circle(f"{prefix}_outer", outer_pos, diameter)
-        inner_id = self.add_circle(f"{prefix}_inner", inner_pos, diameter)
-        return {'outer': outer_id, 'inner': inner_id}
+        radius = diameter / 2
+        outer_points = []
+        inner_points = []
+        
+        # Create points around the circle
+        for i in range(segments):
+            angle = 2 * math.pi * i / segments
+            dx = radius * math.cos(angle)
+            dz = radius * math.sin(angle)
+            
+            outer_pt = self.add_point(
+                f"{prefix}_outer_p{i}",
+                outer_pos.offset(dx=dx, dz=dz)
+            )
+            inner_pt = self.add_point(
+                f"{prefix}_inner_p{i}",
+                inner_pos.offset(dx=dx, dz=dz)
+            )
+            outer_points.append(outer_pt)
+            inner_points.append(inner_pt)
+        
+        # Connect outer points
+        for i in range(segments):
+            next_i = (i + 1) % segments
+            self.add_line(f"{prefix}_outer_edge{i}", outer_points[i], outer_points[next_i])
+            self.add_line(f"{prefix}_inner_edge{i}", inner_points[i], inner_points[next_i])
+        
+        # Connect outer to inner (the tunnel through the wall)
+        for i in range(0, segments, 3):  # Just a few connecting lines
+            self.add_line(f"{prefix}_tunnel{i}", outer_points[i], inner_points[i])
+        
+        return {'outer': outer_points, 'inner': inner_points}
     
     def add_dowel(self, prefix: str,
                   start: Point3D,
@@ -309,7 +352,18 @@ class GeometryBuilder:
         start_id = self.add_point(f"{prefix}_start", start, fixed)
         end_id = self.add_point(f"{prefix}_end", end, fixed)
         line_id = self.add_line(f"{prefix}_shaft", start_id, end_id)
-        cap_id = self.add_circle(f"{prefix}_cap", end, diameter)
+        
+        # Calculate direction for circle normal (perpendicular to dowel axis)
+        dx = end.x - start.x
+        dy = end.y - start.y
+        dz = end.z - start.z
+        length = math.sqrt(dx*dx + dy*dy + dz*dz)
+        if length > 0:
+            normal = (dx/length, dy/length, dz/length)
+        else:
+            normal = (0.0, 0.0, 1.0)
+        
+        cap_id = self.add_circle(f"{prefix}_cap", end, diameter, normal)
         return {'start': start_id, 'end': end_id, 'line': line_id, 'cap': cap_id}
     
     # ========================================================================

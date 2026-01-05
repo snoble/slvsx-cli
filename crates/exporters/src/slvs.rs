@@ -51,7 +51,7 @@ impl SlvsExporter {
                     param_id += 3;
                     entity_id += 1;
                 }
-                ResolvedEntity::Circle { center, diameter } => {
+                ResolvedEntity::Circle { center, diameter, .. } => {
                     // Center point parameters
                     for (i, coord) in center.iter().enumerate() {
                         slvs.push_str(&format!("Param.h.v={:08x}\n", param_id + i));
@@ -159,6 +159,7 @@ mod tests {
             ResolvedEntity::Circle {
                 center: vec![0.0, 0.0, 0.0],
                 diameter: 100.0,
+                normal: vec![0.0, 0.0, 1.0],
             },
         );
 

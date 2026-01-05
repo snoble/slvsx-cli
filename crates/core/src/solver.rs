@@ -417,14 +417,32 @@ impl Solver {
                         );
                     }
                 }
-                crate::ir::Entity::Circle { id, .. } => {
+                crate::ir::Entity::Circle { id, normal, .. } => {
                     let entity_id = entity_id_map.get(id).copied().unwrap_or(0);
                     if let Ok((cx, cy, cz, radius)) = ffi_solver.get_circle_position(entity_id) {
+                        // Evaluate normal components
+                        let nx = match normal.get(0) {
+                            Some(crate::ir::ExprOrNumber::Number(n)) => *n,
+                            Some(crate::ir::ExprOrNumber::Expression(e)) => eval.eval(e).unwrap_or(0.0),
+                            None => 0.0,
+                        };
+                        let ny = match normal.get(1) {
+                            Some(crate::ir::ExprOrNumber::Number(n)) => *n,
+                            Some(crate::ir::ExprOrNumber::Expression(e)) => eval.eval(e).unwrap_or(0.0),
+                            None => 0.0,
+                        };
+                        let nz = match normal.get(2) {
+                            Some(crate::ir::ExprOrNumber::Number(n)) => *n,
+                            Some(crate::ir::ExprOrNumber::Expression(e)) => eval.eval(e).unwrap_or(1.0),
+                            None => 1.0,
+                        };
+                        
                         resolved_entities.insert(
                             id.clone(),
                             crate::ir::ResolvedEntity::Circle {
                                 center: vec![cx, cy, cz],
                                 diameter: radius * 2.0,
+                                normal: vec![nx, ny, nz],
                             },
                         );
                     }
