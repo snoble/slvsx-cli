@@ -182,20 +182,62 @@ int real_slvs_add_circle(RealSlvsSystem* s, int id, double cx, double cy, double
     
     Slvs_hGroup g = 1;
     
-    // For simplicity, create a 3D point at the center
-    int px = s->next_param++;
-    int py = s->next_param++;
-    int pz = s->next_param++;
+    // Create normal entity first (default to Z-axis normal)
+    double qw, qx, qy, qz;
+    normal_to_quaternion(0.0, 0.0, 1.0, &qw, &qx, &qy, &qz);
     
-    s->sys.param[s->sys.params++] = Slvs_MakeParam(px, g, cx);
-    s->sys.param[s->sys.params++] = Slvs_MakeParam(py, g, cy);
-    s->sys.param[s->sys.params++] = Slvs_MakeParam(pz, g, cz);
+    int pqw = s->next_param++;
+    int pqx = s->next_param++;
+    int pqy = s->next_param++;
+    int pqz = s->next_param++;
     
-    // Use a unique entity ID based on input id
-    Slvs_hEntity entity_id = 1000 + id;
-    s->sys.entity[s->sys.entities++] = Slvs_MakePoint3d(entity_id, g, px, py, pz);
+    s->sys.param[s->sys.params++] = Slvs_MakeParam(pqw, g, qw);
+    s->sys.param[s->sys.params++] = Slvs_MakeParam(pqx, g, qx);
+    s->sys.param[s->sys.params++] = Slvs_MakeParam(pqy, g, qy);
+    s->sys.param[s->sys.params++] = Slvs_MakeParam(pqz, g, qz);
     
-    // Store radius for later retrieval
+    Slvs_hEntity normal_id = 3000 + id; // Use different range for normal
+    s->sys.entity[s->sys.entities++] = Slvs_MakeNormal3d(normal_id, g, pqw, pqx, pqy, pqz);
+    
+    // Create origin point for workplane (3D point)
+    int pox = s->next_param++;
+    int poy = s->next_param++;
+    int poz = s->next_param++;
+    
+    s->sys.param[s->sys.params++] = Slvs_MakeParam(pox, g, cx);
+    s->sys.param[s->sys.params++] = Slvs_MakeParam(poy, g, cy);
+    s->sys.param[s->sys.params++] = Slvs_MakeParam(poz, g, cz);
+    
+    Slvs_hEntity origin_id = 6000 + id; // Use different range for origin
+    s->sys.entity[s->sys.entities++] = Slvs_MakePoint3d(origin_id, g, pox, poy, poz);
+    
+    // Create workplane for the circle (required for circles)
+    Slvs_hEntity workplane_id = 5000 + id; // Use different range for workplane
+    s->sys.entity[s->sys.entities++] = Slvs_MakeWorkplane(workplane_id, g, origin_id, normal_id);
+    
+    // Create 2D center point in the workplane (u, v coordinates)
+    // For simplicity, use (0, 0) as the center in the workplane coordinate system
+    int pu = s->next_param++;
+    int pv = s->next_param++;
+    
+    s->sys.param[s->sys.params++] = Slvs_MakeParam(pu, g, 0.0);
+    s->sys.param[s->sys.params++] = Slvs_MakeParam(pv, g, 0.0);
+    
+    Slvs_hEntity center_id = 2000 + id; // Use different range for center point
+    s->sys.entity[s->sys.entities++] = Slvs_MakePoint2d(center_id, g, workplane_id, pu, pv);
+    
+    // Create distance entity for radius
+    int pr = s->next_param++;
+    s->sys.param[s->sys.params++] = Slvs_MakeParam(pr, g, radius);
+    
+    Slvs_hEntity radius_id = 4000 + id; // Use different range for distance
+    s->sys.entity[s->sys.entities++] = Slvs_MakeDistance(radius_id, g, SLVS_FREE_IN_3D, pr);
+    
+    // Create circle entity
+    Slvs_hEntity circle_id = 1000 + id;
+    s->sys.entity[s->sys.entities++] = Slvs_MakeCircle(circle_id, g, workplane_id, center_id, normal_id, radius_id);
+    
+    // Store radius for later retrieval (for backward compatibility)
     if (id < 1000) {
         s->circle_radii[id] = radius;
     }
