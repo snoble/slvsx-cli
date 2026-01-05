@@ -1,5 +1,9 @@
+use quick_xml::events::{BytesStart, Event};
+use quick_xml::{Reader, Writer};
+use regex::Regex;
 use slvsx_core::ir::ResolvedEntity;
 use std::collections::HashMap;
+use std::io::Cursor;
 
 /// Normalize a floating point value to avoid -0.0
 /// This ensures consistent output across platforms
@@ -10,6 +14,60 @@ fn normalize_zero(v: f64) -> f64 {
 /// Format a float for SVG output, normalizing -0.0 to 0.0
 fn fmt_svg(v: f64, precision: usize) -> String {
     format!("{:.p$}", normalize_zero(v), p = precision)
+}
+
+/// Sanitize an attribute value, replacing -0.0... patterns with 0.0...
+fn sanitize_attr_value(value: &str) -> String {
+    // Match -0.0 followed by any number of zeros (e.g., -0.000000)
+    let re = Regex::new(r"-0\.0+").unwrap();
+    re.replace_all(value, |caps: &regex::Captures| {
+        caps[0].replacen("-", "", 1)
+    }).to_string()
+}
+
+/// Post-process SVG using proper XML parsing to sanitize attribute values
+fn sanitize_svg_attributes(svg: &str) -> anyhow::Result<String> {
+    let mut reader = Reader::from_str(svg);
+    reader.trim_text(false);
+    
+    let mut writer = Writer::new(Cursor::new(Vec::new()));
+    
+    loop {
+        match reader.read_event() {
+            Ok(Event::Start(ref e)) => {
+                let name = e.name();
+                let name_str = std::str::from_utf8(name.as_ref())?;
+                let mut elem = BytesStart::new(name_str.to_owned());
+                for attr in e.attributes() {
+                    let attr = attr?;
+                    let key = std::str::from_utf8(attr.key.as_ref())?.to_owned();
+                    let value = std::str::from_utf8(&attr.value)?;
+                    let sanitized = sanitize_attr_value(value);
+                    elem.push_attribute((key.as_str(), sanitized.as_str()));
+                }
+                writer.write_event(Event::Start(elem))?;
+            }
+            Ok(Event::Empty(ref e)) => {
+                let name = e.name();
+                let name_str = std::str::from_utf8(name.as_ref())?;
+                let mut elem = BytesStart::new(name_str.to_owned());
+                for attr in e.attributes() {
+                    let attr = attr?;
+                    let key = std::str::from_utf8(attr.key.as_ref())?.to_owned();
+                    let value = std::str::from_utf8(&attr.value)?;
+                    let sanitized = sanitize_attr_value(value);
+                    elem.push_attribute((key.as_str(), sanitized.as_str()));
+                }
+                writer.write_event(Event::Empty(elem))?;
+            }
+            Ok(Event::Eof) => break,
+            Ok(e) => writer.write_event(e)?,
+            Err(e) => return Err(anyhow::anyhow!("XML parse error: {}", e)),
+        }
+    }
+    
+    let result = writer.into_inner().into_inner();
+    Ok(String::from_utf8(result)?)
 }
 
 pub struct SvgExporter {
@@ -165,7 +223,9 @@ impl SvgExporter {
         }
 
         svg.push_str("</svg>");
-        Ok(svg)
+        
+        // Post-process to sanitize any remaining -0.0 patterns in attributes
+        sanitize_svg_attributes(&svg)
     }
 
     fn project_point(&self, point: &[f64]) -> (f64, f64) {

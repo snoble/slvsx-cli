@@ -1,9 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="-20.0 -20.0 240.0 64.1" width="800" height="800">
   <circle id="axis_end" cx="200.000000" cy="0.000000" r="2" fill="black"/>
-  <line id="connecting_rod" x1="43.834248" y1="24.053247" x2="161.398874" y2="-0.000000" stroke="black"/>
+  <line id="connecting_rod" x1="43.834248" y1="24.053247" x2="161.398874" y2="0.000000" stroke="black"/>
   <line id="crank" x1="0.000000" y1="0.000000" x2="43.834248" y2="24.053247" stroke="black"/>
   <circle id="crank_end" cx="43.834248" cy="24.053247" r="2" fill="black"/>
   <circle id="crank_pivot" cx="0.000000" cy="0.000000" r="2" fill="black"/>
-  <circle id="piston" cx="161.398874" cy="-0.000000" r="2" fill="black"/>
+  <circle id="piston" cx="161.398874" cy="0.000000" r="2" fill="black"/>
   <line id="piston_axis" x1="0.000000" y1="0.000000" x2="200.000000" y2="0.000000" stroke="black"/>
 </svg>
