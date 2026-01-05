@@ -71,8 +71,14 @@ impl Translator {
             Constraint::Horizontal { a, workplane } | Constraint::Vertical { a, workplane } => {
                 vec![a.clone(), workplane.clone()]
             }
-            Constraint::Fixed { entity: a, .. }
-            | Constraint::Diameter { circle: a, .. } => vec![a.clone()],
+            Constraint::Fixed { entity, workplane } => {
+                let mut refs = vec![entity.clone()];
+                if let Some(wp) = workplane {
+                    refs.push(wp.clone());
+                }
+                refs
+            }
+            Constraint::Diameter { circle: a, .. } => vec![a.clone()],
             Constraint::PointOnLine { point, line }
             | Constraint::PointLineDistance { point, line, .. }
             | Constraint::EqualLengthPointLineDistance { point, line, .. }
