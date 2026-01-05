@@ -1,0 +1,119 @@
+{
+  "schema": "slvs-json/1",
+  "units": "mm",
+  "description": "Birdhouse wireframe with wall thickness. Inner and outer edges define where walls would go. Import to CAD and loft/extrude between inner and outer profiles.",
+  "parameters": {
+    "width": 150.0,
+    "depth": 150.0,
+    "wall_height": 180.0,
+    "roof_height": 80.0,
+    "wall_thickness": 10.0,
+    "entrance_diameter": 40.0
+  },
+  "entities": [
+    {"type": "point", "id": "outer_base_fl", "at": [0, 0, 0]},
+    {"type": "point", "id": "outer_base_fr", "at": [150, 0, 0]},
+    {"type": "point", "id": "outer_base_bl", "at": [0, 150, 0]},
+    {"type": "point", "id": "outer_base_br", "at": [150, 150, 0]},
+
+    {"type": "point", "id": "inner_base_fl", "at": [10, 10, 0]},
+    {"type": "point", "id": "inner_base_fr", "at": [140, 10, 0]},
+    {"type": "point", "id": "inner_base_bl", "at": [10, 140, 0]},
+    {"type": "point", "id": "inner_base_br", "at": [140, 140, 0]},
+
+    {"type": "point", "id": "outer_wall_fl", "at": [0, 0, 180]},
+    {"type": "point", "id": "outer_wall_fr", "at": [150, 0, 180]},
+    {"type": "point", "id": "outer_wall_bl", "at": [0, 150, 180]},
+    {"type": "point", "id": "outer_wall_br", "at": [150, 150, 180]},
+
+    {"type": "point", "id": "inner_wall_fl", "at": [10, 10, 180]},
+    {"type": "point", "id": "inner_wall_fr", "at": [140, 10, 180]},
+    {"type": "point", "id": "inner_wall_bl", "at": [10, 140, 180]},
+    {"type": "point", "id": "inner_wall_br", "at": [140, 140, 180]},
+
+    {"type": "point", "id": "outer_ridge_front", "at": [75, 0, 260]},
+    {"type": "point", "id": "outer_ridge_back", "at": [75, 150, 260]},
+    {"type": "point", "id": "inner_ridge_front", "at": [75, 10, 250]},
+    {"type": "point", "id": "inner_ridge_back", "at": [75, 140, 250]},
+
+    {"type": "line", "id": "outer_base_front", "p1": "outer_base_fl", "p2": "outer_base_fr"},
+    {"type": "line", "id": "outer_base_right", "p1": "outer_base_fr", "p2": "outer_base_br"},
+    {"type": "line", "id": "outer_base_back", "p1": "outer_base_br", "p2": "outer_base_bl"},
+    {"type": "line", "id": "outer_base_left", "p1": "outer_base_bl", "p2": "outer_base_fl"},
+
+    {"type": "line", "id": "inner_base_front", "p1": "inner_base_fl", "p2": "inner_base_fr"},
+    {"type": "line", "id": "inner_base_right", "p1": "inner_base_fr", "p2": "inner_base_br"},
+    {"type": "line", "id": "inner_base_back", "p1": "inner_base_br", "p2": "inner_base_bl"},
+    {"type": "line", "id": "inner_base_left", "p1": "inner_base_bl", "p2": "inner_base_fl"},
+
+    {"type": "line", "id": "outer_corner_fl", "p1": "outer_base_fl", "p2": "outer_wall_fl"},
+    {"type": "line", "id": "outer_corner_fr", "p1": "outer_base_fr", "p2": "outer_wall_fr"},
+    {"type": "line", "id": "outer_corner_bl", "p1": "outer_base_bl", "p2": "outer_wall_bl"},
+    {"type": "line", "id": "outer_corner_br", "p1": "outer_base_br", "p2": "outer_wall_br"},
+
+    {"type": "line", "id": "inner_corner_fl", "p1": "inner_base_fl", "p2": "inner_wall_fl"},
+    {"type": "line", "id": "inner_corner_fr", "p1": "inner_base_fr", "p2": "inner_wall_fr"},
+    {"type": "line", "id": "inner_corner_bl", "p1": "inner_base_bl", "p2": "inner_wall_bl"},
+    {"type": "line", "id": "inner_corner_br", "p1": "inner_base_br", "p2": "inner_wall_br"},
+
+    {"type": "line", "id": "outer_wall_front", "p1": "outer_wall_fl", "p2": "outer_wall_fr"},
+    {"type": "line", "id": "outer_wall_right", "p1": "outer_wall_fr", "p2": "outer_wall_br"},
+    {"type": "line", "id": "outer_wall_back", "p1": "outer_wall_br", "p2": "outer_wall_bl"},
+    {"type": "line", "id": "outer_wall_left", "p1": "outer_wall_bl", "p2": "outer_wall_fl"},
+
+    {"type": "line", "id": "inner_wall_front", "p1": "inner_wall_fl", "p2": "inner_wall_fr"},
+    {"type": "line", "id": "inner_wall_right", "p1": "inner_wall_fr", "p2": "inner_wall_br"},
+    {"type": "line", "id": "inner_wall_back", "p1": "inner_wall_br", "p2": "inner_wall_bl"},
+    {"type": "line", "id": "inner_wall_left", "p1": "inner_wall_bl", "p2": "inner_wall_fl"},
+
+    {"type": "line", "id": "outer_gable_fl", "p1": "outer_wall_fl", "p2": "outer_ridge_front"},
+    {"type": "line", "id": "outer_gable_fr", "p1": "outer_wall_fr", "p2": "outer_ridge_front"},
+    {"type": "line", "id": "outer_gable_bl", "p1": "outer_wall_bl", "p2": "outer_ridge_back"},
+    {"type": "line", "id": "outer_gable_br", "p1": "outer_wall_br", "p2": "outer_ridge_back"},
+
+    {"type": "line", "id": "inner_gable_fl", "p1": "inner_wall_fl", "p2": "inner_ridge_front"},
+    {"type": "line", "id": "inner_gable_fr", "p1": "inner_wall_fr", "p2": "inner_ridge_front"},
+    {"type": "line", "id": "inner_gable_bl", "p1": "inner_wall_bl", "p2": "inner_ridge_back"},
+    {"type": "line", "id": "inner_gable_br", "p1": "inner_wall_br", "p2": "inner_ridge_back"},
+
+    {"type": "line", "id": "outer_ridge", "p1": "outer_ridge_front", "p2": "outer_ridge_back"},
+    {"type": "line", "id": "inner_ridge", "p1": "inner_ridge_front", "p2": "inner_ridge_back"},
+
+    {"type": "circle", "id": "entrance_outer", "center": [75, 0, 120], "diameter": 40},
+    {"type": "circle", "id": "entrance_inner", "center": [75, 10, 120], "diameter": 40},
+
+    {"type": "point", "id": "perch_wall", "at": [75, 0, 90]},
+    {"type": "point", "id": "perch_outer", "at": [75, -25, 90]},
+    {"type": "line", "id": "perch", "p1": "perch_wall", "p2": "perch_outer"},
+    {"type": "circle", "id": "perch_dowel", "center": [75, -25, 90], "diameter": 8}
+  ],
+  "constraints": [
+    {"type": "fixed", "entity": "outer_base_fl"},
+    {"type": "fixed", "entity": "outer_base_fr"},
+    {"type": "fixed", "entity": "outer_base_bl"},
+    {"type": "fixed", "entity": "outer_base_br"},
+    
+    {"type": "distance", "between": ["outer_base_fl", "inner_base_fl"], "value": "$wall_thickness * 1.414"},
+    {"type": "distance", "between": ["outer_base_fr", "inner_base_fr"], "value": "$wall_thickness * 1.414"},
+    {"type": "distance", "between": ["outer_base_bl", "inner_base_bl"], "value": "$wall_thickness * 1.414"},
+    {"type": "distance", "between": ["outer_base_br", "inner_base_br"], "value": "$wall_thickness * 1.414"},
+
+    {"type": "fixed", "entity": "outer_wall_fl"},
+    {"type": "fixed", "entity": "outer_wall_fr"},
+    {"type": "fixed", "entity": "outer_wall_bl"},
+    {"type": "fixed", "entity": "outer_wall_br"},
+    
+    {"type": "distance", "between": ["outer_wall_fl", "inner_wall_fl"], "value": "$wall_thickness * 1.414"},
+    {"type": "distance", "between": ["outer_wall_fr", "inner_wall_fr"], "value": "$wall_thickness * 1.414"},
+    {"type": "distance", "between": ["outer_wall_bl", "inner_wall_bl"], "value": "$wall_thickness * 1.414"},
+    {"type": "distance", "between": ["outer_wall_br", "inner_wall_br"], "value": "$wall_thickness * 1.414"},
+
+    {"type": "fixed", "entity": "outer_ridge_front"},
+    {"type": "fixed", "entity": "outer_ridge_back"},
+    {"type": "fixed", "entity": "inner_ridge_front"},
+    {"type": "fixed", "entity": "inner_ridge_back"},
+    
+    {"type": "fixed", "entity": "perch_wall"},
+    {"type": "fixed", "entity": "perch_outer"}
+  ]
+}

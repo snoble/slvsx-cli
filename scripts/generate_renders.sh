@@ -82,11 +82,14 @@ if [ -f "$PROJECT_ROOT/examples/12_3d_basics.json" ]; then
     echo "  Generated 3D basics views (XY, XZ, Isometric)"
 fi
 
-# Chebyshev Linkage
-if [ -f "$PROJECT_ROOT/examples/21_chebyshev_linkage.json" ]; then
-    "$BINARY" solve "$PROJECT_ROOT/examples/21_chebyshev_linkage.json" > /dev/null 2>&1
-    "$BINARY" export -f svg "$PROJECT_ROOT/examples/21_chebyshev_linkage.json" -o "$OUTPUT_DIR/21_chebyshev_linkage.svg" 2>&1
-    echo "  Generated Chebyshev linkage"
+# Birdhouse - all views including isometric  
+if [ -f "$PROJECT_ROOT/examples/21_birdhouse.json" ]; then
+    "$BINARY" solve "$PROJECT_ROOT/examples/21_birdhouse.json" > /dev/null 2>&1
+    "$BINARY" export -f svg -v xy "$PROJECT_ROOT/examples/21_birdhouse.json" -o "$OUTPUT_DIR/birdhouse_xy.svg" 2>&1
+    "$BINARY" export -f svg -v xz "$PROJECT_ROOT/examples/21_birdhouse.json" -o "$OUTPUT_DIR/birdhouse_xz.svg" 2>&1
+    "$BINARY" export -f svg -v yz "$PROJECT_ROOT/examples/21_birdhouse.json" -o "$OUTPUT_DIR/birdhouse_yz.svg" 2>&1
+    "$BINARY" export -f svg -v isometric "$PROJECT_ROOT/examples/21_birdhouse.json" -o "$OUTPUT_DIR/birdhouse_isometric.svg" 2>&1
+    echo "  Generated birdhouse views (XY, XZ, YZ, Isometric)"
 fi
 
 echo ""
