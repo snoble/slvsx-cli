@@ -1,10 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="-20.0 -20.0 120.0 120.0" width="800" height="800">
   <circle id="A" cx="0.000000" cy="0.000000" r="2" fill="black"/>
-  <line id="BC" x1="80.000000" y1="0.000000" x2="80.000000" y2="80.000000" stroke="black"/>
   <line id="AB" x1="0.000000" y1="0.000000" x2="80.000000" y2="0.000000" stroke="black"/>
-  <circle id="D" cx="0.000000" cy="80.000000" r="2" fill="black"/>
   <circle id="B" cx="80.000000" cy="0.000000" r="2" fill="black"/>
+  <line id="BC" x1="80.000000" y1="0.000000" x2="80.000000" y2="80.000000" stroke="black"/>
   <circle id="C" cx="80.000000" cy="80.000000" r="2" fill="black"/>
   <line id="CD" x1="80.000000" y1="80.000000" x2="0.000000" y2="80.000000" stroke="black"/>
+  <circle id="D" cx="0.000000" cy="80.000000" r="2" fill="black"/>
   <line id="DA" x1="0.000000" y1="80.000000" x2="0.000000" y2="0.000000" stroke="black"/>
 </svg>

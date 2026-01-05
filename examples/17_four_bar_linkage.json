@@ -1,12 +1,11 @@
 {
   "schema": "slvs-json/1",
   "units": "mm",
+  "description": "Four-bar linkage mechanism with fixed ground pivots",
   "parameters": {
     "crank_length": 70.0,
     "coupler_length": 100.0,
-    "rocker_length": 90.0,
-    "ground_length": 120.0,
-    "input_angle": 45.0
+    "rocker_length": 90.0
   },
   "entities": [
     {
@@ -62,11 +61,6 @@
     {
       "type": "fixed",
       "entity": "ground_pivot2"
-    },
-    {
-      "type": "distance",
-      "between": ["ground_pivot1", "ground_pivot2"],
-      "value": "$ground_length"
     },
     {
       "type": "distance",

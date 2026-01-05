@@ -1,9 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="-20.0 -20.0 140.0 140.0" width="800" height="800">
-  <circle id="right" cx="99.503719" cy="9.950372" r="2" fill="black"/>
-  <line id="diagonal" x1="0.000000" y1="0.000000" x2="100.000000" y2="100.000000" stroke="black"/>
-  <circle id="top" cx="9.950372" cy="99.503719" r="2" fill="black"/>
-  <circle id="origin" cx="0.000000" cy="0.000000" r="2" fill="black"/>
   <circle id="corner" cx="100.000000" cy="100.000000" r="2" fill="black"/>
-  <line id="horizontal_line" x1="0.000000" y1="0.000000" x2="99.503719" y2="9.950372" stroke="black"/>
-  <line id="vertical_line" x1="0.000000" y1="0.000000" x2="9.950372" y2="99.503719" stroke="black"/>
+  <line id="diagonal" x1="0.000000" y1="0.000000" x2="100.000000" y2="100.000000" stroke="black"/>
+  <line id="horizontal_line" x1="0.000000" y1="0.000000" x2="100.000000" y2="0.000000" stroke="black"/>
+  <circle id="origin" cx="0.000000" cy="0.000000" r="2" fill="black"/>
+  <circle id="right" cx="100.000000" cy="0.000000" r="2" fill="black"/>
+  <circle id="top" cx="0.000000" cy="100.000000" r="2" fill="black"/>
+  <line id="vertical_line" x1="0.000000" y1="0.000000" x2="0.000000" y2="100.000000" stroke="black"/>
 </svg>

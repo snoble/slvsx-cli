@@ -1,6 +1,7 @@
 {
   "schema": "slvs-json/1",
   "units": "mm",
+  "description": "Demonstrates arc entity with distance constraints to ensure equal radii",
   "entities": [
     {
       "type": "point",
@@ -22,18 +23,20 @@
       "id": "quarter_circle",
       "center": "center",
       "start": "start",
-      "end": "end"
+      "end": "end",
+      "normal": [0, 0, 1]
     },
     {
-      "type": "point",
-      "id": "tangent_center",
-      "at": [150, 50, 0]
+      "type": "line",
+      "id": "radius_start",
+      "p1": "center",
+      "p2": "start"
     },
     {
-      "type": "circle",
-      "id": "tangent_circle",
-      "center": "tangent_center",
-      "diameter": 100
+      "type": "line",
+      "id": "radius_end",
+      "p1": "center",
+      "p2": "end"
     }
   ],
   "constraints": [
@@ -50,11 +53,6 @@
       "type": "distance",
       "between": ["center", "end"],
       "value": 50
-    },
-    {
-      "type": "tangent",
-      "a": "quarter_circle",
-      "b": "tangent_circle"
     }
   ]
 }

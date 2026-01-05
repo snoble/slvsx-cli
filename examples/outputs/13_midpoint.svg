@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-20.0 30.0 140.0 90.0" width="800" height="800">
+  <line id="horizontal" x1="0.000000" y1="50.000000" x2="100.000000" y2="50.000000" stroke="black"/>
+  <circle id="left" cx="0.000000" cy="50.000000" r="2" fill="black"/>
+  <line id="left_side" x1="0.000000" y1="50.000000" x2="50.000000" y2="100.000000" stroke="black"/>
+  <line id="median" x1="50.000000" y1="50.000000" x2="50.000000" y2="100.000000" stroke="black"/>
+  <circle id="middle" cx="50.000000" cy="50.000000" r="2" fill="black"/>
+  <circle id="right" cx="100.000000" cy="50.000000" r="2" fill="black"/>
+  <line id="right_side" x1="100.000000" y1="50.000000" x2="50.000000" y2="100.000000" stroke="black"/>
+  <circle id="triangle_top" cx="50.000000" cy="100.000000" r="2" fill="black"/>
+</svg>

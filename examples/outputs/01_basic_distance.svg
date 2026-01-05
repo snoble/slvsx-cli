@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="-20.0 -20.0 125.7 91.4" width="800" height="800">
-  <circle id="start" cx="0.000000" cy="0.000000" r="2" fill="black"/>
   <line id="connector" x1="0.000000" y1="0.000000" x2="85.749293" y2="51.449576" stroke="black"/>
   <circle id="end" cx="85.749293" cy="51.449576" r="2" fill="black"/>
+  <circle id="start" cx="0.000000" cy="0.000000" r="2" fill="black"/>
 </svg>

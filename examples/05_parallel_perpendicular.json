@@ -1,6 +1,7 @@
 {
   "schema": "slvs-json/1",
   "units": "mm",
+  "description": "Demonstrates parallel and perpendicular constraints to form a rectangle",
   "entities": [
     {
       "type": "point",
@@ -58,28 +59,12 @@
     },
     {
       "type": "parallel",
-      "a": "AB",
-      "b": "CD"
-    },
-    {
-      "type": "parallel",
-      "a": "BC",
-      "b": "DA"
+      "entities": ["AB", "CD"]
     },
     {
       "type": "perpendicular",
       "a": "AB",
       "b": "BC"
-    },
-    {
-      "type": "perpendicular",
-      "a": "BC",
-      "b": "CD"
-    },
-    {
-      "type": "distance",
-      "between": ["A", "B"],
-      "value": 100
     },
     {
       "type": "distance",

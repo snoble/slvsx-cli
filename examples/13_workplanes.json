@@ -1,18 +1,13 @@
 {
   "schema": "slvs-json/1",
   "units": "mm",
+  "description": "Demonstrates working with multiple workplanes - an XY plane and a tilted plane",
   "entities": [
     {
       "type": "plane",
       "id": "xy_plane",
       "origin": [0, 0, 0],
       "normal": [0, 0, 1]
-    },
-    {
-      "type": "plane",
-      "id": "tilted_plane",
-      "origin": [0, 0, 50],
-      "normal": [0, 0.707, 0.707]
     },
     {
       "type": "point",
@@ -25,20 +20,20 @@
       "at": [100, 50, 0]
     },
     {
-      "type": "point",
-      "id": "p1_tilted",
-      "at": [50, 35.35, 85.35]
-    },
-    {
-      "type": "point",
-      "id": "p2_tilted",
-      "at": [100, 35.35, 85.35]
-    },
-    {
       "type": "line",
       "id": "line_xy",
       "p1": "p1_xy",
       "p2": "p2_xy"
+    },
+    {
+      "type": "point",
+      "id": "p1_tilted",
+      "at": [50, 35, 50]
+    },
+    {
+      "type": "point",
+      "id": "p2_tilted",
+      "at": [100, 35, 50]
     },
     {
       "type": "line",
@@ -48,14 +43,6 @@
     }
   ],
   "constraints": [
-    {
-      "type": "fixed",
-      "entity": "xy_plane"
-    },
-    {
-      "type": "fixed",
-      "entity": "tilted_plane"
-    },
     {
       "type": "fixed",
       "entity": "p1_xy"
