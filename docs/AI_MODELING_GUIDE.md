@@ -257,6 +257,28 @@ slvsx export model.json -v isometric -o perspective.svg
 | `Handle isn't unique` | Internal ID collision - simplify model |
 | `missing field 'xyz'` | Wrong field name for constraint type |
 | `Unexpected horizontal/vertical constraint in 3d` | Using H/V on 3D lines - use 2D geometry |
+| `invalid type: map, expected a sequence` | Trying to parse a solution file as input |
+| `Solver failed to converge` | Degenerate geometry (0° or 180° angles) |
+
+### 11. Solution Files vs Input Files
+
+**Problem**: Solution output files (`*_solution.json`) have a different format than input files. Don't try to parse them as input.
+
+```json
+// INPUT file - entities is an ARRAY
+{
+  "entities": [
+    {"type": "point", "id": "p1", "at": [0, 0, 0]}
+  ]
+}
+
+// SOLUTION file - entities is a MAP
+{
+  "entities": {
+    "p1": {"at": [0.0, 0.0, 0.0]}
+  }
+}
+```
 
 ## Construction Geometry
 
