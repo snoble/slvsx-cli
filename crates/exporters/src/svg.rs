@@ -4,7 +4,12 @@ use std::collections::HashMap;
 /// Normalize a floating point value to avoid -0.0
 /// This ensures consistent output across platforms
 fn normalize_zero(v: f64) -> f64 {
-    if v == 0.0 { 0.0 } else { v }
+    if v == 0.0 { 0.0_f64.abs() } else { v }
+}
+
+/// Format a float for SVG output, normalizing -0.0 to 0.0
+fn fmt_svg(v: f64, precision: usize) -> String {
+    format!("{:.p$}", normalize_zero(v), p = precision)
 }
 
 pub struct SvgExporter {
@@ -105,11 +110,10 @@ impl SvgExporter {
                 ResolvedEntity::Point { at } => {
                     let (x, y) = self.project_point(at);
                     svg.push_str(&format!(
-                        r#"  <circle id="{}" cx="{:.p$}" cy="{:.p$}" r="2" fill="black"/>"#,
+                        r#"  <circle id="{}" cx="{}" cy="{}" r="2" fill="black"/>"#,
                         id,
-                        x,
-                        y,
-                        p = self.precision
+                        fmt_svg(x, self.precision),
+                        fmt_svg(y, self.precision),
                     ));
                     svg.push('\n');
                 }
@@ -121,8 +125,8 @@ impl SvgExporter {
                     if (rx - ry).abs() < 0.001 {
                         // Circle appears as circle (no significant distortion)
                         svg.push_str(&format!(
-                            r#"  <circle id="{}" cx="{:.p$}" cy="{:.p$}" r="{:.p$}" fill="none" stroke="black"/>"#,
-                            id, cx, cy, rx, p = self.precision
+                            r#"  <circle id="{}" cx="{}" cy="{}" r="{}" fill="none" stroke="black"/>"#,
+                            id, fmt_svg(cx, self.precision), fmt_svg(cy, self.precision), fmt_svg(rx, self.precision)
                         ));
                     } else if rx.abs() < 0.001 || ry.abs() < 0.001 {
                         // Circle appears as line (edge-on view)
@@ -132,14 +136,17 @@ impl SvgExporter {
                         let dx = half_len * angle_rad.cos();
                         let dy = half_len * angle_rad.sin();
                         svg.push_str(&format!(
-                            r#"  <line id="{}" x1="{:.p$}" y1="{:.p$}" x2="{:.p$}" y2="{:.p$}" stroke="black"/>"#,
-                            id, cx - dx, cy - dy, cx + dx, cy + dy, p = self.precision
+                            r#"  <line id="{}" x1="{}" y1="{}" x2="{}" y2="{}" stroke="black"/>"#,
+                            id, fmt_svg(cx - dx, self.precision), fmt_svg(cy - dy, self.precision), 
+                            fmt_svg(cx + dx, self.precision), fmt_svg(cy + dy, self.precision)
                         ));
                     } else {
                         // Circle appears as ellipse
                         svg.push_str(&format!(
-                            r#"  <ellipse id="{}" cx="{:.p$}" cy="{:.p$}" rx="{:.p$}" ry="{:.p$}" transform="rotate({:.1} {:.p$} {:.p$})" fill="none" stroke="black"/>"#,
-                            id, cx, cy, rx, ry, rotation, cx, cy, p = self.precision
+                            r#"  <ellipse id="{}" cx="{}" cy="{}" rx="{}" ry="{}" transform="rotate({:.1} {} {})" fill="none" stroke="black"/>"#,
+                            id, fmt_svg(cx, self.precision), fmt_svg(cy, self.precision), 
+                            fmt_svg(rx, self.precision), fmt_svg(ry, self.precision), 
+                            normalize_zero(rotation), fmt_svg(cx, self.precision), fmt_svg(cy, self.precision)
                         ));
                     }
                     svg.push('\n');
@@ -148,8 +155,9 @@ impl SvgExporter {
                     let (x1, y1) = self.project_point(p1);
                     let (x2, y2) = self.project_point(p2);
                     svg.push_str(&format!(
-                        r#"  <line id="{}" x1="{:.p$}" y1="{:.p$}" x2="{:.p$}" y2="{:.p$}" stroke="black"/>"#,
-                        id, x1, y1, x2, y2, p = self.precision
+                        r#"  <line id="{}" x1="{}" y1="{}" x2="{}" y2="{}" stroke="black"/>"#,
+                        id, fmt_svg(x1, self.precision), fmt_svg(y1, self.precision), 
+                        fmt_svg(x2, self.precision), fmt_svg(y2, self.precision)
                     ));
                     svg.push('\n');
                 }
