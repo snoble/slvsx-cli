@@ -1273,22 +1273,23 @@ mod tests {
     fn test_ffi_solver() {
         let mut solver = Solver::new();
 
-        // Add sun gear
-        solver.add_circle(1, 0.0, 0.0, 0.0, 24.0).unwrap();
+        // Add two points representing circle centers
+        solver.add_point(1, 0.0, 0.0, 0.0, false).unwrap();
+        solver.add_point(2, 36.0, 0.0, 0.0, false).unwrap();
+        
+        // Fix the first point
+        solver.add_fixed_constraint(1, 1).unwrap();
 
-        // Add planet gear
-        solver.add_circle(2, 36.0, 0.0, 0.0, 12.0).unwrap();
-
-        // Add distance constraint
+        // Add distance constraint between points
         solver.add_distance_constraint(100, 1, 2, 36.0).unwrap();
 
         // Solve
         solver.solve().unwrap();
 
         // Get result
-        let (cx, cy, _cz, radius) = solver.get_circle_position(2).unwrap();
-        assert!((cx - 36.0).abs() < 0.001 || cy.abs() > 0.001); // Should be at distance 36
-        assert_eq!(radius, 12.0);
+        let (x, y, z) = solver.get_point_position(2).unwrap();
+        let distance = (x * x + y * y + z * z).sqrt();
+        assert!((distance - 36.0).abs() < 0.001, "Point should be at distance 36 from origin");
     }
 
     #[test]
@@ -1662,6 +1663,48 @@ mod tests {
         // Add diameter constraint - FFI binding should work
         let result = solver.add_diameter_constraint(100, 10, 50.0);
         assert!(result.is_ok(), "Should be able to add diameter constraint via FFI");
+    }
+
+    #[test]
+    fn test_diameter_constraint_with_solve() {
+        // Minimal reproduction of the diameter constraint issue
+        let mut solver = Solver::new();
+
+        // Create a circle (id=10)
+        solver.add_circle(10, 0.0, 0.0, 0.0, 25.0).unwrap();
+
+        // Add diameter constraint (constraint id=100, circle id=10, diameter=50.0)
+        solver.add_diameter_constraint(100, 10, 50.0).unwrap();
+
+        // This is where the failure should occur
+        let solve_result = solver.solve();
+        
+        // If we get here, the solve succeeded
+        assert!(solve_result.is_ok(), "Solve with diameter constraint should succeed: {:?}", solve_result);
+    }
+
+    #[test]
+    fn test_diameter_constraint_with_point_and_fixed() {
+        // EXACT reproduction of the failing test scenario
+        // Matching constraint_effectiveness_tests.rs::test_diameter_constraint_changes_solution
+        let mut solver = Solver::new();
+
+        // 1. Point "c1" -> internal id 1
+        solver.add_point(1, 0.0, 0.0, 0.0, false).unwrap();
+        
+        // 2. Circle "circle1" -> internal id 2
+        solver.add_circle(2, 0.0, 0.0, 0.0, 7.5).unwrap(); // diameter 15 / 2 = 7.5 radius
+
+        // 3. Fixed constraint on point c1 (entity_id=1)
+        solver.add_fixed_constraint(1, 1).unwrap();
+        
+        // 4. Diameter constraint on circle1 (entity_id=2, diameter=25.0)
+        solver.add_diameter_constraint(2, 2, 25.0).unwrap();
+
+        // 5. Solve - this should reproduce the failure
+        let solve_result = solver.solve();
+        
+        assert!(solve_result.is_ok(), "Solve with point, circle, fixed, and diameter constraints should succeed: {:?}", solve_result);
     }
 
     #[test]

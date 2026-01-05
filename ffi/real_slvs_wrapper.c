@@ -642,14 +642,26 @@ int real_slvs_get_point_position(RealSlvsSystem* s, int point_id, double* x, dou
 int real_slvs_get_circle_position(RealSlvsSystem* s, int circle_id, double* cx, double* cy, double* cz, double* radius) {
     if (!s || !cx || !cy || !cz || !radius) return -1;
     
-    // For our simplified circles, get the center point
-    Slvs_hEntity entity_id = 1000 + circle_id;
+    // Circle entity structure (from real_slvs_add_circle):
+    // - Normal at 3000 + id
+    // - Origin point (workplane) at 6000 + id (this is the 3D center!)
+    // - Workplane at 5000 + id
+    // - 2D center point at 2000 + id (relative to workplane, always 0,0)
+    // - Distance (radius) at 4000 + id
+    // - Circle at 1000 + id
     
+    Slvs_hEntity origin_id = 6000 + circle_id;  // Origin point is the 3D center
+    Slvs_hEntity radius_entity_id = 4000 + circle_id;  // Distance entity for radius
+    
+    int found_center = 0;
+    int found_radius = 0;
+    
+    // Find the origin point (which is the 3D center of the circle)
     for (int i = 0; i < s->sys.entities; i++) {
-        if (s->sys.entity[i].h == entity_id && 
+        if (s->sys.entity[i].h == origin_id && 
             s->sys.entity[i].type == SLVS_E_POINT_IN_3D) {
             
-            // Get the parameter values
+            // Get the parameter values for the center
             for (int j = 0; j < s->sys.params; j++) {
                 if (s->sys.param[j].h == s->sys.entity[i].param[0]) {
                     *cx = s->sys.param[j].val;
@@ -661,13 +673,36 @@ int real_slvs_get_circle_position(RealSlvsSystem* s, int circle_id, double* cx, 
                     *cz = s->sys.param[j].val;
                 }
             }
-            
-            // Get stored radius
-            if (circle_id < 1000) {
-                *radius = s->circle_radii[circle_id];
-            }
-            return 0;
+            found_center = 1;
+            break;
         }
+    }
+    
+    // Find the distance entity (radius)
+    for (int i = 0; i < s->sys.entities; i++) {
+        if (s->sys.entity[i].h == radius_entity_id && 
+            s->sys.entity[i].type == SLVS_E_DISTANCE) {
+            
+            // Get the radius parameter value
+            for (int j = 0; j < s->sys.params; j++) {
+                if (s->sys.param[j].h == s->sys.entity[i].param[0]) {
+                    *radius = s->sys.param[j].val;
+                    found_radius = 1;
+                    break;
+                }
+            }
+            break;
+        }
+    }
+    
+    // Also try the stored radius as fallback
+    if (!found_radius && circle_id < 1000) {
+        *radius = s->circle_radii[circle_id];
+        found_radius = 1;
+    }
+    
+    if (found_center && found_radius) {
+        return 0;
     }
     
     return -1;
