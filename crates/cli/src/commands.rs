@@ -22,6 +22,7 @@ pub enum ViewPlane {
     Xy,
     Xz,
     Yz,
+    Isometric,
 }
 
 impl From<ViewPlane> for SvgViewPlane {
@@ -30,6 +31,7 @@ impl From<ViewPlane> for SvgViewPlane {
             ViewPlane::Xy => SvgViewPlane::XY,
             ViewPlane::Xz => SvgViewPlane::XZ,
             ViewPlane::Yz => SvgViewPlane::YZ,
+            ViewPlane::Isometric => SvgViewPlane::Isometric,
         }
     }
 }

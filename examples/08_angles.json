@@ -40,13 +40,8 @@
       "entity": "pivot"
     },
     {
-      "type": "horizontal",
-      "entity": "arm1"
-    },
-    {
-      "type": "distance",
-      "between": ["pivot", "arm1_end"],
-      "value": "$arm_length"
+      "type": "fixed",
+      "entity": "arm1_end"
     },
     {
       "type": "distance",

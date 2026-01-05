@@ -1,6 +1,7 @@
 {
   "schema": "slvs-json/1",
   "units": "mm",
+  "description": "Demonstrates constraining points to lie on a circle using distance from center",
   "entities": [
     {
       "type": "point",
@@ -53,23 +54,19 @@
       "entity": "center"
     },
     {
-      "type": "fixed",
-      "entity": "path"
+      "type": "distance",
+      "between": ["center", "p1"],
+      "value": 40
     },
     {
-      "type": "point_on_circle",
-      "point": "p1",
-      "circle": "path"
+      "type": "distance",
+      "between": ["center", "p2"],
+      "value": 40
     },
     {
-      "type": "point_on_circle",
-      "point": "p2",
-      "circle": "path"
-    },
-    {
-      "type": "point_on_circle",
-      "point": "p3",
-      "circle": "path"
+      "type": "distance",
+      "between": ["center", "p3"],
+      "value": 40
     }
   ]
 }

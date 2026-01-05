@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-20.0 -20.1 90.0 83.4" width="800" height="800">
+  <circle id="A" cx="0.000000" cy="0.000000" r="2" fill="black"/>
+  <line id="AB" x1="0.000000" y1="0.000000" x2="49.983965" y2="-0.121735" stroke="black"/>
+  <line id="AD" x1="0.000000" y1="0.000000" x2="26.053698" y2="14.746008" stroke="black"/>
+  <circle id="B" cx="49.983965" cy="-0.121735" r="2" fill="black"/>
+  <line id="BC" x1="49.983965" y1="-0.121735" x2="25.087377" y2="43.238460" stroke="black"/>
+  <line id="BD" x1="49.983965" y1="-0.121735" x2="26.053698" y2="14.746008" stroke="black"/>
+  <circle id="C" cx="25.087377" cy="43.238460" r="2" fill="black"/>
+  <line id="CA" x1="25.087377" y1="43.238460" x2="0.000000" y2="0.000000" stroke="black"/>
+  <line id="CD" x1="25.087377" y1="43.238460" x2="26.053698" y2="14.746008" stroke="black"/>
+  <circle id="D" cx="26.053698" cy="14.746008" r="2" fill="black"/>
+</svg>

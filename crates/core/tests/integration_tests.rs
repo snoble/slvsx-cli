@@ -15,28 +15,32 @@ fn test_point_on_line_constraint() {
             Entity::Point {
                 id: "p1".to_string(),
                 at: vec![ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0)],
+                construction: false,
+                preserve: false,
             },
             Entity::Point {
                 id: "p2".to_string(),
                 at: vec![ExprOrNumber::Number(100.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0)],
+                construction: false,
+                preserve: false,
             },
             Entity::Point {
                 id: "p3".to_string(),
                 at: vec![ExprOrNumber::Number(50.0), ExprOrNumber::Number(50.0), ExprOrNumber::Number(0.0)],
+                construction: false,
+                preserve: false,
             },
             Entity::Line {
                 id: "line1".to_string(),
                 p1: "p1".to_string(),
                 p2: "p2".to_string(),
+                construction: false,
+                preserve: false,
             },
         ],
         constraints: vec![
-            Constraint::Fixed {
-                entity: "p1".to_string(),
-            },
-            Constraint::Fixed {
-                entity: "p2".to_string(),
-            },
+            Constraint::Fixed { entity: "p1".to_string(), workplane: None },
+            Constraint::Fixed { entity: "p2".to_string(), workplane: None },
             Constraint::PointOnLine {
                 point: "p3".to_string(),
                 line: "line1".to_string(),
@@ -76,28 +80,32 @@ fn test_coincident_constraint_point_on_line() {
             Entity::Point {
                 id: "p1".to_string(),
                 at: vec![ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0)],
+                construction: false,
+                preserve: false,
             },
             Entity::Point {
                 id: "p2".to_string(),
                 at: vec![ExprOrNumber::Number(100.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0)],
+                construction: false,
+                preserve: false,
             },
             Entity::Point {
                 id: "p3".to_string(),
                 at: vec![ExprOrNumber::Number(50.0), ExprOrNumber::Number(50.0), ExprOrNumber::Number(0.0)],
+                construction: false,
+                preserve: false,
             },
             Entity::Line {
                 id: "line1".to_string(),
                 p1: "p1".to_string(),
                 p2: "p2".to_string(),
+                construction: false,
+                preserve: false,
             },
         ],
         constraints: vec![
-            Constraint::Fixed {
-                entity: "p1".to_string(),
-            },
-            Constraint::Fixed {
-                entity: "p2".to_string(),
-            },
+            Constraint::Fixed { entity: "p1".to_string(), workplane: None },
+            Constraint::Fixed { entity: "p2".to_string(), workplane: None },
             Constraint::Coincident {
                 data: slvsx_core::ir::CoincidentData::PointOnLine {
                     at: "p3".to_string(),

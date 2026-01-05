@@ -1,6 +1,7 @@
 {
   "schema": "slvs-json/1",
   "units": "mm",
+  "description": "Demonstrates equal_length constraint - all sides of a rhombus are equal",
   "entities": [
     {
       "type": "point",
@@ -15,12 +16,12 @@
     {
       "type": "point",
       "id": "C",
-      "at": [120, 50, 0]
+      "at": [150, 50, 0]
     },
     {
       "type": "point",
       "id": "D",
-      "at": [20, 50, 0]
+      "at": [50, 50, 0]
     },
     {
       "type": "line",
@@ -57,44 +58,12 @@
       "entity": "B"
     },
     {
-      "type": "parallel",
-      "a": "AB",
-      "b": "CD"
+      "type": "equal_length",
+      "entities": ["AB", "BC"]
     },
     {
-      "type": "parallel",
-      "a": "BC",
-      "b": "DA"
-    },
-    {
-      "type": "perpendicular",
-      "a": "AB",
-      "b": "BC"
-    },
-    {
-      "type": "perpendicular",
-      "a": "BC",
-      "b": "CD"
-    },
-    {
-      "type": "distance",
-      "between": ["A", "B"],
-      "value": 100
-    },
-    {
-      "type": "distance",
-      "between": ["C", "D"],
-      "value": 100
-    },
-    {
-      "type": "distance",
-      "between": ["B", "C"],
-      "value": 50
-    },
-    {
-      "type": "distance",
-      "between": ["D", "A"],
-      "value": 50
+      "type": "equal_length",
+      "entities": ["CD", "DA"]
     }
   ]
 }

@@ -107,3 +107,9 @@ if solution["status"] == "ok":
 - **🏭 Manufacturing**: 3D printing, assembly validation
 
 Each example demonstrates SLVSX's ability to turn mechanical design from manual sketching into mathematical constraint solving - perfect for AI agents doing systematic mechanical problem solving.
+
+## 📚 Learning Resources
+
+- **[Iterative Design Guide](../docs/ITERATIVE_DESIGN.md)** - Learn how to build complex problems step-by-step
+- **[Visual Gallery](../docs/VISUAL_GALLERY.md)** - See rendered examples
+- **[AI Agent Guide](../docs/AI_GUIDE.md)** - For AI agents using SLVSX

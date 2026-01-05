@@ -84,13 +84,15 @@
     },
     {
       "type": "symmetric",
-      "points": ["left_barb", "right_barb"],
-      "line": "axis"
+      "a": "left_barb",
+      "b": "right_barb",
+      "about": "axis"
     },
     {
       "type": "symmetric",
-      "points": ["left_base", "right_base"],
-      "line": "axis"
+      "a": "left_base",
+      "b": "right_base",
+      "about": "axis"
     },
     {
       "type": "distance",

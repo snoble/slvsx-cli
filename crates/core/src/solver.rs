@@ -70,7 +70,7 @@ impl Solver {
 
         for (entity_idx, entity) in doc.entities.iter().enumerate() {
             match entity {
-                crate::ir::Entity::Point { id, at } => {
+                crate::ir::Entity::Point { id, at, preserve, .. } => {
                     // Evaluate expressions for point coordinates
                     let x = match &at[0] {
                         crate::ir::ExprOrNumber::Number(n) => *n,
@@ -90,7 +90,7 @@ impl Solver {
                     };
 
                     ffi_solver
-                        .add_point(next_id, x, y, z)
+                        .add_point(next_id, x, y, z, *preserve)
                         .map_err(|e| crate::error::Error::InvalidInput {
                             message: format!("Failed to add point '{}': {}", id, e),
                             pointer: Some(format!("/entities/{}", entity_idx)),
@@ -98,7 +98,32 @@ impl Solver {
                     entity_id_map.insert(id.clone(), next_id);
                     next_id += 1;
                 }
-                crate::ir::Entity::Line { id, p1, p2 } => {
+                crate::ir::Entity::Point2D { id, at, workplane, preserve, .. } => {
+                    // Evaluate expressions for 2D point coordinates
+                    let u = match &at[0] {
+                        crate::ir::ExprOrNumber::Number(n) => *n,
+                        crate::ir::ExprOrNumber::Expression(e) => eval.eval(&e)?,
+                    };
+                    let v = match &at[1] {
+                        crate::ir::ExprOrNumber::Number(n) => *n,
+                        crate::ir::ExprOrNumber::Expression(e) => eval.eval(&e)?,
+                    };
+
+                    // Look up workplane entity ID
+                    let workplane_id = entity_id_map
+                        .get(workplane)
+                        .ok_or_else(|| crate::error::Error::EntityNotFound(workplane.clone()))?;
+
+                    ffi_solver
+                        .add_point_2d(next_id, *workplane_id, u, v, *preserve)
+                        .map_err(|e| crate::error::Error::InvalidInput {
+                            message: format!("Failed to add 2D point '{}': {}", id, e),
+                            pointer: Some(format!("/entities/{}", entity_idx)),
+                        })?;
+                    entity_id_map.insert(id.clone(), next_id);
+                    next_id += 1;
+                }
+                crate::ir::Entity::Line { id, p1, p2, .. } => {
                     // Look up the point entity IDs
                     let point1_id = entity_id_map
                         .get(p1)
@@ -116,12 +141,35 @@ impl Solver {
                     entity_id_map.insert(id.clone(), next_id);
                     next_id += 1;
                 }
+                crate::ir::Entity::Line2D { id, p1, p2, workplane, .. } => {
+                    // Look up the point entity IDs (must be Point2D)
+                    let point1_id = entity_id_map
+                        .get(p1)
+                        .ok_or_else(|| crate::error::Error::EntityNotFound(p1.clone()))?;
+                    let point2_id = entity_id_map
+                        .get(p2)
+                        .ok_or_else(|| crate::error::Error::EntityNotFound(p2.clone()))?;
+                    let workplane_id = entity_id_map
+                        .get(workplane)
+                        .ok_or_else(|| crate::error::Error::EntityNotFound(workplane.clone()))?;
+
+                    ffi_solver
+                        .add_line_2d(next_id, *point1_id, *point2_id, *workplane_id)
+                        .map_err(|e| crate::error::Error::InvalidInput {
+                            message: format!("Failed to add 2D line '{}': {}", id, e),
+                            pointer: Some(format!("/entities/{}", entity_idx)),
+                        })?;
+                    entity_id_map.insert(id.clone(), next_id);
+                    next_id += 1;
+                }
                 crate::ir::Entity::Circle {
                     id,
                     center,
                     diameter,
+                    normal,
+                    ..
                 } => {
-                    // Evaluate expressions
+                    // Evaluate expressions for center
                     let cx = match &center[0] {
                         crate::ir::ExprOrNumber::Number(n) => *n,
                         crate::ir::ExprOrNumber::Expression(e) => eval.eval(&e)?,
@@ -144,9 +192,190 @@ impl Solver {
                     };
                     let radius = diam / 2.0;
 
+                    // Evaluate expressions for normal vector
+                    let nx = match normal.get(0) {
+                        Some(crate::ir::ExprOrNumber::Number(n)) => *n,
+                        Some(crate::ir::ExprOrNumber::Expression(e)) => eval.eval(&e)?,
+                        None => 0.0,
+                    };
+                    let ny = match normal.get(1) {
+                        Some(crate::ir::ExprOrNumber::Number(n)) => *n,
+                        Some(crate::ir::ExprOrNumber::Expression(e)) => eval.eval(&e)?,
+                        None => 0.0,
+                    };
+                    let nz = match normal.get(2) {
+                        Some(crate::ir::ExprOrNumber::Number(n)) => *n,
+                        Some(crate::ir::ExprOrNumber::Expression(e)) => eval.eval(&e)?,
+                        None => 1.0, // Default to Z-axis
+                    };
+
+                    // Normalize normal vector
+                    let norm_len = (nx * nx + ny * ny + nz * nz).sqrt();
+                    let nx_norm = if norm_len > 0.0 { nx / norm_len } else { 0.0 };
+                    let ny_norm = if norm_len > 0.0 { ny / norm_len } else { 0.0 };
+                    let nz_norm = if norm_len > 0.0 { nz / norm_len } else { 1.0 };
+
                     ffi_solver
-                        .add_circle(next_id, cx, cy, cz, radius)
+                        .add_circle(next_id, cx, cy, cz, radius, nx_norm, ny_norm, nz_norm)
                         .map_err(|e| crate::error::Error::Ffi(e))?;
+                    entity_id_map.insert(id.clone(), next_id);
+                    next_id += 1;
+                }
+                crate::ir::Entity::Arc {
+                    id,
+                    center,
+                    start,
+                    end,
+                    normal,
+                    workplane,
+                    ..
+                } => {
+                    // Look up point entity IDs
+                    let center_id = entity_id_map
+                        .get(center)
+                        .ok_or_else(|| crate::error::Error::EntityNotFound(center.clone()))?;
+                    let start_id = entity_id_map
+                        .get(start)
+                        .ok_or_else(|| crate::error::Error::EntityNotFound(start.clone()))?;
+                    let end_id = entity_id_map
+                        .get(end)
+                        .ok_or_else(|| crate::error::Error::EntityNotFound(end.clone()))?;
+
+                    // Evaluate normal vector
+                    let nx = match &normal[0] {
+                        crate::ir::ExprOrNumber::Number(n) => *n,
+                        crate::ir::ExprOrNumber::Expression(e) => eval.eval(&e)?,
+                    };
+                    let ny = match &normal[1] {
+                        crate::ir::ExprOrNumber::Number(n) => *n,
+                        crate::ir::ExprOrNumber::Expression(e) => eval.eval(&e)?,
+                    };
+                    let nz = if normal.len() > 2 {
+                        match &normal[2] {
+                            crate::ir::ExprOrNumber::Number(n) => *n,
+                            crate::ir::ExprOrNumber::Expression(e) => eval.eval(&e)?,
+                        }
+                    } else {
+                        1.0 // Default to Z-axis
+                    };
+
+                    // Normalize normal vector
+                    let norm_len = (nx * nx + ny * ny + nz * nz).sqrt();
+                    let nx_norm = if norm_len > 0.0 { nx / norm_len } else { 0.0 };
+                    let ny_norm = if norm_len > 0.0 { ny / norm_len } else { 0.0 };
+                    let nz_norm = if norm_len > 0.0 { nz / norm_len } else { 1.0 };
+
+                    // Get workplane ID if specified
+                    let workplane_id = workplane.as_ref().and_then(|wp| entity_id_map.get(wp).copied());
+
+                        ffi_solver
+                        .add_arc(next_id, *center_id, *start_id, *end_id, nx_norm, ny_norm, nz_norm, workplane_id)
+                        .map_err(|e| crate::error::Error::InvalidInput {
+                            message: format!("Failed to add arc '{}': {}", id, e),
+                            pointer: Some(format!("/entities/{}", entity_idx)),
+                        })?;
+                    entity_id_map.insert(id.clone(), next_id);
+                    next_id += 1;
+                }
+                crate::ir::Entity::Cubic {
+                    id,
+                    control_points,
+                    workplane,
+                    ..
+                } => {
+                    if control_points.len() != 4 {
+                        return Err(crate::error::Error::InvalidInput {
+                            message: format!("Cubic curve '{}' must have exactly 4 control points, got {}", id, control_points.len()),
+                            pointer: Some(format!("/entities/{}", entity_idx)),
+                        });
+                    }
+
+                    // Look up point entity IDs
+                    let pt0_id = entity_id_map
+                        .get(&control_points[0])
+                        .ok_or_else(|| crate::error::Error::EntityNotFound(control_points[0].clone()))?;
+                    let pt1_id = entity_id_map
+                        .get(&control_points[1])
+                        .ok_or_else(|| crate::error::Error::EntityNotFound(control_points[1].clone()))?;
+                    let pt2_id = entity_id_map
+                        .get(&control_points[2])
+                        .ok_or_else(|| crate::error::Error::EntityNotFound(control_points[2].clone()))?;
+                    let pt3_id = entity_id_map
+                        .get(&control_points[3])
+                        .ok_or_else(|| crate::error::Error::EntityNotFound(control_points[3].clone()))?;
+
+                    // Get workplane ID if specified
+                    let workplane_id = workplane.as_ref().and_then(|wp| entity_id_map.get(wp).copied());
+
+                    ffi_solver
+                        .add_cubic(next_id, *pt0_id, *pt1_id, *pt2_id, *pt3_id, workplane_id)
+                        .map_err(|e| crate::error::Error::InvalidInput {
+                            message: format!("Failed to add cubic curve '{}': {}", id, e),
+                            pointer: Some(format!("/entities/{}", entity_idx)),
+                        })?;
+                    entity_id_map.insert(id.clone(), next_id);
+                    next_id += 1;
+                }
+                crate::ir::Entity::Plane { id, origin, normal } => {
+                    // Evaluate expressions for origin point
+                    let ox = match &origin[0] {
+                        crate::ir::ExprOrNumber::Number(n) => *n,
+                        crate::ir::ExprOrNumber::Expression(e) => eval.eval(&e)?,
+                    };
+                    let oy = match &origin[1] {
+                        crate::ir::ExprOrNumber::Number(n) => *n,
+                        crate::ir::ExprOrNumber::Expression(e) => eval.eval(&e)?,
+                    };
+                    let oz = if origin.len() > 2 {
+                        match &origin[2] {
+                            crate::ir::ExprOrNumber::Number(n) => *n,
+                            crate::ir::ExprOrNumber::Expression(e) => eval.eval(&e)?,
+                        }
+                    } else {
+                        0.0
+                    };
+
+                    // Evaluate expressions for normal vector
+                    let nx = match &normal[0] {
+                        crate::ir::ExprOrNumber::Number(n) => *n,
+                        crate::ir::ExprOrNumber::Expression(e) => eval.eval(&e)?,
+                    };
+                    let ny = match &normal[1] {
+                        crate::ir::ExprOrNumber::Number(n) => *n,
+                        crate::ir::ExprOrNumber::Expression(e) => eval.eval(&e)?,
+                    };
+                    let nz = if normal.len() > 2 {
+                        match &normal[2] {
+                            crate::ir::ExprOrNumber::Number(n) => *n,
+                            crate::ir::ExprOrNumber::Expression(e) => eval.eval(&e)?,
+                        }
+                    } else {
+                        1.0 // Default to Z-axis if not specified
+                    };
+
+                    // Normalize normal vector (consistent with Arc entity handling)
+                    let norm_len = (nx * nx + ny * ny + nz * nz).sqrt();
+                    let nx_norm = if norm_len > 0.0 { nx / norm_len } else { 0.0 };
+                    let ny_norm = if norm_len > 0.0 { ny / norm_len } else { 0.0 };
+                    let nz_norm = if norm_len > 0.0 { nz / norm_len } else { 1.0 };
+
+                    // Create origin point first (temporary, will be used by workplane)
+                    let origin_point_id = next_id;
+                    ffi_solver
+                        .add_point(origin_point_id, ox, oy, oz, false)  // Plane origin not preserved
+                        .map_err(|e| crate::error::Error::InvalidInput {
+                            message: format!("Failed to add plane origin point '{}': {}", id, e),
+                            pointer: Some(format!("/entities/{}", entity_idx)),
+                        })?;
+                    next_id += 1;
+
+                    // Create workplane with normalized normal
+                        ffi_solver
+                        .add_workplane(next_id, origin_point_id, nx_norm, ny_norm, nz_norm)
+                        .map_err(|e| crate::error::Error::InvalidInput {
+                            message: format!("Failed to add plane '{}': {}", id, e),
+                            pointer: Some(format!("/entities/{}", entity_idx)),
+                        })?;
                     entity_id_map.insert(id.clone(), next_id);
                     next_id += 1;
                 }
@@ -154,113 +383,24 @@ impl Solver {
             }
         }
 
-        // Add constraints from JSON - generic handling
+        // Add constraints from JSON - use ConstraintRegistry to ensure all constraints are handled
+        use crate::constraint_registry::ConstraintRegistry;
         let mut constraint_id = 100;
 
         // Process all constraints from JSON
         for (constraint_idx, constraint) in doc.constraints.iter().enumerate() {
-            match constraint {
-                crate::ir::Constraint::Fixed { entity } => {
-                    let entity_id = entity_id_map.get(entity).copied().unwrap_or_else(|| {
-                        0
-                    });
-                    ffi_solver
-                        .add_fixed_constraint(constraint_id, entity_id)
-                        .map_err(|e| crate::error::Error::InvalidInput {
-                            message: format!("Failed to add fixed constraint for entity '{}': {}", entity, e),
-                            pointer: Some(format!("/constraints/{}", constraint_idx)),
-                        })?;
-                    constraint_id += 1;
-                }
-                crate::ir::Constraint::Distance { between, value } => {
-                    if between.len() == 2 {
-                        let id1 = entity_id_map.get(&between[0]).copied().unwrap_or(0);
-                        let id2 = entity_id_map.get(&between[1]).copied().unwrap_or(0);
-                        let dist = match value {
-                            crate::ir::ExprOrNumber::Number(n) => *n,
-                            crate::ir::ExprOrNumber::Expression(e) => eval.eval(&e)?,
-                        };
-                        ffi_solver
-                            .add_distance_constraint(constraint_id, id1, id2, dist)
-                            .map_err(|e| crate::error::Error::InvalidInput {
-                                message: format!("Failed to add distance constraint between '{}' and '{}': {}", between[0], between[1], e),
-                                pointer: Some(format!("/constraints/{}", constraint_idx)),
-                            })?;
-                        constraint_id += 1;
-                    }
-                }
-                crate::ir::Constraint::PointOnLine { point, line } => {
-                    let point_id = entity_id_map.get(point).copied().unwrap_or(0);
-                    let line_id = entity_id_map.get(line).copied().unwrap_or(0);
-                    ffi_solver
-                        .add_point_on_line_constraint(constraint_id, point_id, line_id)
-                        .map_err(|e| crate::error::Error::InvalidInput {
-                            message: format!("Failed to add point-on-line constraint: point '{}' on line '{}': {}", point, line, e),
-                            pointer: Some(format!("/constraints/{}", constraint_idx)),
-                        })?;
-                    constraint_id += 1;
-                }
-                crate::ir::Constraint::Coincident { data } => {
-                    match data {
-                        crate::ir::CoincidentData::PointOnLine { at, of } => {
-                            // Handle point-on-line coincident
-                            if of.len() == 1 {
-                                let point_id = entity_id_map.get(at).copied().unwrap_or(0);
-                                let line_id = entity_id_map.get(&of[0]).copied().unwrap_or(0);
-                                ffi_solver
-                                    .add_point_on_line_constraint(constraint_id, point_id, line_id)
-                                    .map_err(|e| crate::error::Error::InvalidInput {
-                                        message: format!("Failed to add coincident constraint: point '{}' on line '{}': {}", at, of[0], e),
-                                        pointer: Some(format!("/constraints/{}", constraint_idx)),
-                                    })?;
-                                constraint_id += 1;
-                            }
-                        },
-                        crate::ir::CoincidentData::TwoEntities { entities } => {
-                            // Handle point-to-point coincident
-                            if entities.len() == 2 {
-                                // For point-to-point coincident, we can use a distance constraint of 0
-                                let id1 = entity_id_map.get(&entities[0]).copied().unwrap_or(0);
-                                let id2 = entity_id_map.get(&entities[1]).copied().unwrap_or(0);
-                                ffi_solver
-                                    .add_distance_constraint(constraint_id, id1, id2, 0.0)
-                                    .map_err(|e| crate::error::Error::InvalidInput {
-                                        message: format!("Failed to add coincident constraint between '{}' and '{}': {}", entities[0], entities[1], e),
-                                        pointer: Some(format!("/constraints/{}", constraint_idx)),
-                                    })?;
-                                constraint_id += 1;
-                            }
-                        }
-                    }
-                }
-                crate::ir::Constraint::Perpendicular { a, b } => {
-                    let line1_id = entity_id_map.get(a).copied().unwrap_or(0);
-                    let line2_id = entity_id_map.get(b).copied().unwrap_or(0);
-                    ffi_solver
-                        .add_perpendicular_constraint(constraint_id, line1_id, line2_id)
-                        .map_err(|e| crate::error::Error::InvalidInput {
-                            message: format!("Failed to add perpendicular constraint between '{}' and '{}': {}", a, b, e),
-                            pointer: Some(format!("/constraints/{}", constraint_idx)),
-                        })?;
-                    constraint_id += 1;
-                }
-                crate::ir::Constraint::Parallel { entities } => {
-                    if entities.len() == 2 {
-                        let line1_id = entity_id_map.get(&entities[0]).copied().unwrap_or(0);
-                        let line2_id = entity_id_map.get(&entities[1]).copied().unwrap_or(0);
-                        ffi_solver
-                            .add_parallel_constraint(constraint_id, line1_id, line2_id)
-                            .map_err(|e| crate::error::Error::InvalidInput {
-                                message: format!("Failed to add parallel constraint between '{}' and '{}': {}", entities[0], entities[1], e),
-                                pointer: Some(format!("/constraints/{}", constraint_idx)),
-                            })?;
-                        constraint_id += 1;
-                    }
-                }
-                _ => {
-                    // Constraint type not yet implemented - will be ignored
-                } // Handle other constraint types as needed
-            }
+            ConstraintRegistry::process_constraint(
+                constraint,
+                &mut ffi_solver,
+                constraint_id,
+                &entity_id_map,
+                &eval,
+            )
+            .map_err(|e| crate::error::Error::InvalidInput {
+                message: format!("Failed to process constraint: {}", e),
+                pointer: Some(format!("/constraints/{}", constraint_idx)),
+            })?;
+            constraint_id += 1;
         }
 
         // Actually solve the constraints!
@@ -275,7 +415,7 @@ impl Solver {
         // Retrieve solved positions for all entities
         for entity in &doc.entities {
             match entity {
-                crate::ir::Entity::Point { id, .. } => {
+                crate::ir::Entity::Point { id, .. } | crate::ir::Entity::Point2D { id, .. } => {
                     let entity_id = entity_id_map.get(id).copied().unwrap_or(0);
                     if let Ok((x, y, z)) = ffi_solver.get_point_position(entity_id) {
                         resolved_entities.insert(
@@ -284,7 +424,8 @@ impl Solver {
                         );
                     }
                 }
-                crate::ir::Entity::Line { id, p1, p2 } => {
+                crate::ir::Entity::Line { id, p1, p2, .. }
+                | crate::ir::Entity::Line2D { id, p1, p2, .. } => {
                     // Lines are defined by their endpoints, get the actual coordinates
                     let p1_id = entity_id_map
                         .get(p1)
@@ -306,14 +447,32 @@ impl Solver {
                         );
                     }
                 }
-                crate::ir::Entity::Circle { id, .. } => {
+                crate::ir::Entity::Circle { id, normal, .. } => {
                     let entity_id = entity_id_map.get(id).copied().unwrap_or(0);
                     if let Ok((cx, cy, cz, radius)) = ffi_solver.get_circle_position(entity_id) {
+                        // Evaluate normal components
+                        let nx = match normal.get(0) {
+                            Some(crate::ir::ExprOrNumber::Number(n)) => *n,
+                            Some(crate::ir::ExprOrNumber::Expression(e)) => eval.eval(e).unwrap_or(0.0),
+                            None => 0.0,
+                        };
+                        let ny = match normal.get(1) {
+                            Some(crate::ir::ExprOrNumber::Number(n)) => *n,
+                            Some(crate::ir::ExprOrNumber::Expression(e)) => eval.eval(e).unwrap_or(0.0),
+                            None => 0.0,
+                        };
+                        let nz = match normal.get(2) {
+                            Some(crate::ir::ExprOrNumber::Number(n)) => *n,
+                            Some(crate::ir::ExprOrNumber::Expression(e)) => eval.eval(e).unwrap_or(1.0),
+                            None => 1.0,
+                        };
+                        
                         resolved_entities.insert(
                             id.clone(),
                             crate::ir::ResolvedEntity::Circle {
                                 center: vec![cx, cy, cz],
                                 diameter: radius * 2.0,
+                                normal: vec![nx, ny, nz],
                             },
                         );
                     }

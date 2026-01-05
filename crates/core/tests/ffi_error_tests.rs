@@ -204,6 +204,8 @@ fn test_overconstrained_error() {
                     ExprOrNumber::Number(0.0),
                     ExprOrNumber::Number(0.0),
                 ],
+                construction: false,
+                preserve: false,
             },
             Entity::Point {
                 id: "p2".to_string(),
@@ -212,15 +214,13 @@ fn test_overconstrained_error() {
                     ExprOrNumber::Number(0.0),
                     ExprOrNumber::Number(0.0),
                 ],
+                construction: false,
+                preserve: false,
             },
         ],
         constraints: vec![
-            Constraint::Fixed {
-                entity: "p1".to_string(),
-            },
-            Constraint::Fixed {
-                entity: "p2".to_string(),
-            },
+            Constraint::Fixed { entity: "p1".to_string(), workplane: None },
+            Constraint::Fixed { entity: "p2".to_string(), workplane: None },
             Constraint::Distance {
                 between: vec!["p1".to_string(), "p2".to_string()],
                 value: ExprOrNumber::Number(50.0), // Conflicting with fixed positions

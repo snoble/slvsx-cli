@@ -94,6 +94,8 @@ mod tests {
                     ExprOrNumber::Number(0.0),
                     ExprOrNumber::Number(0.0),
                 ],
+                construction: false,
+                preserve: false,
             }],
             constraints: vec![],
         };

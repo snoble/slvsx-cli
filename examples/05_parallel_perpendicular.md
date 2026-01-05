@@ -148,4 +148,4 @@ This says "these lines meet at 90 degrees" - perfect for corners!
 
 Geometric constraints (parallel, perpendicular, horizontal, vertical) define *relationships* not *positions*. Combine them with distance or fixed constraints to fully define your sketch.
 
-**[Next: Working with Angles →](06_angles.md)**
+**[Next: Working with Circles →](06_circles.md)**

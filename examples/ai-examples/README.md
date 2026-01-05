@@ -125,6 +125,6 @@ def solve_problem(filename):
 
 ## Further Reading
 
-- [SLVSX JSON Schema](../schema/slvs-json.schema.json)
+- [SLVSX JSON Schema](../../schema/slvs-json.schema.json)
 - [MCP Integration Guide](../../docs/MCP_INTEGRATION.md)
 - [All Examples](../README.md)

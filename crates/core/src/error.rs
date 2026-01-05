@@ -26,7 +26,7 @@ pub enum Error {
     #[error("Entity not found: {0}")]
     EntityNotFound(String),
 
-    #[error("FFI error: {0}")]
+    #[error("{0}")]
     Ffi(String),
 
     #[error("IO error: {0}")]

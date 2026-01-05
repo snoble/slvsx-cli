@@ -217,6 +217,100 @@ jobs:
         run: |
           chmod +x test-examples.sh
           ./test-examples.sh || echo "Some examples failed (expected - unimplemented constraints)"
+
+      - name: Generate and verify renders
+        if: matrix.os == 'ubuntu-latest'  # Only run once, on Linux
+        run: |
+          export SLVS_LIB_DIR=$PWD/libslvs-static/build
+          
+          # Find the binary location
+          if [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
+            BINARY_PATH="target/x86_64-unknown-linux-gnu/release/slvsx"
+          else
+            BINARY_PATH="target/release/slvsx"
+          fi
+          
+          # Ensure output directory exists
+          mkdir -p examples/outputs
+          
+          echo "Generating SVG renders..."
+          
+          # Generate renders for 2D examples
+          for example in examples/*.json; do
+            if [ -f "$example" ]; then
+              name=$(basename "$example" .json)
+              
+              # Skip solution output files (they have a different format)
+              if [[ "$name" == *_solution ]]; then
+                echo "  Skipping $name (solution output file)"
+                continue
+              fi
+              
+              echo "  Rendering $name..."
+              
+              # Solve first (needed for export)
+              "$BINARY_PATH" solve "$example" > /dev/null 2>&1 || true
+              
+              # Export to SVG
+              "$BINARY_PATH" export -f svg "$example" -o "examples/outputs/${name}.svg" 2>&1 || true
+            fi
+          done
+          
+          # Generate multiple views for 3D examples
+          echo "Generating 3D views..."
+          
+          # Tetrahedron - all views including isometric
+          if [ -f "examples/04_3d_tetrahedron.json" ]; then
+            "$BINARY_PATH" solve "examples/04_3d_tetrahedron.json" > /dev/null 2>&1
+            "$BINARY_PATH" export -f svg -v xy "examples/04_3d_tetrahedron.json" -o "examples/outputs/tetrahedron_xy.svg" 2>&1
+            "$BINARY_PATH" export -f svg -v xz "examples/04_3d_tetrahedron.json" -o "examples/outputs/tetrahedron_xz.svg" 2>&1
+            "$BINARY_PATH" export -f svg -v yz "examples/04_3d_tetrahedron.json" -o "examples/outputs/tetrahedron_yz.svg" 2>&1
+            "$BINARY_PATH" export -f svg -v isometric "examples/04_3d_tetrahedron.json" -o "examples/outputs/tetrahedron_isometric.svg" 2>&1
+            echo "  Generated tetrahedron views (XY, XZ, YZ, Isometric)"
+          fi
+          
+          # 3D basics - multiple views including isometric
+          if [ -f "examples/12_3d_basics.json" ]; then
+            "$BINARY_PATH" solve "examples/12_3d_basics.json" > /dev/null 2>&1
+            "$BINARY_PATH" export -f svg -v xy "examples/12_3d_basics.json" -o "examples/outputs/3d_basics_xy.svg" 2>&1
+            "$BINARY_PATH" export -f svg -v xz "examples/12_3d_basics.json" -o "examples/outputs/3d_basics_xz.svg" 2>&1
+            "$BINARY_PATH" export -f svg -v isometric "examples/12_3d_basics.json" -o "examples/outputs/3d_basics_isometric.svg" 2>&1
+            echo "  Generated 3D basics views (XY, XZ, Isometric)"
+          fi
+          
+          # Birdhouse - all views including isometric
+          if [ -f "examples/21_birdhouse.json" ]; then
+            "$BINARY_PATH" solve "examples/21_birdhouse.json" > /dev/null 2>&1
+            "$BINARY_PATH" export -f svg -v xy "examples/21_birdhouse.json" -o "examples/outputs/birdhouse_xy.svg" 2>&1
+            "$BINARY_PATH" export -f svg -v xz "examples/21_birdhouse.json" -o "examples/outputs/birdhouse_xz.svg" 2>&1
+            "$BINARY_PATH" export -f svg -v yz "examples/21_birdhouse.json" -o "examples/outputs/birdhouse_yz.svg" 2>&1
+            "$BINARY_PATH" export -f svg -v isometric "examples/21_birdhouse.json" -o "examples/outputs/birdhouse_isometric.svg" 2>&1
+            echo "  Generated birdhouse views (XY, XZ, YZ, Isometric)"
+          fi
+          
+          echo ""
+          echo "Generated renders:"
+          ls -1 examples/outputs/*.svg 2>/dev/null | wc -l | xargs echo "  Total SVG files:"
+          
+          echo ""
+          echo "Checking for differences from committed renders..."
+          
+          # Check if there are any meaningful differences (ignore trailing whitespace/newlines)
+          if git diff --quiet --ignore-space-at-eol --ignore-blank-lines examples/outputs/*.svg 2>/dev/null; then
+            echo "✅ All renders match committed versions"
+          else
+            echo "❌ ERROR: Generated renders differ from committed renders!"
+            echo ""
+            echo "Differences found:"
+            git diff --stat --ignore-space-at-eol --ignore-blank-lines examples/outputs/*.svg || true
+            echo ""
+            echo "Detailed diff (ignoring whitespace):"
+            git diff --ignore-space-at-eol --ignore-blank-lines examples/outputs/*.svg | head -100 || true
+            echo ""
+            echo "To fix this, run: ./scripts/generate_renders.sh"
+            echo "Then commit the updated renders."
+            exit 1
+          fi
           
       - name: Upload static binary artifact
         uses: actions/upload-artifact@v4

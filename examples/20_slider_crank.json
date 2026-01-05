@@ -1,10 +1,10 @@
 {
   "schema": "slvs-json/1",
   "units": "mm",
+  "description": "Slider-crank mechanism - piston slides along axis",
   "parameters": {
     "crank_length": 50.0,
-    "connecting_rod_length": 120.0,
-    "crank_angle": 30.0
+    "connecting_rod_length": 120.0
   },
   "entities": [
     {
@@ -14,13 +14,24 @@
     },
     {
       "type": "point",
+      "id": "axis_end",
+      "at": [200, 0, 0]
+    },
+    {
+      "type": "point",
       "id": "crank_end",
-      "at": [50, 0, 0]
+      "at": [43.3, 25, 0]
     },
     {
       "type": "point",
       "id": "piston",
-      "at": [170, 0, 0]
+      "at": [163, 0, 0]
+    },
+    {
+      "type": "line",
+      "id": "piston_axis",
+      "p1": "crank_pivot",
+      "p2": "axis_end"
     },
     {
       "type": "line",
@@ -33,12 +44,6 @@
       "id": "connecting_rod",
       "p1": "crank_end",
       "p2": "piston"
-    },
-    {
-      "type": "line",
-      "id": "ground_line",
-      "p1": "crank_pivot",
-      "p2": "piston"
     }
   ],
   "constraints": [
@@ -47,9 +52,13 @@
       "entity": "crank_pivot"
     },
     {
+      "type": "fixed",
+      "entity": "axis_end"
+    },
+    {
       "type": "point_on_line",
       "point": "piston",
-      "line": "ground_line"
+      "line": "piston_axis"
     },
     {
       "type": "distance",

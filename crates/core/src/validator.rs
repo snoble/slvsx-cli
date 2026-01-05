@@ -62,22 +62,68 @@ impl Validator {
 
         for (idx, constraint) in doc.constraints.iter().enumerate() {
             let refs = match constraint {
-                Constraint::Fixed { entity } => vec![entity.as_str()],
+                Constraint::Fixed { entity, .. } => vec![entity.as_str()],
                 Constraint::Distance { between, .. } => between.iter().map(|s| s.as_str()).collect(),
                 Constraint::Angle { between, .. } => between.iter().map(|s| s.as_str()).collect(),
-                Constraint::Perpendicular { a, b } | Constraint::EqualRadius { a, b } | Constraint::Tangent { a, b } => {
+                Constraint::Perpendicular { a, b } | Constraint::EqualRadius { a, b } | Constraint::Tangent { a, b } | 
+                Constraint::SameOrientation { a, b } | Constraint::CubicLineTangent { cubic: a, line: b } => {
                     vec![a.as_str(), b.as_str()]
                 }
                 Constraint::Parallel { entities } | Constraint::EqualLength { entities } => {
                     entities.iter().map(|s| s.as_str()).collect()
                 }
-                Constraint::Horizontal { a } | Constraint::Vertical { a } => vec![a.as_str()],
-                Constraint::PointOnLine { point, line } => vec![point.as_str(), line.as_str()],
+                Constraint::EqualAngle { lines } => {
+                    lines.iter().map(|s| s.as_str()).collect()
+                }
+                Constraint::Horizontal { a, workplane } | Constraint::Vertical { a, workplane } => {
+                    vec![a.as_str(), workplane.as_str()]
+                }
+                Constraint::Diameter { circle: a, .. } => {
+                    vec![a.as_str()]
+                }
+                Constraint::PointOnLine { point, line } | Constraint::PointLineDistance { point, line, .. } | 
+                Constraint::EqualLengthPointLineDistance { point, line, .. } => {
+                    vec![point.as_str(), line.as_str()]
+                }
                 Constraint::PointOnCircle { point, circle } => vec![point.as_str(), circle.as_str()],
                 Constraint::Symmetric { a, b, about } => vec![a.as_str(), b.as_str(), about.as_str()],
+                Constraint::SymmetricHorizontal { a, b, workplane } | Constraint::SymmetricVertical { a, b, workplane } => {
+                    vec![a.as_str(), b.as_str(), workplane.as_str()]
+                }
                 Constraint::Midpoint { point, of } => {
                     let mut refs = vec![point.as_str()];
                     refs.push(of.as_str());
+                    refs
+                }
+                Constraint::PointInPlane { point, plane } | Constraint::PointPlaneDistance { point, plane, .. } => {
+                    vec![point.as_str(), plane.as_str()]
+                }
+                Constraint::LengthRatio { a, b, .. } | Constraint::LengthDifference { a, b, .. } => {
+                    vec![a.as_str(), b.as_str()]
+                }
+                Constraint::ProjectedPointDistance { a, b, plane, .. } => {
+                    vec![a.as_str(), b.as_str(), plane.as_str()]
+                }
+                Constraint::PointOnFace { point, face } | Constraint::PointFaceDistance { point, face, .. } => {
+                    vec![point.as_str(), face.as_str()]
+                }
+                Constraint::EqualLineArcLength { line, arc } => {
+                    vec![line.as_str(), arc.as_str()]
+                }
+                Constraint::EqualPointLineDistances { point1, line1, point2, line2 } => {
+                    vec![point1.as_str(), line1.as_str(), point2.as_str(), line2.as_str()]
+                }
+                Constraint::ArcArcLengthRatio { a, b, .. } | Constraint::ArcArcLengthDifference { a, b, .. } => {
+                    vec![a.as_str(), b.as_str()]
+                }
+                Constraint::ArcLineLengthRatio { arc, line, .. } | Constraint::ArcLineLengthDifference { arc, line, .. } => {
+                    vec![arc.as_str(), line.as_str()]
+                }
+                Constraint::Dragged { point, workplane } => {
+                    let mut refs = vec![point.as_str()];
+                    if let Some(wp) = workplane {
+                        refs.push(wp.as_str());
+                    }
                     refs
                 }
                 Constraint::Coincident { data } => {
@@ -169,7 +215,79 @@ impl Validator {
                         }
                     }
                 }
-                Entity::Arc { start, end, .. } => {
+                Entity::Line2D { p1, p2, workplane, .. } => {
+                    // Validate that p1 and p2 reference Point2D entities
+                    if !seen_point_ids.contains(p1.as_str()) {
+                        if !seen_entity_ids.contains(p1.as_str()) {
+                            return Err(Error::InvalidInput {
+                                message: format!(
+                                    "Line2D entity #{} references point '{}' that is not yet defined. Entities must be defined before they are referenced.",
+                                    idx + 1, p1
+                                ),
+                                pointer: Some(format!("/entities/{}/p1", idx)),
+                            });
+                        } else {
+                            return Err(Error::InvalidInput {
+                                message: format!(
+                                    "Line2D entity #{} references '{}' which is not a Point2D entity. Line2D endpoints must reference Point2D entities.",
+                                    idx + 1, p1
+                                ),
+                                pointer: Some(format!("/entities/{}/p1", idx)),
+                            });
+                        }
+                    }
+                    if !seen_point_ids.contains(p2.as_str()) {
+                        if !seen_entity_ids.contains(p2.as_str()) {
+                            return Err(Error::InvalidInput {
+                                message: format!(
+                                    "Line2D entity #{} references point '{}' that is not yet defined. Entities must be defined before they are referenced.",
+                                    idx + 1, p2
+                                ),
+                                pointer: Some(format!("/entities/{}/p2", idx)),
+                            });
+                        } else {
+                            return Err(Error::InvalidInput {
+                                message: format!(
+                                    "Line2D entity #{} references '{}' which is not a Point2D entity. Line2D endpoints must reference Point2D entities.",
+                                    idx + 1, p2
+                                ),
+                                pointer: Some(format!("/entities/{}/p2", idx)),
+                            });
+                        }
+                    }
+                    // Validate workplane reference
+                    if !seen_entity_ids.contains(workplane.as_str()) {
+                        return Err(Error::InvalidInput {
+                            message: format!(
+                                "Line2D entity #{} references workplane '{}' that is not yet defined. Entities must be defined before they are referenced.",
+                                idx + 1, workplane
+                            ),
+                            pointer: Some(format!("/entities/{}/workplane", idx)),
+                        });
+                    }
+                }
+                Entity::Arc { center, start, end, workplane, .. } => {
+                    // Validate center point reference
+                    if !seen_point_ids.contains(center.as_str()) {
+                        if !seen_entity_ids.contains(center.as_str()) {
+                            return Err(Error::InvalidInput {
+                                message: format!(
+                                    "Arc entity #{} references point '{}' that is not yet defined. Entities must be defined before they are referenced.",
+                                    idx + 1, center
+                                ),
+                                pointer: Some(format!("/entities/{}/center", idx)),
+                            });
+                        } else {
+                            return Err(Error::InvalidInput {
+                                message: format!(
+                                    "Arc entity #{} references '{}' which is not a Point entity. Arc center must reference a Point entity.",
+                                    idx + 1, center
+                                ),
+                                pointer: Some(format!("/entities/{}/center", idx)),
+                            });
+                        }
+                    }
+                    // Validate start point reference
                     if !seen_point_ids.contains(start.as_str()) {
                         if !seen_entity_ids.contains(start.as_str()) {
                             return Err(Error::InvalidInput {
@@ -189,6 +307,7 @@ impl Validator {
                             });
                         }
                     }
+                    // Validate end point reference
                     if !seen_point_ids.contains(end.as_str()) {
                         if !seen_entity_ids.contains(end.as_str()) {
                             return Err(Error::InvalidInput {
@@ -208,6 +327,68 @@ impl Validator {
                             });
                         }
                     }
+                    // Validate workplane if specified
+                    if let Some(wp_id) = workplane {
+                        if !seen_entity_ids.contains(wp_id.as_str()) {
+                            return Err(Error::InvalidInput {
+                                message: format!(
+                                    "Arc entity #{} references workplane '{}' that is not yet defined. Entities must be defined before they are referenced.",
+                                    idx + 1, wp_id
+                                ),
+                                pointer: Some(format!("/entities/{}/workplane", idx)),
+                            });
+                        }
+                    }
+                }
+                Entity::Cubic { control_points, workplane, .. } => {
+                    // Validate all control points
+                    for (pt_idx, pt_id) in control_points.iter().enumerate() {
+                        if !seen_point_ids.contains(pt_id.as_str()) {
+                            if !seen_entity_ids.contains(pt_id.as_str()) {
+                                return Err(Error::InvalidInput {
+                                    message: format!(
+                                        "Cubic entity #{} control point #{} '{}' is not yet defined. Entities must be defined before they are referenced.",
+                                        idx + 1, pt_idx + 1, pt_id
+                                    ),
+                                    pointer: Some(format!("/entities/{}/control_points/{}", idx, pt_idx)),
+                                });
+                            } else {
+                                return Err(Error::InvalidInput {
+                                    message: format!(
+                                        "Cubic entity #{} control point #{} '{}' is not a Point entity. Cubic control points must reference Point entities.",
+                                        idx + 1, pt_idx + 1, pt_id
+                                    ),
+                                    pointer: Some(format!("/entities/{}/control_points/{}", idx, pt_idx)),
+                                });
+                            }
+                        }
+                    }
+                    // Validate workplane if specified
+                    if let Some(wp_id) = workplane {
+                        if !seen_entity_ids.contains(wp_id.as_str()) {
+                            return Err(Error::InvalidInput {
+                                message: format!(
+                                    "Cubic entity #{} references workplane '{}' that is not yet defined. Entities must be defined before they are referenced.",
+                                    idx + 1, wp_id
+                                ),
+                                pointer: Some(format!("/entities/{}/workplane", idx)),
+                            });
+                        }
+                    }
+                }
+                Entity::Point2D { workplane, .. } => {
+                    // Validate workplane reference
+                    if !seen_entity_ids.contains(workplane.as_str()) {
+                        return Err(Error::InvalidInput {
+                            message: format!(
+                                "Point2D entity #{} references workplane '{}' that is not yet defined. Entities must be defined before they are referenced.",
+                                idx + 1, workplane
+                            ),
+                            pointer: Some(format!("/entities/{}/workplane", idx)),
+                        });
+                    }
+                    // Track Point2D as a Point for reference validation
+                    seen_point_ids.insert(entity.id());
                 }
                 Entity::Point { .. } => {
                     // Track Point entities separately
@@ -282,10 +463,14 @@ mod tests {
                 Entity::Point {
                     id: "p1".to_string(),
                     at: vec![ExprOrNumber::Number(0.0)],
+                    construction: false,
+                    preserve: false,
                 },
                 Entity::Point {
                     id: "p2".to_string(),
                     at: vec![ExprOrNumber::Number(1.0)],
+                    construction: false,
+                    preserve: false,
                 },
             ],
             constraints: vec![],
@@ -304,10 +489,14 @@ mod tests {
                 Entity::Point {
                     id: "p1".to_string(),
                     at: vec![ExprOrNumber::Number(0.0)],
+                    construction: false,
+                    preserve: false,
                 },
                 Entity::Point {
                     id: "p1".to_string(),
                     at: vec![ExprOrNumber::Number(1.0)],
+                    construction: false,
+                    preserve: false,
                 },
             ],
             constraints: vec![],
@@ -366,6 +555,8 @@ mod tests {
             entities: vec![Entity::Point {
                 id: "p1".to_string(),
                 at: vec![ExprOrNumber::Number(0.0)],
+                construction: false,
+                preserve: false,
             }],
             constraints: vec![],
         };
@@ -384,15 +575,17 @@ mod tests {
                 Entity::Point {
                     id: "p1".to_string(),
                     at: vec![ExprOrNumber::Number(0.0)],
+                    construction: false,
+                    preserve: false,
                 },
                 Entity::Point {
                     id: "p2".to_string(),
                     at: vec![ExprOrNumber::Number(1.0)],
+                    construction: false,
+                    preserve: false,
                 },
             ],
-            constraints: vec![Constraint::Fixed {
-                entity: "p1".to_string(),
-            }],
+            constraints: vec![Constraint::Fixed { entity: "p1".to_string(), workplane: None }],
         };
         assert!(validator.validate_constraint_references(&doc).is_ok());
     }
@@ -408,10 +601,10 @@ mod tests {
             entities: vec![Entity::Point {
                 id: "p1".to_string(),
                 at: vec![ExprOrNumber::Number(0.0)],
+                construction: false,
+                preserve: false,
             }],
-            constraints: vec![Constraint::Fixed {
-                entity: "nonexistent".to_string(),
-            }],
+            constraints: vec![Constraint::Fixed { entity: "nonexistent".to_string(), workplane: None }],
         };
         let result = validator.validate_constraint_references(&doc);
         assert!(result.is_err());
@@ -437,15 +630,21 @@ mod tests {
                 Entity::Point {
                     id: "p1".to_string(),
                     at: vec![ExprOrNumber::Number(0.0)],
+                    construction: false,
+                    preserve: false,
                 },
                 Entity::Point {
                     id: "p2".to_string(),
                     at: vec![ExprOrNumber::Number(1.0)],
+                    construction: false,
+                    preserve: false,
                 },
                 Entity::Line {
                     id: "l1".to_string(),
                     p1: "p1".to_string(),
                     p2: "p2".to_string(),
+                    construction: false,
+                    preserve: false,
                 },
             ],
             constraints: vec![],
@@ -465,11 +664,15 @@ mod tests {
                 Entity::Point {
                     id: "p1".to_string(),
                     at: vec![ExprOrNumber::Number(0.0)],
+                    construction: false,
+                    preserve: false,
                 },
                 Entity::Line {
                     id: "l1".to_string(),
                     p1: "p1".to_string(),
                     p2: "nonexistent".to_string(), // p2 doesn't exist
+                    construction: false,
+                    preserve: false,
                 },
             ],
             constraints: vec![],
@@ -498,11 +701,15 @@ mod tests {
                 Entity::Point {
                     id: "p2".to_string(),
                     at: vec![ExprOrNumber::Number(1.0)],
+                    construction: false,
+                    preserve: false,
                 },
                 Entity::Line {
                     id: "l1".to_string(),
                     p1: "nonexistent".to_string(), // p1 doesn't exist
                     p2: "p2".to_string(),
+                    construction: false,
+                    preserve: false,
                 },
             ],
             constraints: vec![],
@@ -531,12 +738,18 @@ mod tests {
                 Entity::Point {
                     id: "end".to_string(),
                     at: vec![ExprOrNumber::Number(1.0)],
+                    construction: false,
+                    preserve: false,
                 },
                 Entity::Arc {
                     id: "a1".to_string(),
-                    center: vec![ExprOrNumber::Number(0.0)],
+                    center: "end".to_string(),
                     start: "nonexistent".to_string(), // start doesn't exist
                     end: "end".to_string(),
+                    normal: vec![ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(1.0)],
+                    workplane: None,
+                    construction: false,
+                    preserve: false,
                 },
             ],
             constraints: vec![],
@@ -565,12 +778,18 @@ mod tests {
                 Entity::Point {
                     id: "start".to_string(),
                     at: vec![ExprOrNumber::Number(0.0)],
+                    construction: false,
+                    preserve: false,
                 },
                 Entity::Arc {
                     id: "a1".to_string(),
-                    center: vec![ExprOrNumber::Number(0.0)],
+                    center: "start".to_string(),
                     start: "start".to_string(),
                     end: "nonexistent".to_string(), // end doesn't exist
+                    normal: vec![ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(1.0)],
+                    workplane: None,
+                    construction: false,
+                    preserve: false,
                 },
             ],
             constraints: vec![],
@@ -600,15 +819,21 @@ mod tests {
                 Entity::Point {
                     id: "p1".to_string(),
                     at: vec![ExprOrNumber::Number(0.0)],
+                    construction: false,
+                    preserve: false,
                 },
                 Entity::Line {
                     id: "l1".to_string(),
                     p1: "p1".to_string(),
                     p2: "p2".to_string(), // p2 is defined later - forward reference!
+                    construction: false,
+                    preserve: false,
                 },
                 Entity::Point {
                     id: "p2".to_string(),
                     at: vec![ExprOrNumber::Number(1.0)],
+                    construction: false,
+                    preserve: false,
                 },
             ],
             constraints: vec![],
@@ -638,16 +863,23 @@ mod tests {
                 Entity::Point {
                     id: "p1".to_string(),
                     at: vec![ExprOrNumber::Number(0.0)],
+                    construction: false,
+                    preserve: false,
                 },
                 Entity::Circle {
                     id: "c1".to_string(),
                     center: vec![ExprOrNumber::Number(0.0)],
                     diameter: ExprOrNumber::Number(10.0),
+                    normal: vec![ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(1.0)],
+                    construction: false,
+                    preserve: false,
                 },
                 Entity::Line {
                     id: "l1".to_string(),
                     p1: "p1".to_string(),
                     p2: "c1".to_string(), // c1 is a Circle, not a Point!
+                    construction: false,
+                    preserve: false,
                 },
             ],
             constraints: vec![],
@@ -678,17 +910,26 @@ mod tests {
                 Entity::Point {
                     id: "p1".to_string(),
                     at: vec![ExprOrNumber::Number(0.0)],
+                    construction: false,
+                    preserve: false,
                 },
                 Entity::Circle {
                     id: "c1".to_string(),
                     center: vec![ExprOrNumber::Number(0.0)],
                     diameter: ExprOrNumber::Number(10.0),
+                    normal: vec![ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(1.0)],
+                    construction: false,
+                    preserve: false,
                 },
                 Entity::Arc {
                     id: "a1".to_string(),
-                    center: vec![ExprOrNumber::Number(0.0)],
+                    center: "p1".to_string(),
                     start: "p1".to_string(),
                     end: "c1".to_string(), // c1 is a Circle, not a Point!
+                    normal: vec![ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(1.0)],
+                    workplane: None,
+                    construction: false,
+                    preserve: false,
                 },
             ],
             constraints: vec![],
@@ -719,16 +960,22 @@ mod tests {
                 Entity::Point {
                     id: "p1".to_string(),
                     at: vec![ExprOrNumber::Number(0.0)],
+                    construction: false,
+                    preserve: false,
                 },
                 Entity::Line {
                     id: "l1".to_string(),
                     p1: "p1".to_string(),
                     p2: "p1".to_string(), // Self-reference is valid
+                    construction: false,
+                    preserve: false,
                 },
                 Entity::Line {
                     id: "l2".to_string(),
                     p1: "p1".to_string(),
                     p2: "l1".to_string(), // l1 is a Line, not a Point!
+                    construction: false,
+                    preserve: false,
                 },
             ],
             constraints: vec![],
@@ -755,9 +1002,7 @@ mod tests {
             units: "mm".to_string(),
             parameters: HashMap::new(),
             entities: vec![], // Empty entities
-            constraints: vec![Constraint::Fixed {
-                entity: "nonexistent".to_string(),
-            }],
+            constraints: vec![Constraint::Fixed { entity: "nonexistent".to_string(), workplane: None }],
         };
         let result = validator.validate_constraint_references(&doc);
         assert!(result.is_err());
@@ -781,32 +1026,50 @@ mod tests {
             units: "mm".to_string(),
             parameters: HashMap::new(),
             entities: vec![
+                Entity::Plane {
+                    id: "wp1".to_string(),
+                    origin: vec![ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0)],
+                    normal: vec![ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(1.0)],
+                },
                 Entity::Point {
                     id: "p1".to_string(),
                     at: vec![ExprOrNumber::Number(0.0)],
+                    construction: false,
+                    preserve: false,
                 },
                 Entity::Point {
                     id: "p2".to_string(),
                     at: vec![ExprOrNumber::Number(1.0)],
+                    construction: false,
+                    preserve: false,
                 },
                 Entity::Point {
                     id: "p3".to_string(),
                     at: vec![ExprOrNumber::Number(2.0)],
+                    construction: false,
+                    preserve: false,
                 },
                 Entity::Line {
                     id: "l1".to_string(),
                     p1: "p1".to_string(),
                     p2: "p2".to_string(),
+                    construction: false,
+                    preserve: false,
                 },
                 Entity::Line {
                     id: "l2".to_string(),
                     p1: "p2".to_string(),
                     p2: "p3".to_string(),
+                    construction: false,
+                    preserve: false,
                 },
                 Entity::Circle {
                     id: "c1".to_string(),
                     center: vec![ExprOrNumber::Number(0.0)],
                     diameter: ExprOrNumber::Number(10.0),
+                    normal: vec![ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(1.0)],
+                    construction: false,
+                    preserve: false,
                 },
             ],
             constraints: vec![
@@ -838,9 +1101,11 @@ mod tests {
                 },
                 Constraint::Horizontal {
                     a: "l1".to_string(),
+                    workplane: "wp1".to_string(),
                 },
                 Constraint::Vertical {
                     a: "l2".to_string(),
+                    workplane: "wp1".to_string(),
                 },
                 Constraint::PointOnLine {
                     point: "p3".to_string(),
@@ -886,6 +1151,8 @@ mod tests {
             entities: vec![Entity::Point {
                 id: "p1".to_string(),
                 at: vec![ExprOrNumber::Number(0.0)],
+                construction: false,
+                preserve: false,
             }],
             constraints: vec![Constraint::Distance {
                 between: vec!["p1".to_string(), "nonexistent".to_string()],
@@ -915,6 +1182,8 @@ mod tests {
             entities: vec![Entity::Point {
                 id: "p1".to_string(),
                 at: vec![ExprOrNumber::Number(0.0)],
+                construction: false,
+                preserve: false,
             }],
             constraints: vec![Constraint::Coincident {
                 data: CoincidentData::PointOnLine {
@@ -946,6 +1215,8 @@ mod tests {
             entities: vec![Entity::Point {
                 id: "p1".to_string(),
                 at: vec![ExprOrNumber::Number(0.0)],
+                construction: false,
+                preserve: false,
             }],
             constraints: vec![Constraint::Coincident {
                 data: CoincidentData::TwoEntities {
@@ -977,19 +1248,23 @@ mod tests {
                 Entity::Point {
                     id: "zebra".to_string(),
                     at: vec![ExprOrNumber::Number(0.0)],
+                    construction: false,
+                    preserve: false,
                 },
                 Entity::Point {
                     id: "apple".to_string(),
                     at: vec![ExprOrNumber::Number(1.0)],
+                    construction: false,
+                    preserve: false,
                 },
                 Entity::Point {
                     id: "banana".to_string(),
                     at: vec![ExprOrNumber::Number(2.0)],
+                    construction: false,
+                    preserve: false,
                 },
             ],
-            constraints: vec![Constraint::Fixed {
-                entity: "nonexistent".to_string(),
-            }],
+            constraints: vec![Constraint::Fixed { entity: "nonexistent".to_string(), workplane: None }],
         };
         let result = validator.validate_constraint_references(&doc);
         assert!(result.is_err());

@@ -31,6 +31,7 @@ pub enum ViewPlane {
     Xy,
     Xz,
     Yz,
+    Isometric,
 }
 
 impl From<ExportFormat> for commands::ExportFormat {
@@ -50,6 +51,7 @@ impl From<ViewPlane> for commands::ViewPlane {
             ViewPlane::Xy => commands::ViewPlane::Xy,
             ViewPlane::Xz => commands::ViewPlane::Xz,
             ViewPlane::Yz => commands::ViewPlane::Yz,
+            ViewPlane::Isometric => commands::ViewPlane::Isometric,
         }
     }
 }

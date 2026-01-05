@@ -41,7 +41,30 @@ See [docs/BUILDING.md](docs/BUILDING.md) for detailed build instructions.
 
 ## Quick Start
 
-### Basic Example
+### Try It Now
+
+```bash
+# Solve a triangle from distances
+slvsx solve examples/02_triangle.json
+
+# Create a parametric hinge mechanism
+slvsx solve examples/08_angles.json
+
+# Design a symmetric arrowhead
+slvsx solve examples/11_symmetric.json
+
+# Export to SVG for visualization
+slvsx export -f svg examples/08_angles.json -o output.svg
+
+# Export 3D objects from multiple angles
+slvsx export -f svg -v xy examples/04_3d_tetrahedron.json -o top.svg
+slvsx export -f svg -v xz examples/04_3d_tetrahedron.json -o front.svg
+slvsx export -f svg -v yz examples/04_3d_tetrahedron.json -o side.svg
+```
+
+**🎨 See the [Visual Gallery](docs/VISUAL_GALLERY.md) for cool renders and 3D visualizations!**
+
+### Basic Example: Triangle from Distances
 
 ```bash
 # Create a simple constraint problem
@@ -70,7 +93,9 @@ slvsx solve triangle.json
 slvsx export -f svg triangle.json > triangle.svg
 ```
 
-See [docs/USAGE_EXAMPLES.md](docs/USAGE_EXAMPLES.md) for more examples and patterns.
+**What this does**: Given two fixed points and distances to a third point, SLVSX calculates where the third point must be. This is triangulation - the same math used in GPS!
+
+See [SHOWCASE.md](SHOWCASE.md) for impressive examples, [docs/AI_GUIDE.md](docs/AI_GUIDE.md) for AI agent usage, and [docs/ITERATIVE_DESIGN.md](docs/ITERATIVE_DESIGN.md) for best practices on building constraint problems iteratively.
 
 ### Commands
 
@@ -97,27 +122,57 @@ def solve(problem):
 
 ## For AI Agents
 
-SLVSX is designed to be used by AI agents for solving geometric constraint problems. See:
+SLVSX is designed to be used by AI agents for solving geometric constraint problems. Perfect for:
 
-- [MCP Integration Guide](docs/MCP_INTEGRATION.md) - How to use with Claude and other AI
+- **Constraint-based design generation** - Describe what you want, not how to draw it
+- **Mechanism validation** - Check if designs are physically possible
+- **Parametric optimization** - Explore design spaces systematically
+- **Mathematical precision** - Get exact solutions, not approximations
+
+**Quick Links**:
+- [AI Agent Guide](docs/AI_GUIDE.md) - Complete guide for AI usage
+- [Showcase](SHOWCASE.md) - Impressive examples and use cases
+- [MCP Integration Guide](docs/MCP_INTEGRATION.md) - Use with Claude Desktop
 - [AI Examples](examples/ai-examples/) - Ready-to-use constraint problems
-- [MCP Server](MCP_SERVER.md) - Future native MCP support
 
 ## Examples
 
 The [`examples/`](examples/) directory contains many constraint problems:
 
-- [AI Examples](examples/ai-examples/) - Designed for AI agent use
-- [Basic Shapes](examples/01_first_point.json) - Simple geometric constructions
-- [Mechanisms](examples/ai-examples/four_bar_linkage.json) - Kinematic linkages
-- [Gears](examples/ai-examples/gear_meshing.json) - Gear train positioning
+### 🎯 Quick Wins
+- **[Triangle Solver](examples/02_triangle.json)** - Triangulation from distances
+- **[Angle Hinge](examples/08_angles.json)** - Parametric hinge mechanism
+- **[Symmetric Arrow](examples/11_symmetric.json)** - Symmetry constraints
+
+### 🔧 Real-World Applications
+- **[Four-Bar Linkage](examples/ai-examples/four_bar_linkage.json)** - Classic kinematic mechanism
+- **[Planetary Gears](examples/ai-examples/gear_meshing.json)** - Gear train positioning
+- **[3D Tetrahedron](examples/04_3d_tetrahedron.json)** - Three-dimensional geometry
+
+### 📚 Learning Path
+- **[Tutorial Series](examples/README.md)** - Step-by-step learning guide
+- **[Constraint Reference](examples/constraints/)** - Detailed constraint examples
+
+See [SHOWCASE.md](SHOWCASE.md) for more impressive examples and use cases!
 
 ## Documentation
 
+### Getting Started
+- [Showcase](SHOWCASE.md) - What can you build? Impressive examples
+- [Visual Gallery](docs/VISUAL_GALLERY.md) - 🎨 Cool renders and visualizations
+- [AI Agent Guide](docs/AI_GUIDE.md) - Complete guide for AI usage
+- [Examples Tutorial](examples/README.md) - Step-by-step learning
+
+### Reference
 - [Building from Source](docs/BUILDING.md)
 - [MCP Integration](docs/MCP_INTEGRATION.md)
 - [Development Guide](docs/DEVELOPMENT.md)
 - [JSON Schema](schema/slvs-json.schema.json)
+
+### For AI Agents
+- [AI Guide](docs/AI_GUIDE.md) - Patterns, examples, best practices
+- [MCP Integration](docs/MCP_INTEGRATION.md) - Use with Claude Desktop
+- [AI Examples](examples/ai-examples/) - Ready-to-use problems
 
 ## License
 

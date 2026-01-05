@@ -37,7 +37,7 @@ impl DxfExporter {
                         p = self.precision
                     ));
                 }
-                ResolvedEntity::Circle { center, diameter } => {
+                ResolvedEntity::Circle { center, diameter, .. } => {
                     // DXF CIRCLE entity
                     dxf.push_str(&format!(
                         "0\nCIRCLE\n8\n0\n10\n{:.p$}\n20\n{:.p$}\n30\n{:.p$}\n40\n{:.p$}\n",
@@ -122,6 +122,7 @@ mod tests {
             ResolvedEntity::Circle {
                 center: vec![0.0, 0.0, 0.0],
                 diameter: 100.0,
+                normal: vec![0.0, 0.0, 1.0],
             },
         );
 

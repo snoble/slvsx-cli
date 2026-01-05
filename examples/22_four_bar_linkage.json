@@ -1,0 +1,112 @@
+{
+  "schema": "slvs-json/1",
+  "units": "mm",
+  "description": "Four-bar linkage mechanism - a classic kinematic example. Change driver_angle to animate.",
+  "parameters": {
+    "ground_length": 200.0,
+    "crank_length": 60.0,
+    "coupler_length": 160.0,
+    "rocker_length": 100.0,
+    "driver_angle": 30.0
+  },
+  "entities": [
+    {
+      "type": "point",
+      "id": "ground_a",
+      "at": [0, 0, 0]
+    },
+    {
+      "type": "point",
+      "id": "ground_b",
+      "at": [200, 0, 0]
+    },
+    {
+      "type": "point",
+      "id": "crank_end",
+      "at": [52, 30, 0]
+    },
+    {
+      "type": "point",
+      "id": "rocker_end",
+      "at": [140, 120, 0]
+    },
+    {
+      "type": "line",
+      "id": "ground",
+      "p1": "ground_a",
+      "p2": "ground_b"
+    },
+    {
+      "type": "line",
+      "id": "crank",
+      "p1": "ground_a",
+      "p2": "crank_end"
+    },
+    {
+      "type": "line",
+      "id": "coupler",
+      "p1": "crank_end",
+      "p2": "rocker_end"
+    },
+    {
+      "type": "line",
+      "id": "rocker",
+      "p1": "rocker_end",
+      "p2": "ground_b"
+    },
+    {
+      "type": "circle",
+      "id": "pivot_a",
+      "center": [0, 0, 0],
+      "diameter": 10
+    },
+    {
+      "type": "circle",
+      "id": "pivot_b",
+      "center": [200, 0, 0],
+      "diameter": 10
+    },
+    {
+      "type": "circle",
+      "id": "joint_1",
+      "center": [52, 30, 0],
+      "diameter": 8
+    },
+    {
+      "type": "circle",
+      "id": "joint_2",
+      "center": [140, 120, 0],
+      "diameter": 8
+    }
+  ],
+  "constraints": [
+    {
+      "type": "fixed",
+      "entity": "ground_a"
+    },
+    {
+      "type": "fixed",
+      "entity": "ground_b"
+    },
+    {
+      "type": "distance",
+      "between": ["ground_a", "crank_end"],
+      "value": "$crank_length"
+    },
+    {
+      "type": "distance",
+      "between": ["crank_end", "rocker_end"],
+      "value": "$coupler_length"
+    },
+    {
+      "type": "distance",
+      "between": ["rocker_end", "ground_b"],
+      "value": "$rocker_length"
+    },
+    {
+      "type": "angle",
+      "between": ["crank", "ground"],
+      "value": "$driver_angle"
+    }
+  ]
+}

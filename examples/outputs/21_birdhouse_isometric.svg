@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-170.0 -242.5 340.0 412.5" width="800" height="800">
+  <circle id="entrance_inner" cx="65.000000" cy="-77.500000" r="20.000000" fill="none" stroke="black"/>
+  <circle id="entrance_outer" cx="75.000000" cy="-82.500000" r="20.000000" fill="none" stroke="black"/>
+  <line id="inner_base_back" x1="0.000000" y1="140.001510" x2="-130.003020" y2="75.000000" stroke="black"/>
+  <circle id="inner_base_bl" cx="-130.003020" cy="75.000000" r="2" fill="black"/>
+  <circle id="inner_base_br" cx="0.000000" cy="140.001510" r="2" fill="black"/>
+  <circle id="inner_base_fl" cx="0.000000" cy="9.998490" r="2" fill="black"/>
+  <circle id="inner_base_fr" cx="130.003020" cy="75.000000" r="2" fill="black"/>
+  <line id="inner_base_front" x1="0.000000" y1="9.998490" x2="130.003020" y2="75.000000" stroke="black"/>
+  <line id="inner_base_left" x1="-130.003020" y1="75.000000" x2="0.000000" y2="9.998490" stroke="black"/>
+  <line id="inner_base_right" x1="130.003020" y1="75.000000" x2="0.000000" y2="140.001510" stroke="black"/>
+  <line id="inner_corner_bl" x1="-130.003020" y1="75.000000" x2="-130.003020" y2="-105.000000" stroke="black"/>
+  <line id="inner_corner_br" x1="0.000000" y1="140.001510" x2="0.000000" y2="-39.998490" stroke="black"/>
+  <line id="inner_corner_fl" x1="0.000000" y1="9.998490" x2="0.000000" y2="-170.001510" stroke="black"/>
+  <line id="inner_corner_fr" x1="130.003020" y1="75.000000" x2="130.003020" y2="-105.000000" stroke="black"/>
+  <line id="inner_gable_bl" x1="-130.003020" y1="-105.000000" x2="-65.000000" y2="-142.500000" stroke="black"/>
+  <line id="inner_gable_br" x1="0.000000" y1="-39.998490" x2="-65.000000" y2="-142.500000" stroke="black"/>
+  <line id="inner_gable_fl" x1="0.000000" y1="-170.001510" x2="65.000000" y2="-207.500000" stroke="black"/>
+  <line id="inner_gable_fr" x1="130.003020" y1="-105.000000" x2="65.000000" y2="-207.500000" stroke="black"/>
+  <line id="inner_ridge" x1="65.000000" y1="-207.500000" x2="-65.000000" y2="-142.500000" stroke="black"/>
+  <circle id="inner_ridge_back" cx="-65.000000" cy="-142.500000" r="2" fill="black"/>
+  <circle id="inner_ridge_front" cx="65.000000" cy="-207.500000" r="2" fill="black"/>
+  <line id="inner_wall_back" x1="0.000000" y1="-39.998490" x2="-130.003020" y2="-105.000000" stroke="black"/>
+  <circle id="inner_wall_bl" cx="-130.003020" cy="-105.000000" r="2" fill="black"/>
+  <circle id="inner_wall_br" cx="0.000000" cy="-39.998490" r="2" fill="black"/>
+  <circle id="inner_wall_fl" cx="0.000000" cy="-170.001510" r="2" fill="black"/>
+  <circle id="inner_wall_fr" cx="130.003020" cy="-105.000000" r="2" fill="black"/>
+  <line id="inner_wall_front" x1="0.000000" y1="-170.001510" x2="130.003020" y2="-105.000000" stroke="black"/>
+  <line id="inner_wall_left" x1="-130.003020" y1="-105.000000" x2="0.000000" y2="-170.001510" stroke="black"/>
+  <line id="inner_wall_right" x1="130.003020" y1="-105.000000" x2="0.000000" y2="-39.998490" stroke="black"/>
+  <line id="outer_base_back" x1="0.000000" y1="150.000000" x2="-150.000000" y2="75.000000" stroke="black"/>
+  <circle id="outer_base_bl" cx="-150.000000" cy="75.000000" r="2" fill="black"/>
+  <circle id="outer_base_br" cx="0.000000" cy="150.000000" r="2" fill="black"/>
+  <circle id="outer_base_fl" cx="0.000000" cy="0.000000" r="2" fill="black"/>
+  <circle id="outer_base_fr" cx="150.000000" cy="75.000000" r="2" fill="black"/>
+  <line id="outer_base_front" x1="0.000000" y1="0.000000" x2="150.000000" y2="75.000000" stroke="black"/>
+  <line id="outer_base_left" x1="-150.000000" y1="75.000000" x2="0.000000" y2="0.000000" stroke="black"/>
+  <line id="outer_base_right" x1="150.000000" y1="75.000000" x2="0.000000" y2="150.000000" stroke="black"/>
+  <line id="outer_corner_bl" x1="-150.000000" y1="75.000000" x2="-150.000000" y2="-105.000000" stroke="black"/>
+  <line id="outer_corner_br" x1="0.000000" y1="150.000000" x2="0.000000" y2="-30.000000" stroke="black"/>
+  <line id="outer_corner_fl" x1="0.000000" y1="0.000000" x2="0.000000" y2="-180.000000" stroke="black"/>
+  <line id="outer_corner_fr" x1="150.000000" y1="75.000000" x2="150.000000" y2="-105.000000" stroke="black"/>
+  <line id="outer_gable_bl" x1="-150.000000" y1="-105.000000" x2="-75.000000" y2="-147.500000" stroke="black"/>
+  <line id="outer_gable_br" x1="0.000000" y1="-30.000000" x2="-75.000000" y2="-147.500000" stroke="black"/>
+  <line id="outer_gable_fl" x1="0.000000" y1="-180.000000" x2="75.000000" y2="-222.500000" stroke="black"/>
+  <line id="outer_gable_fr" x1="150.000000" y1="-105.000000" x2="75.000000" y2="-222.500000" stroke="black"/>
+  <line id="outer_ridge" x1="75.000000" y1="-222.500000" x2="-75.000000" y2="-147.500000" stroke="black"/>
+  <circle id="outer_ridge_back" cx="-75.000000" cy="-147.500000" r="2" fill="black"/>
+  <circle id="outer_ridge_front" cx="75.000000" cy="-222.500000" r="2" fill="black"/>
+  <line id="outer_wall_back" x1="0.000000" y1="-30.000000" x2="-150.000000" y2="-105.000000" stroke="black"/>
+  <circle id="outer_wall_bl" cx="-150.000000" cy="-105.000000" r="2" fill="black"/>
+  <circle id="outer_wall_br" cx="0.000000" cy="-30.000000" r="2" fill="black"/>
+  <circle id="outer_wall_fl" cx="0.000000" cy="-180.000000" r="2" fill="black"/>
+  <circle id="outer_wall_fr" cx="150.000000" cy="-105.000000" r="2" fill="black"/>
+  <line id="outer_wall_front" x1="0.000000" y1="-180.000000" x2="150.000000" y2="-105.000000" stroke="black"/>
+  <line id="outer_wall_left" x1="-150.000000" y1="-105.000000" x2="0.000000" y2="-180.000000" stroke="black"/>
+  <line id="outer_wall_right" x1="150.000000" y1="-105.000000" x2="0.000000" y2="-30.000000" stroke="black"/>
+  <line id="perch" x1="75.000000" y1="-52.500000" x2="100.000000" y2="-65.000000" stroke="black"/>
+  <circle id="perch_dowel" cx="100.000000" cy="-65.000000" r="4.000000" fill="none" stroke="black"/>
+  <circle id="perch_outer" cx="100.000000" cy="-65.000000" r="2" fill="black"/>
+  <circle id="perch_wall" cx="75.000000" cy="-52.500000" r="2" fill="black"/>
+</svg>

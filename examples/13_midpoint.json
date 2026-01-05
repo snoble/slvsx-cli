@@ -1,6 +1,7 @@
 {
   "schema": "slvs-json/1",
   "units": "mm",
+  "description": "Demonstrates midpoint constraint - triangle with median",
   "entities": [
     {
       "type": "point",
@@ -15,7 +16,7 @@
     {
       "type": "point",
       "id": "middle",
-      "at": [50, 50, 0]
+      "at": [55, 55, 0]
     },
     {
       "type": "line",
@@ -59,15 +60,11 @@
     {
       "type": "midpoint",
       "point": "middle",
-      "line": "horizontal"
+      "of": "horizontal"
     },
     {
       "type": "equal_length",
       "entities": ["left_side", "right_side"]
-    },
-    {
-      "type": "perpendicular",
-      "entities": ["horizontal", "median"]
     }
   ]
 }

@@ -3,56 +3,72 @@
   "units": "mm",
   "entities": [
     {
-      "type": "point",
+      "type": "plane",
+      "id": "xy_plane",
+      "origin": [0, 0, 0],
+      "normal": [0, 0, 1]
+    },
+    {
+      "type": "point2_d",
       "id": "origin",
-      "at": [0, 0, 0]
+      "at": [0, 0],
+      "workplane": "xy_plane"
     },
     {
-      "type": "point",
+      "type": "point2_d",
       "id": "top",
-      "at": [10, 100, 0]
+      "at": [10, 100],
+      "workplane": "xy_plane"
     },
     {
-      "type": "point",
+      "type": "point2_d",
       "id": "right",
-      "at": [100, 10, 0]
+      "at": [100, 10],
+      "workplane": "xy_plane"
     },
     {
-      "type": "point",
+      "type": "point2_d",
       "id": "corner",
-      "at": [100, 100, 0]
+      "at": [100, 100],
+      "workplane": "xy_plane"
     },
     {
-      "type": "line",
+      "type": "line2_d",
       "id": "vertical_line",
       "p1": "origin",
-      "p2": "top"
+      "p2": "top",
+      "workplane": "xy_plane"
     },
     {
-      "type": "line",
+      "type": "line2_d",
       "id": "horizontal_line",
       "p1": "origin",
-      "p2": "right"
+      "p2": "right",
+      "workplane": "xy_plane"
     },
     {
-      "type": "line",
+      "type": "line2_d",
       "id": "diagonal",
       "p1": "origin",
-      "p2": "corner"
+      "p2": "corner",
+      "workplane": "xy_plane"
     }
   ],
   "constraints": [
     {
       "type": "fixed",
-      "entity": "origin"
+      "entity": "origin",
+      "workplane": "xy_plane"
     },
     {
       "type": "vertical",
-      "a": "vertical_line"
+      "a": "vertical_line",
+      "workplane": "xy_plane"
     },
     {
       "type": "horizontal",
-      "a": "horizontal_line"
+      "a": "horizontal_line",
+      "workplane": "xy_plane"
     },
     {
       "type": "distance",
@@ -67,8 +83,6 @@
     {
       "type": "angle",
       "between": ["horizontal_line", "diagonal"],
-      "a": "horizontal_line",
-      "b": "diagonal",
       "value": 45
     }
   ]

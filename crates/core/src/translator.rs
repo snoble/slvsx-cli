@@ -63,18 +63,65 @@ impl Translator {
             }
             Constraint::Perpendicular { a, b }
             | Constraint::EqualRadius { a, b }
-            | Constraint::Tangent { a, b } => vec![a.clone(), b.clone()],
+            | Constraint::Tangent { a, b }
+            | Constraint::SameOrientation { a, b }
+            | Constraint::CubicLineTangent { cubic: a, line: b } => vec![a.clone(), b.clone()],
             Constraint::Parallel { entities } | Constraint::EqualLength { entities } => entities.clone(),
-            Constraint::Horizontal { a }
-            | Constraint::Vertical { a }
-            | Constraint::Fixed { entity: a } => vec![a.clone()],
+            Constraint::EqualAngle { lines } => lines.clone(),
+            Constraint::Horizontal { a, workplane } | Constraint::Vertical { a, workplane } => {
+                vec![a.clone(), workplane.clone()]
+            }
+            Constraint::Fixed { entity, workplane } => {
+                let mut refs = vec![entity.clone()];
+                if let Some(wp) = workplane {
+                    refs.push(wp.clone());
+                }
+                refs
+            }
+            Constraint::Diameter { circle: a, .. } => vec![a.clone()],
             Constraint::PointOnLine { point, line }
+            | Constraint::PointLineDistance { point, line, .. }
+            | Constraint::EqualLengthPointLineDistance { point, line, .. }
             | Constraint::PointOnCircle {
                 point,
                 circle: line,
             } => vec![point.clone(), line.clone()],
             Constraint::Symmetric { a, b, about } => vec![a.clone(), b.clone(), about.clone()],
+            Constraint::SymmetricHorizontal { a, b, workplane } | Constraint::SymmetricVertical { a, b, workplane } => {
+                vec![a.clone(), b.clone(), workplane.clone()]
+            }
             Constraint::Midpoint { point, of } => vec![point.clone(), of.clone()],
+            Constraint::PointInPlane { point, plane } | Constraint::PointPlaneDistance { point, plane, .. } => {
+                vec![point.clone(), plane.clone()]
+            }
+            Constraint::LengthRatio { a, b, .. } | Constraint::LengthDifference { a, b, .. } => {
+                vec![a.clone(), b.clone()]
+            }
+            Constraint::ProjectedPointDistance { a, b, plane, .. } => {
+                vec![a.clone(), b.clone(), plane.clone()]
+            }
+            Constraint::PointOnFace { point, face } | Constraint::PointFaceDistance { point, face, .. } => {
+                vec![point.clone(), face.clone()]
+            }
+            Constraint::EqualLineArcLength { line, arc } => {
+                vec![line.clone(), arc.clone()]
+            }
+            Constraint::EqualPointLineDistances { point1, line1, point2, line2 } => {
+                vec![point1.clone(), line1.clone(), point2.clone(), line2.clone()]
+            }
+            Constraint::ArcArcLengthRatio { a, b, .. } | Constraint::ArcArcLengthDifference { a, b, .. } => {
+                vec![a.clone(), b.clone()]
+            }
+            Constraint::ArcLineLengthRatio { arc, line, .. } | Constraint::ArcLineLengthDifference { arc, line, .. } => {
+                vec![arc.clone(), line.clone()]
+            }
+            Constraint::Dragged { point, workplane } => {
+                let mut refs = vec![point.clone()];
+                if let Some(wp) = workplane {
+                    refs.push(wp.clone());
+                }
+                refs
+            }
         }
     }
 }
@@ -107,15 +154,31 @@ mod tests {
                 Entity::Point {
                     id: "p1".to_string(),
                     at: vec![ExprOrNumber::Number(0.0)],
+                    construction: false,
+                    preserve: false,
+                },
+                Entity::Point {
+                    id: "p2".to_string(),
+                    at: vec![ExprOrNumber::Number(10.0)],
+                    construction: false,
+                    preserve: false,
+                },
+                Entity::Plane {
+                    id: "wp1".to_string(),
+                    origin: vec![ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0)],
+                    normal: vec![ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(1.0)],
                 },
                 Entity::Line {
                     id: "l1".to_string(),
                     p1: "p1".to_string(),
                     p2: "p2".to_string(),
+                    construction: false,
+                    preserve: false,
                 },
             ],
             constraints: vec![Constraint::Horizontal {
                 a: "l1".to_string(),
+                workplane: "wp1".to_string(),
             }],
         };
 
@@ -131,11 +194,14 @@ mod tests {
             parameters: HashMap::new(),
             entities: vec![Entity::Point {
                 id: "p1".to_string(),
+                construction: false,
+                preserve: false,
                 at: vec![ExprOrNumber::Number(0.0)],
             }],
             constraints: vec![
                 Constraint::Horizontal {
                     a: "l1".to_string(),
+                    workplane: "wp1".to_string(),
                 }, // l1 doesn't exist
             ],
         };
@@ -156,8 +222,9 @@ mod tests {
 
         let constraint = Constraint::Horizontal {
             a: "l1".to_string(),
+            workplane: "wp1".to_string(),
         };
-        assert_eq!(translator.get_constraint_refs(&constraint), vec!["l1"]);
+        assert_eq!(translator.get_constraint_refs(&constraint), vec!["l1", "wp1"]);
 
         let constraint = Constraint::Perpendicular {
             a: "l1".to_string(),
@@ -187,7 +254,7 @@ mod tests {
 
         // Test all constraint variants
         let constraints = vec![
-            Constraint::Fixed { entity: "p1".to_string() },
+            Constraint::Fixed { entity: "p1".to_string(), workplane: None },
             Constraint::Distance {
                 between: vec!["p1".to_string(), "p2".to_string()],
                 value: ExprOrNumber::Number(10.0),
@@ -203,8 +270,8 @@ mod tests {
             Constraint::Parallel {
                 entities: vec!["l1".to_string(), "l2".to_string()],
             },
-            Constraint::Horizontal { a: "l1".to_string() },
-            Constraint::Vertical { a: "l1".to_string() },
+            Constraint::Horizontal { a: "l1".to_string(), workplane: "wp1".to_string() },
+            Constraint::Vertical { a: "l1".to_string(), workplane: "wp1".to_string() },
             Constraint::EqualLength {
                 entities: vec!["l1".to_string(), "l2".to_string()],
             },

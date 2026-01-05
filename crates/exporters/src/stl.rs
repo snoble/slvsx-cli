@@ -28,7 +28,7 @@ impl StlExporter {
         // Generate cylinder for each circle entity
         for (_id, entity) in entities {
             match entity {
-                ResolvedEntity::Circle { center, diameter } => {
+                ResolvedEntity::Circle { center, diameter, .. } => {
                     self.add_cylinder_to_stl(&mut stl, center, *diameter)?;
                 }
                 _ => {} // Skip other entities
@@ -169,6 +169,7 @@ mod tests {
             ResolvedEntity::Circle {
                 center: vec![0.0, 0.0, 0.0],
                 diameter: 48.0,
+                normal: vec![0.0, 0.0, 1.0],
             },
         );
 
@@ -193,6 +194,7 @@ mod tests {
             ResolvedEntity::Circle {
                 center: vec![0.0, 0.0, 0.0],
                 diameter: 48.0,
+                normal: vec![0.0, 0.0, 1.0],
             },
         );
 
@@ -202,6 +204,7 @@ mod tests {
             ResolvedEntity::Circle {
                 center: vec![36.0, 0.0, 0.0],
                 diameter: 24.0,
+                normal: vec![0.0, 0.0, 1.0],
             },
         );
 
