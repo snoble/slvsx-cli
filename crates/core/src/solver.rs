@@ -329,6 +329,12 @@ impl Solver {
                         1.0 // Default to Z-axis if not specified
                     };
 
+                    // Normalize normal vector (consistent with Arc entity handling)
+                    let norm_len = (nx * nx + ny * ny + nz * nz).sqrt();
+                    let nx_norm = if norm_len > 0.0 { nx / norm_len } else { 0.0 };
+                    let ny_norm = if norm_len > 0.0 { ny / norm_len } else { 0.0 };
+                    let nz_norm = if norm_len > 0.0 { nz / norm_len } else { 1.0 };
+
                     // Create origin point first (temporary, will be used by workplane)
                     let origin_point_id = next_id;
                     ffi_solver
@@ -339,9 +345,9 @@ impl Solver {
                         })?;
                     next_id += 1;
 
-                    // Create workplane
+                    // Create workplane with normalized normal
                     ffi_solver
-                        .add_workplane(next_id, origin_point_id, nx, ny, nz)
+                        .add_workplane(next_id, origin_point_id, nx_norm, ny_norm, nz_norm)
                         .map_err(|e| crate::error::Error::InvalidInput {
                             message: format!("Failed to add plane '{}': {}", id, e),
                             pointer: Some(format!("/entities/{}", entity_idx)),
