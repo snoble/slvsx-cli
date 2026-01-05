@@ -178,3 +178,60 @@ fn test_circle_normal_serialization() {
     assert_eq!(circle, deserialized);
 }
 
+#[test]
+fn test_svg_sanitizes_negative_zero() {
+    // Test that -0.0 values get sanitized to 0.0 in SVG output
+    let mut entities = HashMap::new();
+    // Create a point that might produce -0.0 in certain calculations
+    entities.insert(
+        "origin".to_string(),
+        ResolvedEntity::Point {
+            at: vec![0.0, 0.0, 0.0],
+        },
+    );
+
+    let exporter = SvgExporter::new(ViewPlane::XY);
+    let svg = exporter.export(&entities).unwrap();
+
+    // Verify no -0. appears in the output
+    assert!(
+        !svg.contains("-0."),
+        "SVG should not contain negative zero: {}",
+        svg
+    );
+}
+
+#[test]
+fn test_circle_renders_as_ellipse_when_tilted() {
+    // Test that a tilted circle renders as an ellipse element
+    let mut entities = HashMap::new();
+    let sqrt2_2 = 0.7071067811865476;
+    entities.insert(
+        "tilted_circle".to_string(),
+        circle_with_normal([50.0, 50.0, 0.0], 40.0, [sqrt2_2, 0.0, sqrt2_2]),
+    );
+
+    let exporter = SvgExporter::new(ViewPlane::XY);
+    let svg = exporter.export(&entities).unwrap();
+    
+    // Should contain an ellipse element
+    assert!(svg.contains("<ellipse"), "Tilted circle should render as ellipse: {}", svg);
+}
+
+#[test]
+fn test_circle_renders_as_line_when_edge_on() {
+    // Test that an edge-on circle renders as a line element  
+    let mut entities = HashMap::new();
+    // Circle with normal perpendicular to view direction (XY view, normal along Y)
+    entities.insert(
+        "edge_circle".to_string(),
+        circle_with_normal([50.0, 50.0, 0.0], 40.0, [0.0, 1.0, 0.0]),
+    );
+
+    let exporter = SvgExporter::new(ViewPlane::XY);
+    let svg = exporter.export(&entities).unwrap();
+    
+    // Should contain a line element (edge-on circle appears as a line)
+    assert!(svg.contains("<line"), "Edge-on circle should render as line: {}", svg);
+}
+
