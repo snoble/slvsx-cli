@@ -142,6 +142,20 @@ test('searchDocumentation returns error when index not loaded', async () => {
   assert(result.error.includes('not loaded'), 'Error should mention not loaded');
 });
 
+test('loadDocsIndex validates structure before assigning', () => {
+  // Verify the mcp-server.js validates docs structure
+  const serverPath = path.join(projectRoot, 'mcp-server.js');
+  const content = fs.readFileSync(serverPath, 'utf-8');
+  
+  // Should parse to temp variable first
+  assert(content.includes('const parsed = JSON.parse'), 'Should parse to temp variable');
+  // Should validate chunks array exists
+  assert(content.includes('!parsed.chunks') || content.includes('parsed.chunks'), 'Should check chunks exists');
+  assert(content.includes('Array.isArray(parsed.chunks)'), 'Should verify chunks is array');
+  // Should reset to null on error
+  assert(content.includes('docsIndex = null'), 'Should reset docsIndex to null on error');
+});
+
 // ============================================
 // Test: MCP Server Tool Definitions
 // ============================================

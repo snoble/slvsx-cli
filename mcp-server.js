@@ -36,9 +36,15 @@ async function loadDocsIndex() {
   if (fs.existsSync(DOCS_INDEX_PATH)) {
     try {
       const data = fs.readFileSync(DOCS_INDEX_PATH, 'utf-8');
-      docsIndex = JSON.parse(data);
+      const parsed = JSON.parse(data);
+      // Validate structure before assigning
+      if (!parsed.chunks || !Array.isArray(parsed.chunks)) {
+        throw new Error('Invalid docs.json structure: missing or invalid chunks array');
+      }
+      docsIndex = parsed;
       console.error(`Loaded ${docsIndex.chunks.length} documentation chunks`);
     } catch (e) {
+      docsIndex = null; // Reset to null on any error
       console.error('Warning: Failed to load docs index:', e.message);
     }
   } else {
