@@ -1,6 +1,12 @@
 use slvsx_core::ir::ResolvedEntity;
 use std::collections::HashMap;
 
+/// Normalize a floating point value to avoid -0.0
+/// This ensures consistent output across platforms
+fn normalize_zero(v: f64) -> f64 {
+    if v == 0.0 { 0.0 } else { v }
+}
+
 pub struct SvgExporter {
     view_plane: ViewPlane,
     precision: usize,
@@ -155,7 +161,7 @@ impl SvgExporter {
     }
 
     fn project_point(&self, point: &[f64]) -> (f64, f64) {
-        match self.view_plane {
+        let (x, y) = match self.view_plane {
             ViewPlane::XY => (
                 point.get(0).copied().unwrap_or(0.0),
                 point.get(1).copied().unwrap_or(0.0),
@@ -178,7 +184,9 @@ impl SvgExporter {
                 let z = point.get(2).copied().unwrap_or(0.0);
                 (x - y, (x + y) / 2.0 - z)
             }
-        }
+        };
+        // Normalize to avoid -0.0 which can differ across platforms
+        (normalize_zero(x), normalize_zero(y))
     }
 
     /// Project a 3D circle as an ellipse based on view angle and circle normal.
@@ -228,7 +236,8 @@ impl SvgExporter {
         // This depends on which direction the circle is tilted
         let rotation = self.calculate_ellipse_rotation(nx, ny, nz);
         
-        (rx, ry, rotation)
+        // Normalize to avoid -0.0 which can differ across platforms
+        (normalize_zero(rx), normalize_zero(ry), normalize_zero(rotation))
     }
 
     /// Calculate the rotation angle (in degrees) for the projected ellipse
