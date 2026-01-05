@@ -1085,7 +1085,7 @@ int real_slvs_add_arc_line_length_ratio_constraint(RealSlvsSystem* s, int id,
     
     s->sys.constraint[s->sys.constraints++] = Slvs_MakeConstraint(
         constraint_id, g, SLVS_C_ARC_LINE_LEN_RATIO, SLVS_FREE_IN_3D,
-        ratio, 0, 0, arc, line);
+        ratio, 0, 0, line, arc);
     
     return 0;
 }
@@ -1123,7 +1123,7 @@ int real_slvs_add_arc_line_length_difference_constraint(RealSlvsSystem* s, int i
     
     s->sys.constraint[s->sys.constraints++] = Slvs_MakeConstraint(
         constraint_id, g, SLVS_C_ARC_LINE_DIFFERENCE, SLVS_FREE_IN_3D,
-        difference, 0, 0, arc, line);
+        difference, 0, 0, line, arc);
     
     return 0;
 }
