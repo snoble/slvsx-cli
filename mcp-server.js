@@ -31,6 +31,7 @@ let docsIndex = null;
 let embedder = null;
 
 const DOCS_INDEX_PATH = path.join(__dirname, 'dist', 'docs.json');
+const EMBEDDING_MODEL = 'Xenova/all-MiniLM-L6-v2';
 
 async function loadDocsIndex() {
   if (fs.existsSync(DOCS_INDEX_PATH)) {
@@ -41,8 +42,12 @@ async function loadDocsIndex() {
       if (!parsed.chunks || !Array.isArray(parsed.chunks)) {
         throw new Error('Invalid docs.json structure: missing or invalid chunks array');
       }
+      // Validate model matches runtime embedder
+      if (parsed.model && parsed.model !== EMBEDDING_MODEL) {
+        throw new Error(`Model mismatch: docs.json uses '${parsed.model}' but runtime uses '${EMBEDDING_MODEL}'. Rebuild with 'npm run build:docs'.`);
+      }
       docsIndex = parsed;
-      console.error(`Loaded ${docsIndex.chunks.length} documentation chunks`);
+      console.error(`Loaded ${docsIndex.chunks.length} documentation chunks (model: ${EMBEDDING_MODEL})`);
     } catch (e) {
       docsIndex = null; // Reset to null on any error
       console.error('Warning: Failed to load docs index:', e.message);
@@ -55,7 +60,7 @@ async function loadDocsIndex() {
 async function getEmbedder() {
   if (!embedder) {
     const { pipeline } = await import('@xenova/transformers');
-    embedder = await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2');
+    embedder = await pipeline('feature-extraction', EMBEDDING_MODEL);
   }
   return embedder;
 }

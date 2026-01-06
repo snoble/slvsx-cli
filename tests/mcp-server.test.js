@@ -127,9 +127,10 @@ test('docs index has correct structure', () => {
 // Test: Search Documentation (mock)
 // ============================================
 
-test('searchDocumentation returns error when index not loaded', async () => {
+test('searchDocumentation returns error when index not loaded', () => {
   // This tests the error path when docsIndex is null
-  const mockSearchDocumentation = async (query, topK = 3) => {
+  // Using synchronous mock since we're just testing the logic
+  const mockSearchDocumentation = (query, topK = 3) => {
     const docsIndex = null; // Simulate not loaded
     if (!docsIndex) {
       return { error: 'Documentation index not loaded. Run "npm run build:docs" first.' };
@@ -137,7 +138,7 @@ test('searchDocumentation returns error when index not loaded', async () => {
     return { results: [] };
   };
   
-  const result = await mockSearchDocumentation('test query');
+  const result = mockSearchDocumentation('test query');
   assert(result.error, 'Should return error when index not loaded');
   assert(result.error.includes('not loaded'), 'Error should mention not loaded');
 });
@@ -154,6 +155,19 @@ test('loadDocsIndex validates structure before assigning', () => {
   assert(content.includes('Array.isArray(parsed.chunks)'), 'Should verify chunks is array');
   // Should reset to null on error
   assert(content.includes('docsIndex = null'), 'Should reset docsIndex to null on error');
+});
+
+test('loadDocsIndex validates model matches runtime embedder', () => {
+  // Verify the mcp-server.js validates model consistency
+  const serverPath = path.join(projectRoot, 'mcp-server.js');
+  const content = fs.readFileSync(serverPath, 'utf-8');
+  
+  // Should define EMBEDDING_MODEL constant
+  assert(content.includes('EMBEDDING_MODEL'), 'Should define EMBEDDING_MODEL constant');
+  // Should check parsed.model matches
+  assert(content.includes('parsed.model') && content.includes('EMBEDDING_MODEL'), 'Should validate model matches');
+  // Should use constant in getEmbedder
+  assert(content.includes("pipeline('feature-extraction', EMBEDDING_MODEL)"), 'Should use EMBEDDING_MODEL in getEmbedder');
 });
 
 // ============================================
