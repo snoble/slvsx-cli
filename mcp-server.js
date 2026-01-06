@@ -23,8 +23,38 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Check if slvsx binary exists
-const SLVSX_BINARY = process.env.SLVSX_BINARY || './target/release/slvsx';
+// Find slvsx binary - check env var, PATH, then local build
+function findSlvsxBinary() {
+  // 1. Check explicit env var
+  if (process.env.SLVSX_BINARY) {
+    return process.env.SLVSX_BINARY;
+  }
+  
+  // 2. Check if slvsx is in PATH
+  try {
+    const which = execSync('which slvsx 2>/dev/null || where slvsx 2>nul', { encoding: 'utf-8' }).trim();
+    if (which) return which.split('\n')[0];
+  } catch (e) {
+    // Not in PATH
+  }
+  
+  // 3. Check local build
+  const localBuild = './target/release/slvsx';
+  if (fs.existsSync(localBuild)) {
+    return localBuild;
+  }
+  
+  // 4. Check relative to this script (for development)
+  const scriptDir = path.dirname(__filename);
+  const devBuild = path.join(scriptDir, 'target/release/slvsx');
+  if (fs.existsSync(devBuild)) {
+    return devBuild;
+  }
+  
+  return null;
+}
+
+const SLVSX_BINARY = findSlvsxBinary();
 
 // Load documentation embeddings if available
 let docsIndex = null;
@@ -586,10 +616,23 @@ class SlvsxServer {
 }
 
 // Check if slvsx binary exists
-if (!fs.existsSync(SLVSX_BINARY)) {
-  console.error(`Error: SLVSX binary not found at ${SLVSX_BINARY}`);
-  console.error('Please build the project first with: cargo build --release');
-  console.error('Or set SLVSX_BINARY environment variable to point to the binary');
+if (!SLVSX_BINARY || !fs.existsSync(SLVSX_BINARY)) {
+  console.error('Error: SLVSX binary not found.');
+  console.error('');
+  console.error('The MCP server requires the slvsx CLI binary. Install it via one of:');
+  console.error('');
+  console.error('  Option 1: Install via Homebrew (macOS/Linux)');
+  console.error('    brew install sknoble/tap/slvsx');
+  console.error('');
+  console.error('  Option 2: Build from source');
+  console.error('    git clone https://github.com/snoble/slvsx-cli');
+  console.error('    cd slvsx-cli && cargo build --release');
+  console.error('    export SLVSX_BINARY=$PWD/target/release/slvsx');
+  console.error('');
+  console.error('  Option 3: Download binary from GitHub releases');
+  console.error('    https://github.com/snoble/slvsx-cli/releases');
+  console.error('');
+  console.error('Then restart the MCP server.');
   process.exit(1);
 }
 
