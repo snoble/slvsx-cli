@@ -3,20 +3,10 @@
   "units": "mm",
   "entities": [
     {
-      "type": "point",
-      "id": "axis_top",
-      "at": [50, 100, 0]
-    },
-    {
-      "type": "point",
-      "id": "axis_bottom",
-      "at": [50, 0, 0]
-    },
-    {
-      "type": "line",
-      "id": "axis",
-      "p1": "axis_bottom",
-      "p2": "axis_top"
+      "type": "plane",
+      "id": "xy_plane",
+      "origin": [0, 0, 0],
+      "normal": [0, 0, 1]
     },
     {
       "type": "point",
@@ -71,28 +61,19 @@
   "constraints": [
     {
       "type": "fixed",
-      "entity": "axis_bottom"
+      "entity": "tip"
     },
     {
-      "type": "fixed",
-      "entity": "axis_top"
-    },
-    {
-      "type": "point_on_line",
-      "point": "tip",
-      "line": "axis"
-    },
-    {
-      "type": "symmetric",
+      "type": "symmetric_vertical",
       "a": "left_barb",
       "b": "right_barb",
-      "about": "axis"
+      "workplane": "xy_plane"
     },
     {
-      "type": "symmetric",
+      "type": "symmetric_vertical",
       "a": "left_base",
       "b": "right_base",
-      "about": "axis"
+      "workplane": "xy_plane"
     },
     {
       "type": "distance",
