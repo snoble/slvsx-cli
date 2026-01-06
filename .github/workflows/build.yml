@@ -40,6 +40,28 @@ jobs:
           fi
           
           echo "✅ Version format is valid: $CARGO_VERSION"
+
+      - name: Verify version sync
+        if: matrix.os == 'ubuntu-latest'  # Only run once
+        run: |
+          # Get versions from both files
+          CARGO_VERSION=$(grep -E '^version = "' Cargo.toml | head -1 | sed 's/version = "\(.*\)"/\1/')
+          NPM_VERSION=$(jq -r .version package.json)
+          
+          echo "Cargo.toml version:   $CARGO_VERSION"
+          echo "package.json version: $NPM_VERSION"
+          
+          if [ "$CARGO_VERSION" != "$NPM_VERSION" ]; then
+            echo ""
+            echo "❌ ERROR: Version mismatch!"
+            echo "   Cargo.toml:   $CARGO_VERSION"
+            echo "   package.json: $NPM_VERSION"
+            echo ""
+            echo "   Run: ./scripts/bump-version.sh <version> to sync versions"
+            exit 1
+          fi
+          
+          echo "✅ Versions are in sync: $CARGO_VERSION"
           
       - name: Install dependencies (Ubuntu)
         if: matrix.os == 'ubuntu-latest'
