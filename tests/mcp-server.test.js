@@ -195,6 +195,8 @@ test('build-docs script defines user-facing docs list', () => {
   assert(content.includes('USER_FACING_DOCS'), 'Should define USER_FACING_DOCS');
   assert(content.includes('AI_GUIDE.md'), 'Should include AI_GUIDE.md');
   assert(content.includes('README.md'), 'Should include README.md');
+  assert(content.includes('ADVANCED_TECHNIQUES.md'), 'Should include ADVANCED_TECHNIQUES.md');
+  assert(content.includes('examples/generators/README.md'), 'Should include generators README');
 });
 
 test('build-docs script uses correct chunking settings', () => {

@@ -36,11 +36,14 @@ const USER_FACING_DOCS = [
   'docs/AI_GUIDE.md',
   'docs/AI_INTERACTIVE_FEATURES.md',
   'docs/AI_MODELING_GUIDE.md',
+  'docs/ADVANCED_TECHNIQUES.md',  // Walls with thickness, patterns, mechanisms
   'docs/ITERATIVE_DESIGN.md',
   'docs/JSON_SCHEMA.md',
   'docs/MCP_INTEGRATION.md',
   'docs/USAGE_EXAMPLES.md',
   'docs/VISUAL_GALLERY.md',
+  // Generators documentation
+  'examples/generators/README.md',
   // Top-level user docs
   'README.md',
   'QUICKSTART.md',
