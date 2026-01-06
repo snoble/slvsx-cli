@@ -41,7 +41,8 @@ function findSlvsxBinary() {
   // 3. Check if slvsx is in PATH
   try {
     const which = execSync('which slvsx 2>/dev/null || where slvsx 2>nul', { encoding: 'utf-8' }).trim();
-    if (which) return which.split('\n')[0];
+    // Handle Windows CRLF line endings by trimming each line
+    if (which) return which.split('\n')[0].trim();
   } catch (e) {
     // Not in PATH
   }

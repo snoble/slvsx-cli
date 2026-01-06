@@ -74,16 +74,25 @@ async function downloadFile(url, dest) {
     const follow = (url) => {
       https.get(url, (res) => {
         if (res.statusCode === 302 || res.statusCode === 301) {
+          // Consume the redirect response to release the connection
+          res.resume();
           follow(res.headers.location);
           return;
         }
         
         if (res.statusCode !== 200) {
+          res.resume(); // Consume response body
           reject(new Error(`Download failed with status ${res.statusCode}`));
           return;
         }
         
         const file = createWriteStream(dest);
+        // Handle file stream errors to prevent hanging
+        file.on('error', (err) => {
+          file.close();
+          fs.unlink(dest, () => {}); // Clean up partial file
+          reject(err);
+        });
         res.pipe(file);
         file.on('finish', () => {
           file.close();
