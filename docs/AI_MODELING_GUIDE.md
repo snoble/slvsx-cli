@@ -120,7 +120,63 @@ Different constraints use different field names. Check the schema carefully:
 - Fixed points don't need additional position constraints
 - Count degrees of freedom: each 3D point has 3 DOF, each constraint removes DOF
 
-### 5. Entity ID Case Sensitivity
+### 5. Tangent Constraints Don't Work with Circles
+
+**Problem**: The `tangent` constraint only works with `arc`, `cubic`, and `line` entities. **It does NOT work with `circle` entities** - attempting to use it will cause an error.
+
+```json
+// BAD - circle cannot be tangent
+{
+  "type": "tangent",
+  "a": "my_circle",    // circle entity - NOT SUPPORTED!
+  "b": "my_line"
+}
+
+// GOOD - use an Arc instead
+{
+  "type": "arc",
+  "id": "my_arc",
+  "center": "center_point",
+  "start": "arc_start",
+  "end": "arc_end",
+  "normal": [0, 0, 1],
+  "workplane": "xy_plane"
+}
+// Then tangent constraint works:
+{
+  "type": "tangent",
+  "a": "my_arc",
+  "b": "my_line"
+}
+```
+
+**Why**: In SolveSpace, circles are static (center + radius) while arcs are parametric curves that can be constrained. For tangent behavior, use an `arc` entity.
+
+### 6. Symmetric Constraint Requires 2D Geometry
+
+**Problem**: The `symmetric` constraint (about a line) only works with 2D geometry in a workplane. Using it with 3D points will crash.
+
+```json
+// BAD - 3D points with symmetric constraint
+{
+  "type": "symmetric",
+  "a": "point1",      // 3D point - CRASHES!
+  "b": "point2",
+  "about": "axis"
+}
+
+// WORKAROUND - use symmetric_horizontal or symmetric_vertical with a workplane
+{
+  "type": "symmetric_horizontal",
+  "a": "point1",
+  "b": "point2", 
+  "workplane": "xy_plane"
+}
+```
+
+**Why**: SolveSpace's `SYMMETRIC_LINE` constraint requires a workplane context. For 3D symmetry, use `symmetric_horizontal` or `symmetric_vertical` with an explicit workplane.
+
+### 8. Entity ID Case Sensitivity
 
 Entity IDs are case-sensitive:
 ```json
@@ -129,7 +185,7 @@ Entity IDs are case-sensitive:
 "id": "point1"  // Different from Point1!
 ```
 
-### 6. Parameter References Must Use $ Prefix
+### 9. Parameter References Must Use $ Prefix
 
 ```json
 // BAD
@@ -139,7 +195,7 @@ Entity IDs are case-sensitive:
 "value": "$width"
 ```
 
-### 7. Entity Type Names Use snake_case
+### 10. Entity Type Names Use snake_case
 
 ```json
 // BAD
@@ -151,7 +207,7 @@ Entity IDs are case-sensitive:
 "type": "line2_d"
 ```
 
-### 8. Fixed Constraint for 2D Points Needs Workplane
+### 11. Fixed Constraint for 2D Points Needs Workplane
 
 ```json
 // BAD - 2D point will drift without workplane
@@ -168,7 +224,7 @@ Entity IDs are case-sensitive:
 }
 ```
 
-### 9. Angle Constraint Behavior
+### 12. Angle Constraint Behavior
 
 The angle constraint measures the angle between two lines. The angle value is in degrees.
 
@@ -177,7 +233,7 @@ The angle constraint measures the angle between two lines. The angle value is in
 - Start with geometry that differs from your target angle (e.g., initial 45° if target is 90°)
 - Angle is measured as the acute angle between lines
 
-### 10. Equal Length with Many Entities
+### 13. Equal Length with Many Entities
 
 Using `equal_length` with many entities (>4) can cause internal ID collisions. Split into multiple constraints:
 
@@ -199,7 +255,7 @@ Using `equal_length` with many entities (>4) can cause internal ID collisions. S
 }
 ```
 
-### 11. Circle Orientation (Normal Vector)
+### 14. Circle Orientation (Normal Vector)
 
 **Problem**: Circles lie in a plane defined by their `normal` vector. If not specified, circles default to the XY plane (normal = [0,0,1]). Circles on walls or other planes **must** specify their normal or they will project incorrectly in different views.
 
@@ -297,7 +353,7 @@ slvsx export model.json -v isometric -o perspective.svg
 | `invalid type: map, expected a sequence` | Trying to parse a solution file as input |
 | `Solver failed to converge` | Degenerate geometry (0° or 180° angles) |
 
-### 11. Solution Files vs Input Files
+### 15. Solution Files vs Input Files
 
 **Problem**: Solution output files (`*_solution.json`) have a different format than input files. Don't try to parse them as input.
 

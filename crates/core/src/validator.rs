@@ -15,6 +15,7 @@ impl Validator {
         self.validate_units(doc)?;
         self.validate_constraint_references(doc)?;
         self.validate_entity_references(doc)?;
+        self.validate_constraint_entity_types(doc)?;
         Ok(())
     }
 
@@ -154,6 +155,72 @@ impl Validator {
                                 sorted.sort();
                                 sorted.join(", ")
                             }
+                        ),
+                        pointer: Some(format!("/constraints/{}", idx)),
+                    });
+                }
+            }
+        }
+
+        Ok(())
+    }
+
+    fn validate_constraint_entity_types(&self, doc: &InputDocument) -> Result<()> {
+        use crate::ir::{Constraint, Entity};
+        use std::collections::HashMap;
+
+        // Build entity type map
+        let entity_types: HashMap<&str, &str> = doc.entities.iter().map(|e| {
+            let type_name = match e {
+                Entity::Point { .. } | Entity::Point2D { .. } => "point",
+                Entity::Line { .. } | Entity::Line2D { .. } => "line",
+                Entity::Circle { .. } => "circle",
+                Entity::Arc { .. } => "arc",
+                Entity::Plane { .. } => "plane",
+                Entity::Cubic { .. } => "cubic",
+            };
+            (e.id(), type_name)
+        }).collect();
+
+        for (idx, constraint) in doc.constraints.iter().enumerate() {
+            // Symmetric constraint about a line doesn't work in 3D
+            if let Constraint::Symmetric { a, b, about } = constraint {
+                return Err(Error::InvalidInput {
+                    message: format!(
+                        "The 'symmetric' constraint (about line '{}') is not supported in 3D mode. \
+                        Use 'symmetric_horizontal' or 'symmetric_vertical' with a workplane instead. \
+                        Example: {{\"type\": \"symmetric_horizontal\", \"a\": \"{}\", \"b\": \"{}\", \"workplane\": \"your_plane\"}}",
+                        about, a, b
+                    ),
+                    pointer: Some(format!("/constraints/{}", idx)),
+                });
+            }
+
+            // Tangent constraint only works with arc, cubic, and line - NOT circle
+            if let Constraint::Tangent { a, b } = constraint {
+                let type_a = entity_types.get(a.as_str()).copied().unwrap_or("unknown");
+                let type_b = entity_types.get(b.as_str()).copied().unwrap_or("unknown");
+                
+                const VALID_TANGENT_TYPES: &[&str] = &["arc", "cubic", "line"];
+                
+                if !VALID_TANGENT_TYPES.contains(&type_a) {
+                    return Err(Error::InvalidInput {
+                        message: format!(
+                            "Tangent constraint cannot be applied to entity '{}' (type: {}). \
+                            Tangent constraints only work with arc, cubic, or line entities. \
+                            Circles are not supported - use an Arc entity instead.",
+                            a, type_a
+                        ),
+                        pointer: Some(format!("/constraints/{}", idx)),
+                    });
+                }
+                if !VALID_TANGENT_TYPES.contains(&type_b) {
+                    return Err(Error::InvalidInput {
+                        message: format!(
+                            "Tangent constraint cannot be applied to entity '{}' (type: {}). \
+                            Tangent constraints only work with arc, cubic, or line entities. \
+                            Circles are not supported - use an Arc entity instead.",
+                            b, type_b
                         ),
                         pointer: Some(format!("/constraints/{}", idx)),
                     });
