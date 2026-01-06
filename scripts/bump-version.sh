@@ -27,19 +27,19 @@ fi
 
 echo "Bumping version to $VERSION..."
 
-# Update Cargo.toml (workspace version)
-if [[ "$OSTYPE" == "darwin"* ]]; then
-  sed -i '' "s/^version = \".*\"/version = \"$VERSION\"/" Cargo.toml
+# Detect sed type (BSD vs GNU)
+# GNU sed uses -i, BSD sed uses -i ''
+if sed --version 2>&1 | grep -q GNU; then
+  SED_INPLACE="sed -i"
 else
-  sed -i "s/^version = \".*\"/version = \"$VERSION\"/" Cargo.toml
+  SED_INPLACE="sed -i ''"
 fi
 
+# Update Cargo.toml (workspace version)
+$SED_INPLACE "s/^version = \".*\"/version = \"$VERSION\"/" Cargo.toml
+
 # Update package.json
-if [[ "$OSTYPE" == "darwin"* ]]; then
-  sed -i '' "s/\"version\": \".*\"/\"version\": \"$VERSION\"/" package.json
-else
-  sed -i "s/\"version\": \".*\"/\"version\": \"$VERSION\"/" package.json
-fi
+$SED_INPLACE "s/\"version\": \".*\"/\"version\": \"$VERSION\"/" package.json
 
 # Update Cargo.lock
 echo "Updating Cargo.lock..."
