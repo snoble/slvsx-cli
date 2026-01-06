@@ -23,14 +23,22 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Find slvsx binary - check env var, PATH, then local build
+// Find slvsx binary - check env var, bundled, PATH, then local build
 function findSlvsxBinary() {
+  const ext = process.platform === 'win32' ? '.exe' : '';
+  
   // 1. Check explicit env var
   if (process.env.SLVSX_BINARY) {
     return process.env.SLVSX_BINARY;
   }
   
-  // 2. Check if slvsx is in PATH
+  // 2. Check bundled binary (installed via postinstall)
+  const bundled = path.join(__dirname, 'bin', `slvsx${ext}`);
+  if (fs.existsSync(bundled)) {
+    return bundled;
+  }
+  
+  // 3. Check if slvsx is in PATH
   try {
     const which = execSync('which slvsx 2>/dev/null || where slvsx 2>nul', { encoding: 'utf-8' }).trim();
     if (which) return which.split('\n')[0];
@@ -38,15 +46,14 @@ function findSlvsxBinary() {
     // Not in PATH
   }
   
-  // 3. Check local build
-  const localBuild = './target/release/slvsx';
+  // 4. Check local build
+  const localBuild = `./target/release/slvsx${ext}`;
   if (fs.existsSync(localBuild)) {
     return localBuild;
   }
   
-  // 4. Check relative to this script (for development)
-  const scriptDir = path.dirname(__filename);
-  const devBuild = path.join(scriptDir, 'target/release/slvsx');
+  // 5. Check relative to this script (for development)
+  const devBuild = path.join(__dirname, 'target/release', `slvsx${ext}`);
   if (fs.existsSync(devBuild)) {
     return devBuild;
   }
