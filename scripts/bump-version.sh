@@ -17,9 +17,11 @@ if [ -z "$VERSION" ]; then
 fi
 
 # Validate version format (semver)
-if ! echo "$VERSION" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.]+)?$'; then
+# Must match the regex in .github/workflows/build.yml
+if ! echo "$VERSION" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.-]+)?(\+[a-zA-Z0-9.-]+)?$'; then
   echo "Error: Invalid version format '$VERSION'"
-  echo "Expected: X.Y.Z or X.Y.Z-suffix (e.g., 0.2.3 or 0.2.3-rc1)"
+  echo "Expected: X.Y.Z, X.Y.Z-prerelease, or X.Y.Z+build"
+  echo "Examples: 0.2.3, 0.2.3-beta.1, 0.2.3-rc-1, 0.2.3+build.123"
   exit 1
 fi
 
