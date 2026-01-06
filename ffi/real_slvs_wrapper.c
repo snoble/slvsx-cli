@@ -52,6 +52,18 @@ RealSlvsSystem* real_slvs_create() {
     
     // Start numbering from higher values to avoid conflicts
     // Use different ranges to prevent ID collisions
+    // ID scheme:
+    //   User entities:       id (passed directly, typically 1-10000)
+    //   Constraints:         id (passed directly)
+    //   Circle internals use offsets of 100000+ to avoid collisions:
+    //     Normal:     100000 + id
+    //     Origin:     200000 + id  
+    //     Workplane:  300000 + id
+    //     2D Center:  400000 + id
+    //     Distance:   500000 + id
+    //     Circle:     600000 + id
+    //   Arc normals:  700000 + id
+    //   Workplane normals: 800000 + id
     s->next_param = 10000;  // Parameters: 10000+
     s->next_entity = 100;   // Entities stay at 100+
     s->next_constraint = 100; // Constraints stay at 100+
@@ -197,7 +209,7 @@ int real_slvs_add_circle(RealSlvsSystem* s, int id, double cx, double cy, double
     s->sys.param[s->sys.params++] = Slvs_MakeParam(pqy, g, qy);
     s->sys.param[s->sys.params++] = Slvs_MakeParam(pqz, g, qz);
     
-    Slvs_hEntity normal_id = 3000 + id; // Use different range for normal
+    Slvs_hEntity normal_id = 100000 + id; // Use large offset to avoid collisions
     s->sys.entity[s->sys.entities++] = Slvs_MakeNormal3d(normal_id, g, pqw, pqx, pqy, pqz);
     
     // Create origin point for workplane (3D point)
@@ -209,11 +221,11 @@ int real_slvs_add_circle(RealSlvsSystem* s, int id, double cx, double cy, double
     s->sys.param[s->sys.params++] = Slvs_MakeParam(poy, g, cy);
     s->sys.param[s->sys.params++] = Slvs_MakeParam(poz, g, cz);
     
-    Slvs_hEntity origin_id = 6000 + id; // Use different range for origin
+    Slvs_hEntity origin_id = 200000 + id; // Use large offset to avoid collisions
     s->sys.entity[s->sys.entities++] = Slvs_MakePoint3d(origin_id, g, pox, poy, poz);
     
     // Create workplane for the circle (required for circles)
-    Slvs_hEntity workplane_id = 5000 + id; // Use different range for workplane
+    Slvs_hEntity workplane_id = 300000 + id; // Use large offset to avoid collisions
     s->sys.entity[s->sys.entities++] = Slvs_MakeWorkplane(workplane_id, g, origin_id, normal_id);
     
     // Create 2D center point in the workplane (u, v coordinates)
@@ -224,18 +236,18 @@ int real_slvs_add_circle(RealSlvsSystem* s, int id, double cx, double cy, double
     s->sys.param[s->sys.params++] = Slvs_MakeParam(pu, g, 0.0);
     s->sys.param[s->sys.params++] = Slvs_MakeParam(pv, g, 0.0);
     
-    Slvs_hEntity center_id = 2000 + id; // Use different range for center point
+    Slvs_hEntity center_id = 400000 + id; // Use large offset to avoid collisions
     s->sys.entity[s->sys.entities++] = Slvs_MakePoint2d(center_id, g, workplane_id, pu, pv);
     
     // Create distance entity for radius
     int pr = s->next_param++;
     s->sys.param[s->sys.params++] = Slvs_MakeParam(pr, g, radius);
     
-    Slvs_hEntity radius_id = 4000 + id; // Use different range for distance
+    Slvs_hEntity radius_id = 500000 + id; // Use large offset to avoid collisions
     s->sys.entity[s->sys.entities++] = Slvs_MakeDistance(radius_id, g, SLVS_FREE_IN_3D, pr);
     
     // Create circle entity (use high offset to avoid collision with regular entities)
-    Slvs_hEntity circle_id = 8000 + id;
+    Slvs_hEntity circle_id = 600000 + id;
     s->sys.entity[s->sys.entities++] = Slvs_MakeCircle(circle_id, g, workplane_id, center_id, normal_id, radius_id);
     
     // Store radius for later retrieval (for backward compatibility)
@@ -269,7 +281,7 @@ int real_slvs_add_arc(RealSlvsSystem* s, int id, int center_point_id, int start_
     s->sys.param[s->sys.params++] = Slvs_MakeParam(pqz, g, qz);
     
     // Create normal entity
-    Slvs_hEntity normal_id = 3000 + id; // Use different range
+    Slvs_hEntity normal_id = 700000 + id; // Use large offset to avoid collisions
     s->sys.entity[s->sys.entities++] = Slvs_MakeNormal3d(normal_id, g, pqw, pqx, pqy, pqz);
     
     // Create arc entity
@@ -467,8 +479,8 @@ int real_slvs_add_equal_radius_constraint(RealSlvsSystem* s, int id, int circle1
     
     // Use proper ID mapping for constraint and entities
     Slvs_hConstraint constraint_id = 10000 + id;
-    Slvs_hEntity circle1 = 8000 + circle1_id;
-    Slvs_hEntity circle2 = 8000 + circle2_id;
+    Slvs_hEntity circle1 = 600000 + circle1_id;
+    Slvs_hEntity circle2 = 600000 + circle2_id;
     
     s->sys.constraint[s->sys.constraints++] = Slvs_MakeConstraint(
         constraint_id, g, SLVS_C_EQUAL_RADIUS, SLVS_FREE_IN_3D,
@@ -557,7 +569,7 @@ int real_slvs_add_point_on_circle_constraint(RealSlvsSystem* s, int id, int poin
     // Use proper ID mapping for constraint and entities
     Slvs_hConstraint constraint_id = 10000 + id;
     Slvs_hEntity point = 1000 + point_id;
-    Slvs_hEntity circle = 8000 + circle_id;
+    Slvs_hEntity circle = 600000 + circle_id;
     
     s->sys.constraint[s->sys.constraints++] = Slvs_MakeConstraint(
         constraint_id, g, SLVS_C_PT_ON_CIRCLE, SLVS_FREE_IN_3D,
@@ -711,16 +723,16 @@ int real_slvs_get_point_position(RealSlvsSystem* s, int point_id, double* x, dou
 int real_slvs_get_circle_position(RealSlvsSystem* s, int circle_id, double* cx, double* cy, double* cz, double* radius) {
     if (!s || !cx || !cy || !cz || !radius) return -1;
     
-    // Circle entity structure (from real_slvs_add_circle):
-    // - Normal at 3000 + id
-    // - Origin point (workplane) at 6000 + id (this is the 3D center!)
-    // - Workplane at 5000 + id
-    // - 2D center point at 2000 + id (relative to workplane, always 0,0)
-    // - Distance (radius) at 4000 + id
-    // - Circle at 8000 + id
+    // Circle entity structure (from real_slvs_add_circle) with large offsets:
+    // - Normal at 100000 + id
+    // - Origin point (3D center) at 200000 + id
+    // - Workplane at 300000 + id
+    // - 2D center point at 400000 + id (relative to workplane, always 0,0)
+    // - Distance (radius) at 500000 + id
+    // - Circle entity at 600000 + id
     
-    Slvs_hEntity origin_id = 6000 + circle_id;  // Origin point is the 3D center
-    Slvs_hEntity radius_entity_id = 4000 + circle_id;  // Distance entity for radius
+    Slvs_hEntity origin_id = 200000 + circle_id;  // Origin point is the 3D center
+    Slvs_hEntity radius_entity_id = 500000 + circle_id;  // Distance entity for radius
     
     int found_center = 0;
     int found_radius = 0;
@@ -862,7 +874,7 @@ int real_slvs_add_workplane(RealSlvsSystem* s, int id, int origin_point_id,
     s->sys.param[s->sys.params++] = Slvs_MakeParam(pqz, g, qz);
     
     // Create normal entity
-    Slvs_hEntity normal_id = 2000 + id; // Use different range to avoid conflicts
+    Slvs_hEntity normal_id = 800000 + id; // Use large offset to avoid collisions
     s->sys.entity[s->sys.entities++] = Slvs_MakeNormal3d(normal_id, g, pqw, pqx, pqy, pqz);
     
     // Create workplane entity
@@ -1024,7 +1036,7 @@ int real_slvs_add_diameter_constraint(RealSlvsSystem* s, int id,
     Slvs_hGroup g = 1;
     Slvs_hConstraint constraint_id = 10000 + id;
     
-    Slvs_hEntity circle = 8000 + circle_id;  // Match circle entity ID offset
+    Slvs_hEntity circle = 600000 + circle_id;  // Match circle entity ID offset
     
     s->sys.constraint[s->sys.constraints++] = Slvs_MakeConstraint(
         constraint_id, g, SLVS_C_DIAMETER, SLVS_FREE_IN_3D,
