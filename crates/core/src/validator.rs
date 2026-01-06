@@ -1352,4 +1352,176 @@ mod tests {
             _ => panic!("Wrong error type"),
         }
     }
+
+    #[test]
+    fn test_tangent_constraint_rejects_circle() {
+        use crate::ir::{Constraint, ExprOrNumber};
+        let validator = Validator::new();
+        let doc = InputDocument {
+            schema: "slvs-json/1".to_string(),
+            units: "mm".to_string(),
+            parameters: HashMap::new(),
+            entities: vec![
+                Entity::Circle {
+                    id: "c1".to_string(),
+                    center: vec![ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0)],
+                    diameter: ExprOrNumber::Number(10.0),
+                    normal: vec![ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(1.0)],
+                    construction: false,
+                    preserve: false,
+                },
+                Entity::Point {
+                    id: "p1".to_string(),
+                    at: vec![ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0)],
+                    construction: false,
+                    preserve: false,
+                },
+                Entity::Point {
+                    id: "p2".to_string(),
+                    at: vec![ExprOrNumber::Number(10.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0)],
+                    construction: false,
+                    preserve: false,
+                },
+                Entity::Line {
+                    id: "l1".to_string(),
+                    p1: "p1".to_string(),
+                    p2: "p2".to_string(),
+                    construction: false,
+                    preserve: false,
+                },
+            ],
+            constraints: vec![Constraint::Tangent {
+                a: "c1".to_string(),
+                b: "l1".to_string(),
+            }],
+        };
+        // validate_constraint_entity_types checks the entity types for constraints
+        let result = validator.validate_constraint_entity_types(&doc);
+        assert!(result.is_err());
+        match result.unwrap_err() {
+            Error::InvalidInput { message, pointer } => {
+                assert!(message.contains("Tangent constraint cannot be applied"));
+                assert!(message.contains("circle"));
+                assert!(message.contains("Arc"));
+                assert_eq!(pointer, Some("/constraints/0".to_string()));
+            }
+            _ => panic!("Wrong error type"),
+        }
+    }
+
+    #[test]
+    fn test_tangent_constraint_accepts_arc() {
+        use crate::ir::{Constraint, ExprOrNumber};
+        let validator = Validator::new();
+        let doc = InputDocument {
+            schema: "slvs-json/1".to_string(),
+            units: "mm".to_string(),
+            parameters: HashMap::new(),
+            entities: vec![
+                Entity::Point {
+                    id: "center".to_string(),
+                    at: vec![ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0)],
+                    construction: false,
+                    preserve: false,
+                },
+                Entity::Point {
+                    id: "start".to_string(),
+                    at: vec![ExprOrNumber::Number(5.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0)],
+                    construction: false,
+                    preserve: false,
+                },
+                Entity::Point {
+                    id: "end".to_string(),
+                    at: vec![ExprOrNumber::Number(0.0), ExprOrNumber::Number(5.0), ExprOrNumber::Number(0.0)],
+                    construction: false,
+                    preserve: false,
+                },
+                Entity::Arc {
+                    id: "a1".to_string(),
+                    center: "center".to_string(),
+                    start: "start".to_string(),
+                    end: "end".to_string(),
+                    normal: vec![ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(1.0)],
+                    workplane: None,
+                    construction: false,
+                    preserve: false,
+                },
+                Entity::Point {
+                    id: "p1".to_string(),
+                    at: vec![ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0)],
+                    construction: false,
+                    preserve: false,
+                },
+                Entity::Point {
+                    id: "p2".to_string(),
+                    at: vec![ExprOrNumber::Number(10.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0)],
+                    construction: false,
+                    preserve: false,
+                },
+                Entity::Line {
+                    id: "l1".to_string(),
+                    p1: "p1".to_string(),
+                    p2: "p2".to_string(),
+                    construction: false,
+                    preserve: false,
+                },
+            ],
+            constraints: vec![Constraint::Tangent {
+                a: "a1".to_string(),
+                b: "l1".to_string(),
+            }],
+        };
+        // validate_constraint_entity_types should pass for arc + line
+        let result = validator.validate_constraint_entity_types(&doc);
+        assert!(result.is_ok(), "Arc + Line tangent should be allowed: {:?}", result);
+    }
+
+    #[test]
+    fn test_symmetric_constraint_rejected_in_3d() {
+        use crate::ir::Constraint;
+        let validator = Validator::new();
+        let doc = InputDocument {
+            schema: "slvs-json/1".to_string(),
+            units: "mm".to_string(),
+            parameters: HashMap::new(),
+            entities: vec![
+                Entity::Point {
+                    id: "p1".to_string(),
+                    at: vec![ExprOrNumber::Number(-50.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0)],
+                    construction: false,
+                    preserve: false,
+                },
+                Entity::Point {
+                    id: "p2".to_string(),
+                    at: vec![ExprOrNumber::Number(50.0), ExprOrNumber::Number(10.0), ExprOrNumber::Number(0.0)],
+                    construction: false,
+                    preserve: false,
+                },
+                Entity::Line {
+                    id: "axis".to_string(),
+                    p1: "p1".to_string(),
+                    p2: "p2".to_string(),
+                    construction: false,
+                    preserve: false,
+                },
+            ],
+            constraints: vec![Constraint::Symmetric {
+                a: "p1".to_string(),
+                b: "p2".to_string(),
+                about: "axis".to_string(),
+            }],
+        };
+        // validate_constraint_entity_types should reject symmetric in 3D
+        let result = validator.validate_constraint_entity_types(&doc);
+        assert!(result.is_err());
+        match result.unwrap_err() {
+            Error::InvalidInput { message, pointer } => {
+                assert!(message.contains("symmetric"));
+                assert!(message.contains("not supported in 3D"));
+                assert!(message.contains("symmetric_horizontal"));
+                assert_eq!(pointer, Some("/constraints/0".to_string()));
+            }
+            _ => panic!("Wrong error type"),
+        }
+    }
 }
