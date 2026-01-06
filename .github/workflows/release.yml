@@ -42,6 +42,41 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Verify tag matches code version
+        run: |
+          # Get tag version (strip 'v' prefix)
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            TAG_VERSION="${{ github.event.inputs.tag }}"
+          else
+            TAG_VERSION="${GITHUB_REF#refs/tags/}"
+          fi
+          TAG_VERSION="${TAG_VERSION#v}"  # Strip 'v' prefix
+          
+          # Get versions from code
+          CARGO_VERSION=$(grep -E '^version = "' Cargo.toml | head -1 | sed 's/version = "\(.*\)"/\1/')
+          NPM_VERSION=$(jq -r .version package.json)
+          
+          echo "Tag version:          $TAG_VERSION"
+          echo "Cargo.toml version:   $CARGO_VERSION"
+          echo "package.json version: $NPM_VERSION"
+          
+          # Verify all match
+          if [ "$TAG_VERSION" != "$CARGO_VERSION" ]; then
+            echo ""
+            echo "❌ ERROR: Tag v$TAG_VERSION doesn't match Cargo.toml version $CARGO_VERSION"
+            echo "   Update Cargo.toml to version $TAG_VERSION or create tag v$CARGO_VERSION"
+            exit 1
+          fi
+          
+          if [ "$TAG_VERSION" != "$NPM_VERSION" ]; then
+            echo ""
+            echo "❌ ERROR: Tag v$TAG_VERSION doesn't match package.json version $NPM_VERSION"
+            echo "   Update package.json to version $TAG_VERSION"
+            exit 1
+          fi
+          
+          echo "✅ All versions match: $TAG_VERSION"
+
       - name: Install dependencies (Ubuntu)
         if: matrix.os == 'ubuntu-latest'
         run: |
