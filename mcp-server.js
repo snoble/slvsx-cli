@@ -23,8 +23,45 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Check if slvsx binary exists
-const SLVSX_BINARY = process.env.SLVSX_BINARY || './target/release/slvsx';
+// Find slvsx binary - check env var, bundled, PATH, then local build
+function findSlvsxBinary() {
+  const ext = process.platform === 'win32' ? '.exe' : '';
+  
+  // 1. Check explicit env var
+  if (process.env.SLVSX_BINARY) {
+    return process.env.SLVSX_BINARY;
+  }
+  
+  // 2. Check bundled binary (installed via postinstall)
+  const bundled = path.join(__dirname, 'bin', `slvsx${ext}`);
+  if (fs.existsSync(bundled)) {
+    return bundled;
+  }
+  
+  // 3. Check if slvsx is in PATH
+  try {
+    const which = execSync('which slvsx 2>/dev/null || where slvsx 2>nul', { encoding: 'utf-8' }).trim();
+    if (which) return which.split('\n')[0];
+  } catch (e) {
+    // Not in PATH
+  }
+  
+  // 4. Check local build
+  const localBuild = `./target/release/slvsx${ext}`;
+  if (fs.existsSync(localBuild)) {
+    return localBuild;
+  }
+  
+  // 5. Check relative to this script (for development)
+  const devBuild = path.join(__dirname, 'target/release', `slvsx${ext}`);
+  if (fs.existsSync(devBuild)) {
+    return devBuild;
+  }
+  
+  return null;
+}
+
+const SLVSX_BINARY = findSlvsxBinary();
 
 // Load documentation embeddings if available
 let docsIndex = null;
@@ -403,49 +440,49 @@ class SlvsxServer {
         schema: 'slvs-json/1',
         units: 'mm',
         entities: [
-          { id: 'p1', type: 'Point', x: 0, y: 0 },
-          { id: 'p2', type: 'Point', x: 100, y: 0 },
-          { id: 'p3', type: 'Point', x: 50, y: 86.6 }
+          { type: 'point', id: 'p1', at: [0, 0, 0] },
+          { type: 'point', id: 'p2', at: [100, 0, 0] },
+          { type: 'point', id: 'p3', at: [50, 86.6, 0] }
         ],
         constraints: [
-          { type: 'Fixed', entity: 'p1' },
-          { type: 'Distance', entities: ['p1', 'p2'], distance: 100 },
-          { type: 'Distance', entities: ['p2', 'p3'], distance: 100 },
-          { type: 'Distance', entities: ['p3', 'p1'], distance: 100 }
+          { type: 'fixed', entity: 'p1' },
+          { type: 'distance', between: ['p1', 'p2'], value: 100 },
+          { type: 'distance', between: ['p2', 'p3'], value: 100 },
+          { type: 'distance', between: ['p3', 'p1'], value: 100 }
         ]
       },
       square: {
         schema: 'slvs-json/1',
         units: 'mm',
         entities: [
-          { id: 'p1', type: 'Point', x: 0, y: 0 },
-          { id: 'p2', type: 'Point', x: 100, y: 0 },
-          { id: 'p3', type: 'Point', x: 100, y: 100 },
-          { id: 'p4', type: 'Point', x: 0, y: 100 },
-          { id: 'l1', type: 'Line', points: ['p1', 'p2'] },
-          { id: 'l2', type: 'Line', points: ['p2', 'p3'] },
-          { id: 'l3', type: 'Line', points: ['p3', 'p4'] },
-          { id: 'l4', type: 'Line', points: ['p4', 'p1'] }
+          { type: 'point', id: 'p1', at: [0, 0, 0] },
+          { type: 'point', id: 'p2', at: [100, 0, 0] },
+          { type: 'point', id: 'p3', at: [100, 100, 0] },
+          { type: 'point', id: 'p4', at: [0, 100, 0] },
+          { type: 'line', id: 'l1', p1: 'p1', p2: 'p2' },
+          { type: 'line', id: 'l2', p1: 'p2', p2: 'p3' },
+          { type: 'line', id: 'l3', p1: 'p3', p2: 'p4' },
+          { type: 'line', id: 'l4', p1: 'p4', p2: 'p1' }
         ],
         constraints: [
-          { type: 'Fixed', entity: 'p1' },
-          { type: 'Fixed', entity: 'p2' },
-          { type: 'Perpendicular', entities: ['l1', 'l2'] },
-          { type: 'Perpendicular', entities: ['l2', 'l3'] },
-          { type: 'Perpendicular', entities: ['l3', 'l4'] },
-          { type: 'Equal', entities: ['l1', 'l2'] }
+          { type: 'fixed', entity: 'p1' },
+          { type: 'fixed', entity: 'p2' },
+          { type: 'perpendicular', a: 'l1', b: 'l2' },
+          { type: 'perpendicular', a: 'l2', b: 'l3' },
+          { type: 'perpendicular', a: 'l3', b: 'l4' },
+          { type: 'equal_length', entities: ['l1', 'l2'] }
         ]
       },
       circle: {
         schema: 'slvs-json/1',
         units: 'mm',
         entities: [
-          { id: 'center', type: 'Point', x: 50, y: 50 },
-          { id: 'c1', type: 'Circle', center: 'center', radius: 30 }
+          { type: 'point', id: 'center', at: [50, 50, 0] },
+          { type: 'circle', id: 'c1', center: [50, 50, 0], diameter: 60 }
         ],
         constraints: [
-          { type: 'Fixed', entity: 'center' },
-          { type: 'Radius', entity: 'c1', radius: 30 }
+          { type: 'fixed', entity: 'center' },
+          { type: 'diameter', circle: 'c1', value: 60 }
         ]
       },
       linkage: {
@@ -455,21 +492,20 @@ class SlvsxServer {
           input_angle: 45
         },
         entities: [
-          { id: 'ground1', type: 'Point', x: 0, y: 0 },
-          { id: 'ground2', type: 'Point', x: 100, y: 0 },
-          { id: 'joint1', type: 'Point', x: 30, y: 30 },
-          { id: 'joint2', type: 'Point', x: 70, y: 40 },
-          { id: 'link1', type: 'Line', points: ['ground1', 'joint1'] },
-          { id: 'link2', type: 'Line', points: ['joint1', 'joint2'] },
-          { id: 'link3', type: 'Line', points: ['joint2', 'ground2'] }
+          { type: 'point', id: 'ground1', at: [0, 0, 0] },
+          { type: 'point', id: 'ground2', at: [100, 0, 0] },
+          { type: 'point', id: 'joint1', at: [30, 30, 0] },
+          { type: 'point', id: 'joint2', at: [70, 40, 0] },
+          { type: 'line', id: 'link1', p1: 'ground1', p2: 'joint1' },
+          { type: 'line', id: 'link2', p1: 'joint1', p2: 'joint2' },
+          { type: 'line', id: 'link3', p1: 'joint2', p2: 'ground2' }
         ],
         constraints: [
-          { type: 'Fixed', entity: 'ground1' },
-          { type: 'Fixed', entity: 'ground2' },
-          { type: 'Distance', entities: ['ground1', 'joint1'], distance: 40 },
-          { type: 'Distance', entities: ['joint1', 'joint2'], distance: 50 },
-          { type: 'Distance', entities: ['joint2', 'ground2'], distance: 35 },
-          { type: 'Angle', entities: ['link1'], angle: '$input_angle' }
+          { type: 'fixed', entity: 'ground1' },
+          { type: 'fixed', entity: 'ground2' },
+          { type: 'distance', between: ['ground1', 'joint1'], value: 40 },
+          { type: 'distance', between: ['joint1', 'joint2'], value: 50 },
+          { type: 'distance', between: ['joint2', 'ground2'], value: 35 }
         ]
       },
       parametric: {
@@ -478,48 +514,61 @@ class SlvsxServer {
         parameters: {
           width: 150,
           height: 100,
-          hole_radius: 10
+          hole_diameter: 20
         },
         entities: [
-          { id: 'p1', type: 'Point', x: 0, y: 0 },
-          { id: 'p2', type: 'Point', x: '$width', y: 0 },
-          { id: 'p3', type: 'Point', x: '$width', y: '$height' },
-          { id: 'p4', type: 'Point', x: 0, y: '$height' },
-          { id: 'hole_center', type: 'Point', x: 75, y: 50 },
-          { id: 'hole', type: 'Circle', center: 'hole_center', radius: '$hole_radius' }
+          { type: 'point', id: 'p1', at: [0, 0, 0] },
+          { type: 'point', id: 'p2', at: ['$width', 0, 0] },
+          { type: 'point', id: 'p3', at: ['$width', '$height', 0] },
+          { type: 'point', id: 'p4', at: [0, '$height', 0] },
+          { type: 'line', id: 'bottom', p1: 'p1', p2: 'p2' },
+          { type: 'line', id: 'right', p1: 'p2', p2: 'p3' },
+          { type: 'line', id: 'top', p1: 'p3', p2: 'p4' },
+          { type: 'line', id: 'left', p1: 'p4', p2: 'p1' },
+          { type: 'circle', id: 'hole', center: [75, 50, 0], diameter: '$hole_diameter' }
         ],
         constraints: [
-          { type: 'Fixed', entity: 'p1' },
-          { type: 'HorizontalDistance', entities: ['p1', 'p2'], distance: '$width' },
-          { type: 'VerticalDistance', entities: ['p1', 'p4'], distance: '$height' },
-          { type: 'Horizontal', entity: 'p2' },
-          { type: 'Vertical', entity: 'p4' },
-          { type: 'Radius', entity: 'hole', radius: '$hole_radius' }
+          { type: 'fixed', entity: 'p1' },
+          { type: 'distance', between: ['p1', 'p2'], value: '$width' },
+          { type: 'distance', between: ['p1', 'p4'], value: '$height' },
+          { type: 'perpendicular', a: 'bottom', b: 'right' },
+          { type: 'perpendicular', a: 'right', b: 'top' },
+          { type: 'diameter', circle: 'hole', value: '$hole_diameter' }
         ]
       },
       '3d': {
         schema: 'slvs-json/1',
         units: 'mm',
         entities: [
-          { id: 'p1', type: 'Point', x: 0, y: 0, z: 0 },
-          { id: 'p2', type: 'Point', x: 100, y: 0, z: 0 },
-          { id: 'p3', type: 'Point', x: 100, y: 100, z: 0 },
-          { id: 'p4', type: 'Point', x: 0, y: 100, z: 0 },
-          { id: 'p5', type: 'Point', x: 0, y: 0, z: 50 },
-          { id: 'p6', type: 'Point', x: 100, y: 0, z: 50 },
-          { id: 'p7', type: 'Point', x: 100, y: 100, z: 50 },
-          { id: 'p8', type: 'Point', x: 0, y: 100, z: 50 }
+          { type: 'point', id: 'p1', at: [0, 0, 0] },
+          { type: 'point', id: 'p2', at: [100, 0, 0] },
+          { type: 'point', id: 'p3', at: [100, 100, 0] },
+          { type: 'point', id: 'p4', at: [0, 100, 0] },
+          { type: 'point', id: 'p5', at: [0, 0, 50] },
+          { type: 'point', id: 'p6', at: [100, 0, 50] },
+          { type: 'point', id: 'p7', at: [100, 100, 50] },
+          { type: 'point', id: 'p8', at: [0, 100, 50] },
+          { type: 'line', id: 'base1', p1: 'p1', p2: 'p2' },
+          { type: 'line', id: 'base2', p1: 'p2', p2: 'p3' },
+          { type: 'line', id: 'base3', p1: 'p3', p2: 'p4' },
+          { type: 'line', id: 'base4', p1: 'p4', p2: 'p1' },
+          { type: 'line', id: 'top1', p1: 'p5', p2: 'p6' },
+          { type: 'line', id: 'top2', p1: 'p6', p2: 'p7' },
+          { type: 'line', id: 'top3', p1: 'p7', p2: 'p8' },
+          { type: 'line', id: 'top4', p1: 'p8', p2: 'p5' },
+          { type: 'line', id: 'vert1', p1: 'p1', p2: 'p5' },
+          { type: 'line', id: 'vert2', p1: 'p2', p2: 'p6' },
+          { type: 'line', id: 'vert3', p1: 'p3', p2: 'p7' },
+          { type: 'line', id: 'vert4', p1: 'p4', p2: 'p8' }
         ],
         constraints: [
-          { type: 'Fixed', entity: 'p1' },
-          { type: 'Distance', entities: ['p1', 'p2'], distance: 100 },
-          { type: 'Distance', entities: ['p2', 'p3'], distance: 100 },
-          { type: 'Distance', entities: ['p3', 'p4'], distance: 100 },
-          { type: 'Distance', entities: ['p4', 'p1'], distance: 100 },
-          { type: 'Distance', entities: ['p1', 'p5'], distance: 50 },
-          { type: 'Distance', entities: ['p2', 'p6'], distance: 50 },
-          { type: 'Distance', entities: ['p3', 'p7'], distance: 50 },
-          { type: 'Distance', entities: ['p4', 'p8'], distance: 50 }
+          { type: 'fixed', entity: 'p1' },
+          { type: 'fixed', entity: 'p2' },
+          { type: 'fixed', entity: 'p4' },
+          { type: 'distance', between: ['p1', 'p5'], value: 50 },
+          { type: 'distance', between: ['p2', 'p6'], value: 50 },
+          { type: 'distance', between: ['p3', 'p7'], value: 50 },
+          { type: 'distance', between: ['p4', 'p8'], value: 50 }
         ]
       }
     };
@@ -586,10 +635,23 @@ class SlvsxServer {
 }
 
 // Check if slvsx binary exists
-if (!fs.existsSync(SLVSX_BINARY)) {
-  console.error(`Error: SLVSX binary not found at ${SLVSX_BINARY}`);
-  console.error('Please build the project first with: cargo build --release');
-  console.error('Or set SLVSX_BINARY environment variable to point to the binary');
+if (!SLVSX_BINARY || !fs.existsSync(SLVSX_BINARY)) {
+  console.error('Error: SLVSX binary not found.');
+  console.error('');
+  console.error('The MCP server requires the slvsx CLI binary. Install it via one of:');
+  console.error('');
+  console.error('  Option 1: Install via Homebrew (macOS/Linux)');
+  console.error('    brew install sknoble/tap/slvsx');
+  console.error('');
+  console.error('  Option 2: Build from source');
+  console.error('    git clone https://github.com/snoble/slvsx-cli');
+  console.error('    cd slvsx-cli && cargo build --release');
+  console.error('    export SLVSX_BINARY=$PWD/target/release/slvsx');
+  console.error('');
+  console.error('  Option 3: Download binary from GitHub releases');
+  console.error('    https://github.com/snoble/slvsx-cli/releases');
+  console.error('');
+  console.error('Then restart the MCP server.');
   process.exit(1);
 }
 
