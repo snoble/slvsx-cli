@@ -262,6 +262,16 @@ pub fn handle_schema<W: OutputWriter + ?Sized>(writer: &mut W) -> Result<()> {
             "end": { "type": "string", "description": "Reference to end point" },
             "normal": { "type": "array", "items": { "type": "number" }, "minItems": 3, "maxItems": 3 }
           }
+        },
+        {
+          "type": "object",
+          "required": ["type", "id", "control_points"],
+          "properties": {
+            "type": { "const": "cubic" },
+            "id": { "type": "string" },
+            "control_points": { "type": "array", "items": { "type": "string" }, "minItems": 4, "maxItems": 4, "description": "4 point entity IDs [p0, p1, p2, p3] for cubic bezier" },
+            "workplane": { "type": "string", "description": "Optional workplane for 2D cubics" }
+          }
         }
       ]
     },

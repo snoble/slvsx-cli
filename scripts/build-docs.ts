@@ -81,9 +81,10 @@ async function main() {
   }
   
   // Initialize text splitter
+  // Larger chunks (2000 chars) provide more context for AI agents
   const splitter = new RecursiveCharacterTextSplitter({
-    chunkSize: 1000,
-    chunkOverlap: 200,
+    chunkSize: 2000,
+    chunkOverlap: 400,
     separators: ['\n## ', '\n### ', '\n#### ', '\n\n', '\n', ' ', ''],
   });
   

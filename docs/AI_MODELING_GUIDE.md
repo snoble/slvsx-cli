@@ -46,13 +46,18 @@ Different constraints use different field names. Check the schema carefully:
 | `midpoint` | `point`, `of: line` (NOT `line`) |
 | `equal_length` | `entities: [line1, line2, ...]` |
 | `point_on_line` | `point`, `line` |
+| `point_on_circle` | `point`, `circle` |
 | `coincident` | `entities: [point1, point2]` |
 | `fixed` | `entity`, `workplane` (optional, for 2D points) |
 | `horizontal` | `a: line`, `workplane: plane` (2D only!) |
 | `vertical` | `a: line`, `workplane: plane` (2D only!) |
+| `tangent` | `a: arc/line`, `b: arc/line` (NOT circle!) |
+| `equal_radius` | `a: circle/arc`, `b: circle/arc` |
+| `diameter` | `circle: circle_id`, `value` |
 | `symmetric` | `a: point`, `b: point`, `about: line` (**NOT supported in 3D!**) |
 | `symmetric_horizontal` | `a: point`, `b: point`, `workplane: plane` |
 | `symmetric_vertical` | `a: point`, `b: point`, `workplane: plane` |
+| `dragged` | `point`, `workplane` (optional) - locks point position |
 
 ## 2D Geometry Setup (Required for horizontal/vertical/symmetric)
 

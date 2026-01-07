@@ -264,6 +264,22 @@ class SlvsxServer {
             },
             required: ['query'],
           },
+        },
+        {
+          name: 'list_constraints',
+          description: 'Get a complete reference of all constraint types with their field names and descriptions. Use this to see all available constraints.',
+          inputSchema: {
+            type: 'object',
+            properties: {},
+          },
+        },
+        {
+          name: 'list_entities',
+          description: 'Get a complete reference of all entity types (point, line, circle, arc, etc.) with their field names and descriptions.',
+          inputSchema: {
+            type: 'object',
+            properties: {},
+          },
         }
       ],
     }));
@@ -291,6 +307,12 @@ class SlvsxServer {
           
           case 'search_documentation':
             return await this.searchDocs(args.query);
+          
+          case 'list_constraints':
+            return this.listConstraints();
+          
+          case 'list_entities':
+            return this.listEntities();
           
           default:
             throw new Error(`Unknown tool: ${name}`);
@@ -622,6 +644,84 @@ class SlvsxServer {
           text: formatted || 'No results found.',
         },
       ],
+    };
+  }
+
+  listConstraints() {
+    const constraintRef = `# SLVSX Constraint Reference
+
+All constraints with their field names:
+
+| Constraint | Fields | Description |
+|------------|--------|-------------|
+| \`fixed\` | \`entity\`, \`workplane?\` | Lock a point in place. For 2D points, include workplane. |
+| \`distance\` | \`between: [p1, p2]\`, \`value\` | Set distance between two points |
+| \`angle\` | \`between: [l1, l2]\`, \`value\` | Set angle between two lines (degrees) |
+| \`perpendicular\` | \`a\`, \`b\` | Make two lines perpendicular |
+| \`parallel\` | \`entities: [l1, l2, ...]\` | Make lines parallel |
+| \`horizontal\` | \`a\`, \`workplane\` | Make line horizontal (2D only!) |
+| \`vertical\` | \`a\`, \`workplane\` | Make line vertical (2D only!) |
+| \`equal_length\` | \`entities: [l1, l2, ...]\` | Make lines equal length |
+| \`equal_radius\` | \`a\`, \`b\` | Make circles/arcs equal radius |
+| \`midpoint\` | \`point\`, \`of\` | Place point at midpoint of line |
+| \`point_on_line\` | \`point\`, \`line\` | Constrain point to lie on line |
+| \`point_on_circle\` | \`point\`, \`circle\` | Constrain point to lie on circle |
+| \`coincident\` | \`entities: [p1, p2]\` | Make points coincident |
+| \`tangent\` | \`a\`, \`b\` | Make arc/line tangent (NOT for circles!) |
+| \`diameter\` | \`circle\`, \`value\` | Set circle diameter |
+| \`symmetric\` | \`a\`, \`b\`, \`about\` | Mirror symmetry (2D only!) |
+| \`symmetric_horizontal\` | \`a\`, \`b\`, \`workplane\` | Horizontal mirror symmetry |
+| \`symmetric_vertical\` | \`a\`, \`b\`, \`workplane\` | Vertical mirror symmetry |
+| \`dragged\` | \`point\`, \`workplane?\` | Lock point position absolutely |
+
+## Important Notes
+- **2D constraints** (horizontal, vertical, symmetric) require a workplane and 2D entities (point2_d, line2_d)
+- **tangent** does NOT work with circle entities - use arc entities instead
+- **symmetric** about a line requires 2D mode; use symmetric_horizontal/vertical for 3D`;
+
+    return {
+      content: [{ type: 'text', text: constraintRef }],
+    };
+  }
+
+  listEntities() {
+    const entityRef = `# SLVSX Entity Reference
+
+All entity types with their field names:
+
+| Entity | Fields | Description |
+|--------|--------|-------------|
+| \`point\` | \`id\`, \`at: [x,y,z]\`, \`preserve?\` | 3D point |
+| \`point2_d\` | \`id\`, \`at: [u,v]\`, \`workplane\` | 2D point in workplane |
+| \`line\` | \`id\`, \`p1\`, \`p2\` | Line between two 3D points |
+| \`line2_d\` | \`id\`, \`p1\`, \`p2\`, \`workplane\` | Line between two 2D points |
+| \`circle\` | \`id\`, \`center\`, \`diameter\`, \`normal?\` | Circle (center can be coords or point ref) |
+| \`arc\` | \`id\`, \`center\`, \`start\`, \`end\`, \`normal\` | Arc defined by center and endpoints |
+| \`cubic\` | \`id\`, \`control_points: [p0,p1,p2,p3]\` | Cubic Bezier curve |
+| \`plane\` | \`id\`, \`origin: [x,y,z]\`, \`normal: [x,y,z]\` | Workplane definition |
+
+## Circle Center Options
+Circles can use either fixed coordinates or a point reference:
+
+\`\`\`json
+// Fixed coordinates (circle won't move)
+{"type": "circle", "id": "c1", "center": [50, 50, 0], "diameter": 20}
+
+// Point reference (circle tracks the point!)
+{"type": "circle", "id": "c1", "center": "my_point", "diameter": 20}
+\`\`\`
+
+## 2D Geometry Setup
+For horizontal/vertical constraints, use 2D entities:
+
+\`\`\`json
+{"type": "plane", "id": "xy", "origin": [0,0,0], "normal": [0,0,1]},
+{"type": "point2_d", "id": "p1", "at": [0,0], "workplane": "xy"},
+{"type": "line2_d", "id": "l1", "p1": "p1", "p2": "p2", "workplane": "xy"}
+\`\`\``;
+
+    return {
+      content: [{ type: 'text', text: entityRef }],
     };
   }
 

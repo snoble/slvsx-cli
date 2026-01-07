@@ -1,0 +1,33 @@
+{
+  "schema": "slvs-json/1",
+  "units": "mm",
+  "parameters": {
+    "petal_length": 50,
+    "petal_angle": 72
+  },
+  "entities": [
+    {"type": "point", "id": "center", "at": [0, 0, 0]},
+    {"type": "point", "id": "petal1_tip", "at": [50, 0, 0]},
+    {"type": "point", "id": "petal2_tip", "at": [40, 30, 0]},
+    {"type": "point", "id": "petal3_tip", "at": [15, 48, 0]},
+    {"type": "point", "id": "petal4_tip", "at": [-25, 43, 0]},
+    {"type": "point", "id": "petal5_tip", "at": [-49, 10, 0]},
+    {"type": "line", "id": "petal1", "p1": "center", "p2": "petal1_tip"},
+    {"type": "line", "id": "petal2", "p1": "center", "p2": "petal2_tip"},
+    {"type": "line", "id": "petal3", "p1": "center", "p2": "petal3_tip"},
+    {"type": "line", "id": "petal4", "p1": "center", "p2": "petal4_tip"},
+    {"type": "line", "id": "petal5", "p1": "center", "p2": "petal5_tip"}
+  ],
+  "constraints": [
+    {"type": "fixed", "entity": "center"},
+    {"type": "distance", "between": ["center", "petal1_tip"], "value": "$petal_length"},
+    {"type": "distance", "between": ["center", "petal2_tip"], "value": "$petal_length"},
+    {"type": "distance", "between": ["center", "petal3_tip"], "value": "$petal_length"},
+    {"type": "distance", "between": ["center", "petal4_tip"], "value": "$petal_length"},
+    {"type": "distance", "between": ["center", "petal5_tip"], "value": "$petal_length"},
+    {"type": "angle", "between": ["petal1", "petal2"], "value": "$petal_angle"},
+    {"type": "angle", "between": ["petal2", "petal3"], "value": "$petal_angle"},
+    {"type": "angle", "between": ["petal3", "petal4"], "value": "$petal_angle"},
+    {"type": "angle", "between": ["petal4", "petal5"], "value": "$petal_angle"}
+  ]
+}
