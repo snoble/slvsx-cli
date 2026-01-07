@@ -193,6 +193,27 @@ test('MCP server imports documentation dependencies', () => {
   assert(content.includes('searchDocumentation'), 'Should have searchDocumentation function');
 });
 
+test('MCP server defines list_constraints tool', () => {
+  const serverPath = path.join(projectRoot, 'mcp-server.js');
+  const content = fs.readFileSync(serverPath, 'utf-8');
+  
+  assert(content.includes("name: 'list_constraints'"), 'Should define list_constraints tool');
+  assert(content.includes('listConstraints'), 'Should have listConstraints method');
+  assert(content.includes('point_on_circle'), 'Should document point_on_circle constraint');
+  assert(content.includes('tangent'), 'Should document tangent constraint');
+});
+
+test('MCP server defines list_entities tool', () => {
+  const serverPath = path.join(projectRoot, 'mcp-server.js');
+  const content = fs.readFileSync(serverPath, 'utf-8');
+  
+  assert(content.includes("name: 'list_entities'"), 'Should define list_entities tool');
+  assert(content.includes('listEntities'), 'Should have listEntities method');
+  assert(content.includes('point2_d'), 'Should document point2_d entity');
+  assert(content.includes('arc'), 'Should document arc entity');
+  assert(content.includes('cubic'), 'Should document cubic entity');
+});
+
 // ============================================
 // Test: Build Docs Script
 // ============================================
@@ -217,8 +238,8 @@ test('build-docs script uses correct chunking settings', () => {
   const scriptPath = path.join(projectRoot, 'scripts', 'build-docs.ts');
   const content = fs.readFileSync(scriptPath, 'utf-8');
   
-  assert(content.includes('chunkSize: 1000'), 'Should have chunkSize 1000');
-  assert(content.includes('chunkOverlap: 200'), 'Should have chunkOverlap 200');
+  assert(content.includes('chunkSize: 2000'), 'Should have chunkSize 2000 for better context');
+  assert(content.includes('chunkOverlap: 400'), 'Should have chunkOverlap 400 for better context');
 });
 
 // ============================================
