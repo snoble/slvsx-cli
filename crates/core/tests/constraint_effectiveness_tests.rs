@@ -410,7 +410,7 @@ fn test_equal_radius_constraint_changes_solution() {
         },
         Entity::Circle {
             id: "circle1".to_string(),
-            center: vec![ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0)],
+            center: slvsx_core::ir::PositionOrRef::Coordinates(vec![ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0)]),
             diameter: ExprOrNumber::Number(20.0),
             normal: vec![ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(1.0)],
             construction: false,
@@ -424,7 +424,7 @@ fn test_equal_radius_constraint_changes_solution() {
         },
         Entity::Circle {
             id: "circle2".to_string(),
-            center: vec![ExprOrNumber::Number(10.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0)],
+            center: slvsx_core::ir::PositionOrRef::Coordinates(vec![ExprOrNumber::Number(10.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0)]),
             diameter: ExprOrNumber::Number(30.0),
             normal: vec![ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(1.0)],
             construction: false,
@@ -582,7 +582,7 @@ fn test_tangent_constraint_circle_line_workaround() {
         },
         Entity::Circle {
             id: "circle1".to_string(),
-            center: vec![ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0)],
+            center: slvsx_core::ir::PositionOrRef::Coordinates(vec![ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0)]),
             diameter: ExprOrNumber::Number(20.0),
             normal: vec![ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(1.0)],
             construction: false,
@@ -682,7 +682,7 @@ fn test_point_on_circle_constraint_changes_solution() {
         },
         Entity::Circle {
             id: "circle1".to_string(),
-            center: vec![ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0)],
+            center: slvsx_core::ir::PositionOrRef::Coordinates(vec![ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0)]),
             diameter: ExprOrNumber::Number(20.0),
             normal: vec![ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(1.0)],
             construction: false,
@@ -1168,7 +1168,7 @@ fn test_diameter_constraint_changes_solution() {
         },
         Entity::Circle {
             id: "circle1".to_string(),
-            center: vec![ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0)],
+            center: slvsx_core::ir::PositionOrRef::Coordinates(vec![ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0)]),
             diameter: ExprOrNumber::Number(15.0), // Initial diameter
             normal: vec![ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(1.0)],
             construction: false,

@@ -5,7 +5,7 @@ mod commands;
 mod io;
 mod json_error;
 
-use commands::{handle_capabilities, handle_export, handle_solve, handle_validate};
+use commands::{handle_capabilities, handle_export, handle_schema, handle_solve, handle_validate};
 use io::{create_input_reader, create_output_writer};
 use io::StderrWriter;
 
@@ -84,6 +84,8 @@ enum Commands {
     },
     /// Show capabilities
     Capabilities,
+    /// Output JSON schema for input documents
+    Schema,
 }
 
 fn main() -> Result<()> {
@@ -113,6 +115,10 @@ fn main() -> Result<()> {
         Commands::Capabilities => {
             let mut writer = create_output_writer(None);
             handle_capabilities(writer.as_mut())
+        }
+        Commands::Schema => {
+            let mut writer = create_output_writer(None);
+            handle_schema(writer.as_mut())
         }
     }
 }

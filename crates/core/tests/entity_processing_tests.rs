@@ -233,11 +233,11 @@ fn test_circle_entity_with_normal() {
     let doc = make_doc(
         vec![Entity::Circle {
             id: "c1".to_string(),
-            center: vec![
+            center: slvsx_core::ir::PositionOrRef::Coordinates(vec![
                 ExprOrNumber::Number(50.0),
                 ExprOrNumber::Number(50.0),
                 ExprOrNumber::Number(0.0),
-            ],
+            ]),
             diameter: ExprOrNumber::Number(40.0),
             normal: vec![
                 ExprOrNumber::Number(0.0),
@@ -265,11 +265,11 @@ fn test_circle_with_expression_diameter() {
     let doc = make_doc_with_params(
         vec![Entity::Circle {
             id: "c1".to_string(),
-            center: vec![
+            center: slvsx_core::ir::PositionOrRef::Coordinates(vec![
                 ExprOrNumber::Number(0.0),
                 ExprOrNumber::Number(0.0),
                 ExprOrNumber::Number(0.0),
-            ],
+            ]),
             diameter: ExprOrNumber::Expression("$d".to_string()),
             normal: vec![
                 ExprOrNumber::Number(0.0),
@@ -286,6 +286,74 @@ fn test_circle_with_expression_diameter() {
     let solver = Solver::new(SolverConfig::default());
     let result = solver.solve(&doc).unwrap();
     assert!(result.entities.unwrap().contains_key("c1"));
+}
+
+#[test]
+fn test_circle_entity_with_point_reference() {
+    // Test that a circle can reference a point entity for its center
+    let doc = make_doc(
+        vec![
+            Entity::Point {
+                id: "pivot".to_string(),
+                at: vec![
+                    ExprOrNumber::Number(10.0),
+                    ExprOrNumber::Number(20.0),
+                    ExprOrNumber::Number(0.0),
+                ],
+                construction: false,
+                preserve: false,
+            },
+            Entity::Point {
+                id: "fixed_point".to_string(),
+                at: vec![
+                    ExprOrNumber::Number(100.0),
+                    ExprOrNumber::Number(20.0),
+                    ExprOrNumber::Number(0.0),
+                ],
+                construction: false,
+                preserve: false,
+            },
+            Entity::Circle {
+                id: "bearing".to_string(),
+                center: slvsx_core::ir::PositionOrRef::Reference("pivot".to_string()),
+                diameter: ExprOrNumber::Number(30.0),
+                normal: vec![
+                    ExprOrNumber::Number(0.0),
+                    ExprOrNumber::Number(0.0),
+                    ExprOrNumber::Number(1.0),
+                ],
+                construction: false,
+                preserve: false,
+            },
+        ],
+        vec![
+            Constraint::Fixed { entity: "fixed_point".to_string(), workplane: None },
+            Constraint::Distance {
+                between: vec!["pivot".to_string(), "fixed_point".to_string()],
+                value: ExprOrNumber::Number(50.0),
+            },
+        ],
+    );
+
+    let solver = Solver::new(SolverConfig::default());
+    let result = solver.solve(&doc).unwrap();
+    
+    // The pivot should move from (10, 20, 0) to (50, 20, 0) due to distance constraint
+    // And the circle's center should track the pivot
+    let entities = result.entities.unwrap();
+    
+    if let Some(slvsx_core::ir::ResolvedEntity::Point { at }) = entities.get("pivot") {
+        assert!((at[0] - 50.0).abs() < 0.1, "pivot x should be 50, got {}", at[0]);
+    } else {
+        panic!("pivot point not found");
+    }
+    
+    if let Some(slvsx_core::ir::ResolvedEntity::Circle { center, .. }) = entities.get("bearing") {
+        assert!((center[0] - 50.0).abs() < 0.1, "bearing center x should track pivot (50), got {}", center[0]);
+        assert!((center[1] - 20.0).abs() < 0.1, "bearing center y should be 20, got {}", center[1]);
+    } else {
+        panic!("bearing circle not found");
+    }
 }
 
 // ============================================================================
