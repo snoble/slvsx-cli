@@ -127,6 +127,12 @@ impl Validator {
                     }
                     refs
                 }
+                Constraint::Collinear { points } => {
+                    points.iter().map(|s| s.as_str()).collect()
+                }
+                Constraint::EqualAngles { lines, .. } => {
+                    lines.iter().map(|s| s.as_str()).collect()
+                }
                 Constraint::Coincident { data } => {
                     match data {
                         CoincidentData::PointOnLine { at, of } => {

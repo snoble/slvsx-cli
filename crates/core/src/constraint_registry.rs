@@ -388,6 +388,72 @@ impl ConstraintRegistry {
                 solver.add_arc_line_length_difference_constraint(constraint_id, arc_id, line_id, difference)
                     .map_err(|e| e.to_string())
             }
+            // ============ CONVENIENCE CONSTRAINTS ============
+            // These expand into multiple primitive constraints
+            
+            Constraint::Collinear { points } => {
+                // Collinear: first two points define a line, remaining points use point_on_line
+                // Requires at least 3 points
+                if points.len() < 3 {
+                    return Err("Collinear constraint requires at least 3 points".to_string());
+                }
+                
+                // Get the first two points (they define the implicit line direction)
+                let p1_id = entity_id_map.get(&points[0]).copied().unwrap_or(0);
+                let p2_id = entity_id_map.get(&points[1]).copied().unwrap_or(0);
+                
+                // Create an implicit line entity for the collinear constraint
+                // Use a high offset to avoid ID collisions
+                let line_id = constraint_id * 1000;
+                solver.add_line(line_id, p1_id, p2_id)
+                    .map_err(|e| e.to_string())?;
+                
+                // Add point_on_line constraints for remaining points
+                for (i, point) in points.iter().skip(2).enumerate() {
+                    let point_id = entity_id_map.get(point).copied().unwrap_or(0);
+                    let sub_constraint_id = constraint_id * 1000 + (i as i32) + 1;
+                    solver.add_point_on_line_constraint(sub_constraint_id, point_id, line_id)
+                        .map_err(|e| e.to_string())?;
+                }
+                Ok(())
+            }
+            
+            Constraint::EqualAngles { lines, value } => {
+                // EqualAngles: ensure equal angles between consecutive lines
+                // Requires at least 2 lines
+                if lines.len() < 2 {
+                    return Err("EqualAngles constraint requires at least 2 lines".to_string());
+                }
+                
+                // Get the angle value if specified
+                let angle = value.as_ref().map(|v| match v {
+                    crate::ir::ExprOrNumber::Number(n) => *n,
+                    crate::ir::ExprOrNumber::Expression(e) => evaluator.eval(e).unwrap_or(0.0),
+                });
+                
+                // Add angle constraints between consecutive pairs
+                for i in 0..lines.len() - 1 {
+                    let line1_id = entity_id_map.get(&lines[i]).copied().unwrap_or(0);
+                    let line2_id = entity_id_map.get(&lines[i + 1]).copied().unwrap_or(0);
+                    let sub_constraint_id = constraint_id * 1000 + (i as i32);
+                    
+                    if let Some(angle_val) = angle {
+                        // If angle is specified, use that value
+                        solver.add_angle_constraint(sub_constraint_id, line1_id, line2_id, angle_val)
+                            .map_err(|e| e.to_string())?;
+                    } else if i > 0 {
+                        // If no angle specified, make this angle equal to the first angle
+                        // Use EqualAngle constraint: angle(line0, line1) == angle(lineI, lineI+1)
+                        let line0_id = entity_id_map.get(&lines[0]).copied().unwrap_or(0);
+                        let line1_first_id = entity_id_map.get(&lines[1]).copied().unwrap_or(0);
+                        solver.add_equal_angle_constraint(sub_constraint_id, line0_id, line1_first_id, line1_id, line2_id)
+                            .map_err(|e| e.to_string())?;
+                    }
+                    // Note: first pair (i=0) without specified angle is left unconstrained
+                    // as it sets the reference angle for equal_angle comparisons
+                }
+                Ok(())
+            }
             // COMPILER ERROR if a constraint variant is missing here!
             // This ensures we never forget to handle a new constraint type
         }
@@ -438,6 +504,8 @@ impl ConstraintRegistry {
             "ArcArcLengthDifference",
             "ArcLineLengthDifference",
             "Dragged",
+            "Collinear",
+            "EqualAngles",
         ]
     }
 }

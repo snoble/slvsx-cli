@@ -1,0 +1,26 @@
+{
+  "schema": "slvs-json/1",
+  "units": "mm",
+  "parameters": {
+    "spoke_length": 50
+  },
+  "entities": [
+    {"type": "point", "id": "center", "at": [0, 0, 0]},
+    {"type": "point", "id": "tip1", "at": [50, 0, 0]},
+    {"type": "point", "id": "tip2", "at": [35, 35, 0]},
+    {"type": "point", "id": "tip3", "at": [0, 50, 0]},
+    {"type": "point", "id": "tip4", "at": [-35, 35, 0]},
+    {"type": "line", "id": "spoke1", "p1": "center", "p2": "tip1"},
+    {"type": "line", "id": "spoke2", "p1": "center", "p2": "tip2"},
+    {"type": "line", "id": "spoke3", "p1": "center", "p2": "tip3"},
+    {"type": "line", "id": "spoke4", "p1": "center", "p2": "tip4"}
+  ],
+  "constraints": [
+    {"type": "fixed", "entity": "center"},
+    {"type": "fixed", "entity": "tip1"},
+    {"type": "distance", "between": ["center", "tip2"], "value": "$spoke_length"},
+    {"type": "distance", "between": ["center", "tip3"], "value": "$spoke_length"},
+    {"type": "distance", "between": ["center", "tip4"], "value": "$spoke_length"},
+    {"type": "equal_angles", "lines": ["spoke1", "spoke2", "spoke3", "spoke4"]}
+  ]
+}

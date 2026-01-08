@@ -122,6 +122,12 @@ impl Translator {
                 }
                 refs
             }
+            Constraint::Collinear { points } => {
+                points.clone()
+            }
+            Constraint::EqualAngles { lines, .. } => {
+                lines.clone()
+            }
         }
     }
 }
