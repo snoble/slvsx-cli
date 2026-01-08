@@ -171,42 +171,7 @@ impl Solver {
                     normal,
                     ..
                 } => {
-                    // Resolve center - either coordinates or point reference
-                    let (cx, cy, cz, center_point_id): (f64, f64, f64, Option<i32>) = match center {
-                        crate::ir::PositionOrRef::Coordinates(coords) => {
-                            let x = match &coords[0] {
-                                crate::ir::ExprOrNumber::Number(n) => *n,
-                                crate::ir::ExprOrNumber::Expression(e) => eval.eval(&e)?,
-                            };
-                            let y = match &coords[1] {
-                                crate::ir::ExprOrNumber::Number(n) => *n,
-                                crate::ir::ExprOrNumber::Expression(e) => eval.eval(&e)?,
-                            };
-                            let z = if coords.len() > 2 {
-                                match &coords[2] {
-                                    crate::ir::ExprOrNumber::Number(n) => *n,
-                                    crate::ir::ExprOrNumber::Expression(e) => eval.eval(&e)?,
-                                }
-                            } else {
-                                0.0
-                            };
-                            (x, y, z, None)
-                        }
-                        crate::ir::PositionOrRef::Reference(point_id) => {
-                            // Look up the referenced point's position
-                            let point_entity_id = *entity_id_map.get(point_id).ok_or_else(|| {
-                                crate::error::Error::EntityNotFound(format!(
-                                    "Circle '{}' references unknown point '{}'",
-                                    id, point_id
-                                ))
-                            })?;
-                            // Get the point's current position from FFI
-                            let (x, y, z) = ffi_solver
-                                .get_point_position(point_entity_id)
-                                .map_err(|e| crate::error::Error::Ffi(e.to_string()))?;
-                            (x, y, z, Some(point_entity_id))
-                        }
-                    };
+                    // Evaluate diameter
                     let diam = match diameter {
                         crate::ir::ExprOrNumber::Number(n) => *n,
                         crate::ir::ExprOrNumber::Expression(e) => eval.eval(&e)?,
@@ -236,14 +201,47 @@ impl Solver {
                     let ny_norm = if norm_len > 0.0 { ny / norm_len } else { 0.0 };
                     let nz_norm = if norm_len > 0.0 { nz / norm_len } else { 1.0 };
 
-                    ffi_solver
-                        .add_circle(next_id, cx, cy, cz, radius, nx_norm, ny_norm, nz_norm)
-                        .map_err(|e| crate::error::Error::Ffi(e))?;
-                    entity_id_map.insert(id.clone(), next_id);
-                    // Track point reference if this circle references a point
-                    if let Some(point_id) = center_point_id {
-                        circle_point_refs.insert(id.clone(), point_id);
+                    // Handle center - either coordinates or point reference
+                    match center {
+                        crate::ir::PositionOrRef::Coordinates(coords) => {
+                            // Evaluate center coordinates
+                            let cx = match &coords[0] {
+                                crate::ir::ExprOrNumber::Number(n) => *n,
+                                crate::ir::ExprOrNumber::Expression(e) => eval.eval(&e)?,
+                            };
+                            let cy = match &coords[1] {
+                                crate::ir::ExprOrNumber::Number(n) => *n,
+                                crate::ir::ExprOrNumber::Expression(e) => eval.eval(&e)?,
+                            };
+                            let cz = if coords.len() > 2 {
+                                match &coords[2] {
+                                    crate::ir::ExprOrNumber::Number(n) => *n,
+                                    crate::ir::ExprOrNumber::Expression(e) => eval.eval(&e)?,
+                                }
+                            } else {
+                                0.0
+                            };
+                            ffi_solver
+                                .add_circle(next_id, cx, cy, cz, radius, nx_norm, ny_norm, nz_norm)
+                                .map_err(|e| crate::error::Error::Ffi(e))?;
+                        }
+                        crate::ir::PositionOrRef::Reference(point_id) => {
+                            // Look up the referenced point's entity ID
+                            let point_entity_id = *entity_id_map.get(point_id).ok_or_else(|| {
+                                crate::error::Error::EntityNotFound(format!(
+                                    "Circle '{}' references unknown point '{}'",
+                                    id, point_id
+                                ))
+                            })?;
+                            // Use the new FFI function that tracks the point
+                            ffi_solver
+                                .add_circle_with_center_point(next_id, point_entity_id, radius, nx_norm, ny_norm, nz_norm)
+                                .map_err(|e| crate::error::Error::Ffi(e))?;
+                            // Track this reference for output
+                            circle_point_refs.insert(id.clone(), point_entity_id);
+                        }
                     }
+                    entity_id_map.insert(id.clone(), next_id);
                     next_id += 1;
                 }
                 crate::ir::Entity::Arc {
@@ -472,44 +470,53 @@ impl Solver {
                         );
                     }
                 }
-                crate::ir::Entity::Circle { id, normal, .. } => {
+                crate::ir::Entity::Circle { id, normal, diameter, .. } => {
                     let entity_id = entity_id_map.get(id).copied().unwrap_or(0);
-                    if let Ok((cx, cy, cz, radius)) = ffi_solver.get_circle_position(entity_id) {
-                        // If this circle references a point, get the point's updated position
-                        let (final_cx, final_cy, final_cz) = if let Some(point_id) = circle_point_refs.get(id) {
-                            // Circle references a point - use the point's solved position
-                            ffi_solver.get_point_position(*point_id as i32).unwrap_or((cx, cy, cz))
+                    
+                    // Get center position - different for circles referencing points vs coordinates
+                    let (final_cx, final_cy, final_cz, final_radius) = if let Some(point_id) = circle_point_refs.get(id) {
+                        // Circle references a point - get the point's solved position
+                        let (cx, cy, cz) = ffi_solver.get_point_position(*point_id).unwrap_or((0.0, 0.0, 0.0));
+                        // Radius comes from the IR since we can't easily get it from FFI for this case
+                        let diam = match diameter {
+                            crate::ir::ExprOrNumber::Number(n) => *n,
+                            crate::ir::ExprOrNumber::Expression(e) => eval.eval(e).unwrap_or(0.0),
+                        };
+                        (cx, cy, cz, diam / 2.0)
+                    } else {
+                        // Circle has fixed coordinates - use get_circle_position
+                        if let Ok((cx, cy, cz, radius)) = ffi_solver.get_circle_position(entity_id) {
+                            (cx, cy, cz, radius)
                         } else {
-                            // Circle has fixed coordinates - use the circle's own position
-                            (cx, cy, cz)
-                        };
-                        
-                        // Evaluate normal components
-                        let nx = match normal.get(0) {
-                            Some(crate::ir::ExprOrNumber::Number(n)) => *n,
-                            Some(crate::ir::ExprOrNumber::Expression(e)) => eval.eval(e).unwrap_or(0.0),
-                            None => 0.0,
-                        };
-                        let ny = match normal.get(1) {
-                            Some(crate::ir::ExprOrNumber::Number(n)) => *n,
-                            Some(crate::ir::ExprOrNumber::Expression(e)) => eval.eval(e).unwrap_or(0.0),
-                            None => 0.0,
-                        };
-                        let nz = match normal.get(2) {
-                            Some(crate::ir::ExprOrNumber::Number(n)) => *n,
-                            Some(crate::ir::ExprOrNumber::Expression(e)) => eval.eval(e).unwrap_or(1.0),
-                            None => 1.0,
-                        };
-                        
-                        resolved_entities.insert(
-                            id.clone(),
-                            crate::ir::ResolvedEntity::Circle {
-                                center: vec![final_cx, final_cy, final_cz],
-                                diameter: radius * 2.0,
-                                normal: vec![nx, ny, nz],
-                            },
-                        );
-                    }
+                            continue; // Skip if we can't get the position
+                        }
+                    };
+                    
+                    // Evaluate normal components
+                    let nx = match normal.get(0) {
+                        Some(crate::ir::ExprOrNumber::Number(n)) => *n,
+                        Some(crate::ir::ExprOrNumber::Expression(e)) => eval.eval(e).unwrap_or(0.0),
+                        None => 0.0,
+                    };
+                    let ny = match normal.get(1) {
+                        Some(crate::ir::ExprOrNumber::Number(n)) => *n,
+                        Some(crate::ir::ExprOrNumber::Expression(e)) => eval.eval(e).unwrap_or(0.0),
+                        None => 0.0,
+                    };
+                    let nz = match normal.get(2) {
+                        Some(crate::ir::ExprOrNumber::Number(n)) => *n,
+                        Some(crate::ir::ExprOrNumber::Expression(e)) => eval.eval(e).unwrap_or(1.0),
+                        None => 1.0,
+                    };
+                    
+                    resolved_entities.insert(
+                        id.clone(),
+                        crate::ir::ResolvedEntity::Circle {
+                            center: vec![final_cx, final_cy, final_cz],
+                            diameter: final_radius * 2.0,
+                            normal: vec![nx, ny, nz],
+                        },
+                    );
                 }
                 _ => {} // Handle other entity types as needed
             }
