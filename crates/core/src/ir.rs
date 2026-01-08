@@ -27,6 +27,16 @@ fn default_circle_normal() -> Vec<ExprOrNumber> {
     ]
 }
 
+/// Represents a position that can be either coordinates or a reference to a point entity
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, JsonSchema)]
+#[serde(untagged)]
+pub enum PositionOrRef {
+    /// Reference to a point entity by ID
+    Reference(String),
+    /// Direct coordinates [x, y, z]
+    Coordinates(Vec<ExprOrNumber>),
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, JsonSchema)]
 pub struct Parameter {
     pub name: String,
@@ -74,7 +84,8 @@ pub enum Entity {
     },
     Circle {
         id: String,
-        center: Vec<ExprOrNumber>,
+        /// Center position - either [x, y, z] coordinates or a point entity reference
+        center: PositionOrRef,
         diameter: ExprOrNumber,
         /// Normal vector defining the plane of the circle [nx, ny, nz]
         /// Defaults to [0, 0, 1] (XY plane) if not specified
@@ -431,7 +442,7 @@ mod tests {
 
         let circle = Entity::Circle {
             id: "c1".into(),
-            center: vec![ExprOrNumber::Number(0.0)],
+            center: PositionOrRef::Coordinates(vec![ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0)]),
             diameter: ExprOrNumber::Number(10.0),
             normal: vec![ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(1.0)],
             construction: false,
@@ -478,7 +489,7 @@ mod tests {
 
         let preserved_circle = Entity::Circle {
             id: "c1".into(),
-            center: vec![ExprOrNumber::Number(0.0)],
+            center: PositionOrRef::Coordinates(vec![ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0)]),
             diameter: ExprOrNumber::Number(10.0),
             normal: vec![ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(1.0)],
             construction: false,
@@ -632,7 +643,7 @@ mod tests {
 
         let circle = Entity::Circle {
             id: "c1".to_string(),
-            center: vec![ExprOrNumber::Number(0.0)],
+            center: PositionOrRef::Coordinates(vec![ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0)]),
             diameter: ExprOrNumber::Number(10.0),
             normal: vec![ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(1.0)],
             construction: false,

@@ -4,29 +4,34 @@ This guide documents common pitfalls and best practices discovered while using S
 
 ## Critical Pitfalls
 
-### 1. Circles Don't Track Points
+### 1. Circles Can Track Points (NEW!)
 
-**Problem**: Circle entities have a `center` field that takes coordinates, NOT a reference to a point entity. This means circles stay at their initial position even after solving.
+Circle entities can now reference a point entity for their center:
 
 ```json
-// BAD - circle won't move when "pivot" moves
-{
-  "type": "circle",
-  "id": "bearing",
-  "center": [50, 50, 0],  // These are fixed coordinates!
-  "diameter": 20
-}
-
-// WORKAROUND - use a point entity to track the position
+// NEW FEATURE - Circle tracks a moving point!
 {
   "type": "point",
   "id": "pivot",
   "at": [50, 50, 0]
+},
+{
+  "type": "circle",
+  "id": "bearing",
+  "center": "pivot",  // Reference to point entity
+  "diameter": 20
 }
-// The circle will NOT follow pivot - this is a known limitation
+
+// You can still use coordinates for fixed circles
+{
+  "type": "circle",
+  "id": "fixed_circle",
+  "center": [100, 100, 0],  // Fixed coordinates
+  "diameter": 30
+}
 ```
 
-**Best Practice**: For moving parts, use points and lines. Only use circles for fixed decorative elements or reference geometry.
+**Best Practice**: For mechanism parts that move (gears, bearings, cam followers), reference a point entity. For fixed decorative elements, use coordinates.
 
 ### 2. Constraint Field Names Vary
 
@@ -41,8 +46,79 @@ Different constraints use different field names. Check the schema carefully:
 | `midpoint` | `point`, `of: line` (NOT `line`) |
 | `equal_length` | `entities: [line1, line2, ...]` |
 | `point_on_line` | `point`, `line` |
+| `point_on_circle` | `point`, `circle` |
 | `coincident` | `entities: [point1, point2]` |
 | `fixed` | `entity`, `workplane` (optional, for 2D points) |
+| `horizontal` | `a: line`, `workplane: plane` (2D only!) |
+| `vertical` | `a: line`, `workplane: plane` (2D only!) |
+| `tangent` | `a: arc/line`, `b: arc/line` (NOT circle!) |
+| `equal_radius` | `a: circle/arc`, `b: circle/arc` |
+| `diameter` | `circle: circle_id`, `value` |
+| `symmetric` | `a: point`, `b: point`, `about: line` (**NOT supported in 3D!**) |
+| `symmetric_horizontal` | `a: point`, `b: point`, `workplane: plane` |
+| `symmetric_vertical` | `a: point`, `b: point`, `workplane: plane` |
+| `dragged` | `point`, `workplane` (optional) - locks point position |
+
+## 2D Geometry Setup (Required for horizontal/vertical/symmetric)
+
+Many constraints only work with 2D geometry in a workplane. Here's the complete setup pattern:
+
+```json
+{
+  "schema": "slvs-json/1",
+  "units": "mm",
+  "entities": [
+    // Step 1: Create a workplane (required first!)
+    {
+      "type": "plane",
+      "id": "xy_plane",
+      "origin": [0, 0, 0],
+      "normal": [0, 0, 1]
+    },
+    // Step 2: Create 2D points IN the workplane
+    {
+      "type": "point2_d",
+      "id": "p1",
+      "at": [0, 0],
+      "workplane": "xy_plane"
+    },
+    {
+      "type": "point2_d",
+      "id": "p2",
+      "at": [100, 0],
+      "workplane": "xy_plane"
+    },
+    // Step 3: Create 2D lines between 2D points
+    {
+      "type": "line2_d",
+      "id": "line1",
+      "p1": "p1",
+      "p2": "p2",
+      "workplane": "xy_plane"
+    }
+  ],
+  "constraints": [
+    // Step 4: Now horizontal/vertical work!
+    {
+      "type": "horizontal",
+      "a": "line1",
+      "workplane": "xy_plane"
+    },
+    {
+      "type": "fixed",
+      "entity": "p1",
+      "workplane": "xy_plane"
+    }
+  ]
+}
+```
+
+**Key Points:**
+- Use `plane` to define a workplane first
+- Use `point2_d` (NOT `point`) for 2D points
+- Use `line2_d` (NOT `line`) for 2D lines
+- All 2D entities need `"workplane": "plane_id"`
+- Horizontal/vertical/symmetric constraints need `"workplane": "plane_id"`
 
 ### 3. Horizontal/Vertical Require 2D Geometry
 
@@ -156,25 +232,38 @@ Different constraints use different field names. Check the schema carefully:
 
 **Problem**: The `symmetric` constraint (about a line) only works with 2D geometry in a workplane. Using it with 3D points will crash.
 
+**Common Mistakes:**
+- Using `axis` instead of `about` - the correct field is `about`
+- Using 3D points instead of 2D points
+- Forgetting the workplane reference
+
 ```json
-// BAD - 3D points with symmetric constraint
+// BAD - wrong field name and 3D points
 {
   "type": "symmetric",
   "a": "point1",      // 3D point - CRASHES!
   "b": "point2",
-  "about": "axis"
+  "axis": "line"      // WRONG! Should be "about"
 }
 
-// WORKAROUND - use symmetric_horizontal or symmetric_vertical with a workplane
+// GOOD - use symmetric_horizontal or symmetric_vertical with a workplane
 {
   "type": "symmetric_horizontal",
-  "a": "point1",
-  "b": "point2", 
+  "a": "p1",          // Reference to point (3D or 2D)
+  "b": "p2",
+  "workplane": "xy_plane"
+}
+
+// ALTERNATIVE - symmetric_vertical
+{
+  "type": "symmetric_vertical",
+  "a": "p1",
+  "b": "p2", 
   "workplane": "xy_plane"
 }
 ```
 
-**Why**: SolveSpace's `SYMMETRIC_LINE` constraint requires a workplane context. For 3D symmetry, use `symmetric_horizontal` or `symmetric_vertical` with an explicit workplane.
+**Why**: SolveSpace's `SYMMETRIC_LINE` constraint requires a workplane context. For most symmetry needs, use `symmetric_horizontal` or `symmetric_vertical` with an explicit workplane.
 
 ### 8. Entity ID Case Sensitivity
 

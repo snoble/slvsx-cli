@@ -95,6 +95,16 @@ extern "C" {
         nz: c_double,
     ) -> c_int;
 
+    pub fn real_slvs_add_circle_with_center_point(
+        sys: *mut SolverSystem,
+        id: c_int,
+        center_point_id: c_int,
+        radius: c_double,
+        nx: c_double,
+        ny: c_double,
+        nz: c_double,
+    ) -> c_int;
+
     pub fn real_slvs_add_arc(
         sys: *mut SolverSystem,
         id: c_int,
@@ -507,6 +517,29 @@ impl Solver {
                 Ok(())
             } else {
                 Err(format!("Failed to add circle {}", id))
+            }
+        }
+    }
+
+    /// Add a circle with an existing point as center
+    /// This allows the circle to track the point during solving
+    pub fn add_circle_with_center_point(
+        &mut self,
+        id: i32,
+        center_point_id: i32,
+        radius: f64,
+        nx: f64,
+        ny: f64,
+        nz: f64,
+    ) -> Result<(), String> {
+        unsafe {
+            let result = real_slvs_add_circle_with_center_point(
+                self.system, id, center_point_id, radius, nx, ny, nz
+            );
+            if result == 0 {
+                Ok(())
+            } else {
+                Err(format!("Failed to add circle {} with center point {}", id, center_point_id))
             }
         }
     }

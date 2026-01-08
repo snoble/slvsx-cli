@@ -461,7 +461,33 @@ impl Validator {
                     // Track Point entities separately
                     seen_point_ids.insert(entity.id());
                 }
-                _ => {} // Circles, planes don't reference other entities
+                Entity::Circle { id, center, .. } => {
+                    // Validate center point reference if it's a reference (not coordinates)
+                    if let crate::ir::PositionOrRef::Reference(point_id) = center {
+                        if !seen_point_ids.contains(point_id.as_str()) {
+                            if !seen_entity_ids.contains(point_id.as_str()) {
+                                return Err(Error::InvalidInput {
+                                    message: format!(
+                                        "Circle entity '{}' references point '{}' that is not yet defined. Entities must be defined before they are referenced.",
+                                        id, point_id
+                                    ),
+                                    pointer: Some(format!("/entities/{}/center", idx)),
+                                });
+                            } else {
+                                return Err(Error::InvalidInput {
+                                    message: format!(
+                                        "Circle entity '{}' references '{}' which is not a Point entity. Circle center must reference a Point or Point2D entity.",
+                                        id, point_id
+                                    ),
+                                    pointer: Some(format!("/entities/{}/center", idx)),
+                                });
+                            }
+                        }
+                    }
+                }
+                Entity::Plane { .. } => {
+                    // Planes don't reference other entities
+                }
             }
             // Add this entity's ID to the set after checking its references
             seen_entity_ids.insert(entity.id());
@@ -935,7 +961,7 @@ mod tests {
                 },
                 Entity::Circle {
                     id: "c1".to_string(),
-                    center: vec![ExprOrNumber::Number(0.0)],
+                    center: crate::ir::PositionOrRef::Coordinates(vec![ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0)]),
                     diameter: ExprOrNumber::Number(10.0),
                     normal: vec![ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(1.0)],
                     construction: false,
@@ -982,7 +1008,7 @@ mod tests {
                 },
                 Entity::Circle {
                     id: "c1".to_string(),
-                    center: vec![ExprOrNumber::Number(0.0)],
+                    center: crate::ir::PositionOrRef::Coordinates(vec![ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0)]),
                     diameter: ExprOrNumber::Number(10.0),
                     normal: vec![ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(1.0)],
                     construction: false,
@@ -1132,7 +1158,7 @@ mod tests {
                 },
                 Entity::Circle {
                     id: "c1".to_string(),
-                    center: vec![ExprOrNumber::Number(0.0)],
+                    center: crate::ir::PositionOrRef::Coordinates(vec![ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0)]),
                     diameter: ExprOrNumber::Number(10.0),
                     normal: vec![ExprOrNumber::Number(0.0), ExprOrNumber::Number(0.0), ExprOrNumber::Number(1.0)],
                     construction: false,

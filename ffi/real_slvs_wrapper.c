@@ -258,6 +258,67 @@ int real_slvs_add_circle(RealSlvsSystem* s, int id, double cx, double cy, double
     return 0;
 }
 
+// Add a circle with an existing point as center
+// This allows the circle to track the point during solving
+int real_slvs_add_circle_with_center_point(RealSlvsSystem* s, int id, int center_point_id, 
+                                            double radius, double nx, double ny, double nz) {
+    if (!s) return -1;
+    
+    Slvs_hGroup g = 1;
+    
+    // Create normal entity from the provided normal vector
+    double qw, qx, qy, qz;
+    normal_to_quaternion(nx, ny, nz, &qw, &qx, &qy, &qz);
+    
+    int pqw = s->next_param++;
+    int pqx = s->next_param++;
+    int pqy = s->next_param++;
+    int pqz = s->next_param++;
+    
+    s->sys.param[s->sys.params++] = Slvs_MakeParam(pqw, g, qw);
+    s->sys.param[s->sys.params++] = Slvs_MakeParam(pqx, g, qx);
+    s->sys.param[s->sys.params++] = Slvs_MakeParam(pqy, g, qy);
+    s->sys.param[s->sys.params++] = Slvs_MakeParam(pqz, g, qz);
+    
+    Slvs_hEntity normal_id = 100000 + id;
+    s->sys.entity[s->sys.entities++] = Slvs_MakeNormal3d(normal_id, g, pqw, pqx, pqy, pqz);
+    
+    // Use the existing point as the workplane origin
+    Slvs_hEntity origin_id = 1000 + center_point_id;
+    
+    // Create workplane for the circle centered on the existing point
+    Slvs_hEntity workplane_id = 300000 + id;
+    s->sys.entity[s->sys.entities++] = Slvs_MakeWorkplane(workplane_id, g, origin_id, normal_id);
+    
+    // Create 2D center point at origin of the workplane (0, 0)
+    int pu = s->next_param++;
+    int pv = s->next_param++;
+    
+    s->sys.param[s->sys.params++] = Slvs_MakeParam(pu, g, 0.0);
+    s->sys.param[s->sys.params++] = Slvs_MakeParam(pv, g, 0.0);
+    
+    Slvs_hEntity center_2d_id = 400000 + id;
+    s->sys.entity[s->sys.entities++] = Slvs_MakePoint2d(center_2d_id, g, workplane_id, pu, pv);
+    
+    // Create distance entity for radius
+    int pr = s->next_param++;
+    s->sys.param[s->sys.params++] = Slvs_MakeParam(pr, g, radius);
+    
+    Slvs_hEntity radius_id = 500000 + id;
+    s->sys.entity[s->sys.entities++] = Slvs_MakeDistance(radius_id, g, SLVS_FREE_IN_3D, pr);
+    
+    // Create circle entity
+    Slvs_hEntity circle_id = 600000 + id;
+    s->sys.entity[s->sys.entities++] = Slvs_MakeCircle(circle_id, g, workplane_id, center_2d_id, normal_id, radius_id);
+    
+    // Store radius and track that this circle uses an existing point
+    if (id < 1000) {
+        s->circle_radii[id] = radius;
+    }
+    
+    return 0;
+}
+
 // Add a proper arc of circle
 int real_slvs_add_arc(RealSlvsSystem* s, int id, int center_point_id, int start_point_id, 
                      int end_point_id, double nx, double ny, double nz, int workplane_id) {

@@ -147,6 +147,288 @@ pub fn handle_capabilities<W: OutputWriter + ?Sized>(writer: &mut W) -> Result<(
     Ok(())
 }
 
+/// Schema command handler - returns JSON schema for input documents
+pub fn handle_schema<W: OutputWriter + ?Sized>(writer: &mut W) -> Result<()> {
+    let schema = r##"{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "SLVSX Constraint Document",
+  "description": "JSON schema for SLVSX geometric constraint solver input",
+  "type": "object",
+  "required": ["schema", "entities", "constraints"],
+  "properties": {
+    "schema": {
+      "type": "string",
+      "const": "slvs-json/1",
+      "description": "Schema version identifier"
+    },
+    "units": {
+      "type": "string",
+      "enum": ["mm", "cm", "m", "in", "ft"],
+      "default": "mm",
+      "description": "Unit of measurement for all numeric values"
+    },
+    "parameters": {
+      "type": "object",
+      "additionalProperties": { "type": "number" },
+      "description": "Named parameters that can be referenced with $name syntax"
+    },
+    "entities": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/entity" },
+      "description": "Geometric entities (points, lines, circles, etc.)"
+    },
+    "constraints": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/constraint" },
+      "description": "Constraints between entities"
+    }
+  },
+  "definitions": {
+    "entity": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["type", "id", "at"],
+          "properties": {
+            "type": { "const": "point" },
+            "id": { "type": "string" },
+            "at": { "type": "array", "items": { "type": "number" }, "minItems": 3, "maxItems": 3 },
+            "preserve": { "type": "boolean", "default": false }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["type", "id", "p1", "p2"],
+          "properties": {
+            "type": { "const": "line" },
+            "id": { "type": "string" },
+            "p1": { "type": "string", "description": "Reference to start point" },
+            "p2": { "type": "string", "description": "Reference to end point" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["type", "id", "center", "diameter"],
+          "properties": {
+            "type": { "const": "circle" },
+            "id": { "type": "string" },
+            "center": { "oneOf": [
+              { "type": "array", "items": { "type": "number" }, "minItems": 3, "maxItems": 3 },
+              { "type": "string", "description": "Reference to center point" }
+            ]},
+            "diameter": { "type": "number" },
+            "normal": { "type": "array", "items": { "type": "number" }, "minItems": 3, "maxItems": 3, "default": [0,0,1] }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["type", "id", "origin", "normal"],
+          "properties": {
+            "type": { "const": "plane" },
+            "id": { "type": "string" },
+            "origin": { "type": "array", "items": { "type": "number" }, "minItems": 3, "maxItems": 3 },
+            "normal": { "type": "array", "items": { "type": "number" }, "minItems": 3, "maxItems": 3 }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["type", "id", "at", "workplane"],
+          "properties": {
+            "type": { "const": "point2_d" },
+            "id": { "type": "string" },
+            "at": { "type": "array", "items": { "type": "number" }, "minItems": 2, "maxItems": 2 },
+            "workplane": { "type": "string", "description": "Reference to plane entity" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["type", "id", "p1", "p2", "workplane"],
+          "properties": {
+            "type": { "const": "line2_d" },
+            "id": { "type": "string" },
+            "p1": { "type": "string" },
+            "p2": { "type": "string" },
+            "workplane": { "type": "string", "description": "Reference to plane entity" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["type", "id", "center", "start", "end"],
+          "properties": {
+            "type": { "const": "arc" },
+            "id": { "type": "string" },
+            "center": { "type": "string", "description": "Reference to center point" },
+            "start": { "type": "string", "description": "Reference to start point" },
+            "end": { "type": "string", "description": "Reference to end point" },
+            "normal": { "type": "array", "items": { "type": "number" }, "minItems": 3, "maxItems": 3 }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["type", "id", "control_points"],
+          "properties": {
+            "type": { "const": "cubic" },
+            "id": { "type": "string" },
+            "control_points": { "type": "array", "items": { "type": "string" }, "minItems": 4, "maxItems": 4, "description": "4 point entity IDs [p0, p1, p2, p3] for cubic bezier" },
+            "workplane": { "type": "string", "description": "Optional workplane for 2D cubics" }
+          }
+        }
+      ]
+    },
+    "constraint": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["type", "entity"],
+          "properties": {
+            "type": { "const": "fixed" },
+            "entity": { "type": "string" },
+            "workplane": { "type": "string", "description": "Required for 2D points" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["type", "between", "value"],
+          "properties": {
+            "type": { "const": "distance" },
+            "between": { "type": "array", "items": { "type": "string" }, "minItems": 2, "maxItems": 2 },
+            "value": { "type": "number" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["type", "between", "value"],
+          "properties": {
+            "type": { "const": "angle" },
+            "between": { "type": "array", "items": { "type": "string" }, "minItems": 2, "maxItems": 2 },
+            "value": { "type": "number", "description": "Angle in degrees" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["type", "a", "b"],
+          "properties": {
+            "type": { "const": "perpendicular" },
+            "a": { "type": "string" },
+            "b": { "type": "string" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["type", "entities"],
+          "properties": {
+            "type": { "const": "parallel" },
+            "entities": { "type": "array", "items": { "type": "string" }, "minItems": 2 }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["type", "a", "workplane"],
+          "properties": {
+            "type": { "const": "horizontal" },
+            "a": { "type": "string", "description": "Line or point (2D only)" },
+            "workplane": { "type": "string", "description": "Required - horizontal/vertical only work in 2D" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["type", "a", "workplane"],
+          "properties": {
+            "type": { "const": "vertical" },
+            "a": { "type": "string", "description": "Line or point (2D only)" },
+            "workplane": { "type": "string", "description": "Required - horizontal/vertical only work in 2D" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["type", "entities"],
+          "properties": {
+            "type": { "const": "equal_length" },
+            "entities": { "type": "array", "items": { "type": "string" }, "minItems": 2 }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["type", "a", "b"],
+          "properties": {
+            "type": { "const": "equal_radius" },
+            "a": { "type": "string" },
+            "b": { "type": "string" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["type", "a", "b"],
+          "properties": {
+            "type": { "const": "tangent" },
+            "a": { "type": "string", "description": "Arc or line (NOT circle)" },
+            "b": { "type": "string", "description": "Arc or line (NOT circle)" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["type", "point", "line"],
+          "properties": {
+            "type": { "const": "point_on_line" },
+            "point": { "type": "string" },
+            "line": { "type": "string" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["type", "point", "circle"],
+          "properties": {
+            "type": { "const": "point_on_circle" },
+            "point": { "type": "string" },
+            "circle": { "type": "string" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["type", "a", "b", "workplane"],
+          "properties": {
+            "type": { "const": "symmetric_horizontal" },
+            "a": { "type": "string" },
+            "b": { "type": "string" },
+            "workplane": { "type": "string" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["type", "a", "b", "workplane"],
+          "properties": {
+            "type": { "const": "symmetric_vertical" },
+            "a": { "type": "string" },
+            "b": { "type": "string" },
+            "workplane": { "type": "string" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["type", "point", "of"],
+          "properties": {
+            "type": { "const": "midpoint" },
+            "point": { "type": "string" },
+            "of": { "type": "string", "description": "Reference to line" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["type", "circle", "value"],
+          "properties": {
+            "type": { "const": "diameter" },
+            "circle": { "type": "string" },
+            "value": { "type": "number" }
+          }
+        }
+      ]
+    }
+  }
+}"##;
+    writer.write_str(schema)?;
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -220,6 +502,28 @@ mod tests {
         assert!(output.contains("\"entities\""));
         assert!(output.contains("\"constraints\""));
         assert!(output.contains("\"export_formats\""));
+    }
+
+    #[test]
+    fn test_handle_schema() {
+        let mut writer = MemoryWriter::new();
+        let result = handle_schema(&mut writer);
+        assert!(result.is_ok());
+        let output = writer.as_string();
+        // Verify it's valid JSON
+        let parsed: serde_json::Value = serde_json::from_str(&output).expect("Schema should be valid JSON");
+        // Verify key schema elements
+        assert_eq!(parsed["$schema"], "http://json-schema.org/draft-07/schema#");
+        assert_eq!(parsed["title"], "SLVSX Constraint Document");
+        assert!(parsed["definitions"]["entity"].is_object());
+        assert!(parsed["definitions"]["constraint"].is_object());
+        // Verify important constraints are documented
+        let constraint_def = &parsed["definitions"]["constraint"]["oneOf"];
+        assert!(constraint_def.is_array());
+        // Check that horizontal/vertical document workplane requirement
+        let schema_str = output.as_str();
+        assert!(schema_str.contains("horizontal"));
+        assert!(schema_str.contains("workplane"));
     }
 
     #[test]

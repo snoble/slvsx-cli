@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-64.9 -64.2 134.1 133.7" width="800" height="800">
+  <circle id="center" cx="0.000000" cy="0.000000" r="2" fill="black"/>
+  <line id="petal1" x1="0.000000" y1="0.000000" x2="23.324183" y2="-44.226491" stroke="black"/>
+  <circle id="petal1_tip" cx="23.324183" cy="-44.226491" r="2" fill="black"/>
+  <line id="petal2" x1="0.000000" y1="0.000000" x2="49.269461" y2="8.515879" stroke="black"/>
+  <circle id="petal2_tip" cx="49.269461" cy="8.515879" r="2" fill="black"/>
+  <line id="petal3" x1="0.000000" y1="0.000000" x2="7.126018" y2="49.489594" stroke="black"/>
+  <circle id="petal3_tip" cx="7.126018" cy="49.489594" r="2" fill="black"/>
+  <line id="petal4" x1="0.000000" y1="0.000000" x2="-44.865340" y2="22.070371" stroke="black"/>
+  <circle id="petal4_tip" cx="-44.865340" cy="22.070371" r="2" fill="black"/>
+  <line id="petal5" x1="0.000000" y1="0.000000" x2="-34.854323" y2="-35.849354" stroke="black"/>
+  <circle id="petal5_tip" cx="-34.854323" cy="-35.849354" r="2" fill="black"/>
+</svg>
