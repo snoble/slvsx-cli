@@ -341,6 +341,10 @@ jobs:
     runs-on: ubuntu-latest
     # Only publish on tag pushes (not workflow_dispatch to avoid accidental publishes)
     if: startsWith(github.ref, 'refs/tags/')
+    # OIDC requires id-token permission at job level
+    permissions:
+      contents: read
+      id-token: write
     
     steps:
       - name: Checkout code
@@ -350,13 +354,18 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          registry-url: 'https://registry.npmjs.org'
+          # Note: NOT using registry-url to allow OIDC to work
 
       - name: Install dependencies
         run: npm ci
 
       - name: Build docs index
         run: npm run build:docs
+
+      - name: Check npm CLI version
+        run: |
+          echo "npm version: $(npm --version)"
+          echo "node version: $(node --version)"
 
       - name: Check if version already published
         id: check-version
@@ -365,7 +374,7 @@ jobs:
           echo "Package version: $PACKAGE_VERSION"
           
           # Check if this version exists on npm
-          if npm view slvsx@$PACKAGE_VERSION version 2>/dev/null; then
+          if npm view @sknoble/slvsx-mcp-server@$PACKAGE_VERSION version 2>/dev/null; then
             echo "Version $PACKAGE_VERSION already published to npm, skipping"
             echo "skip=true" >> $GITHUB_OUTPUT
           else
@@ -373,8 +382,6 @@ jobs:
             echo "skip=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Publish to npm with provenance
+      - name: Publish to npm with OIDC provenance
         if: steps.check-version.outputs.skip != 'true'
         run: npm publish --provenance --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
