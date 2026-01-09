@@ -4,8 +4,8 @@ on:
   push:
     tags:
       - 'v*'
-  release:
-    types: [created]
+  # Removed 'release: types: [created]' to prevent duplicate runs
+  # Tag push creates the release, so we only need one trigger
   workflow_dispatch:
     inputs:
       tag:
@@ -352,11 +352,21 @@ jobs:
           node-version: '20'
           registry-url: 'https://registry.npmjs.org'
 
-      - name: Verify npm version supports OIDC
+      - name: Check if version already published
+        id: check-version
         run: |
-          npm --version
-          # Ensure npm 10.9.2+ for OIDC support
-          echo "Using npm with OIDC trusted publishing"
+          PACKAGE_VERSION=$(jq -r .version package.json)
+          echo "Package version: $PACKAGE_VERSION"
+          
+          # Check if this version exists on npm
+          if npm view slvsx@$PACKAGE_VERSION version 2>/dev/null; then
+            echo "Version $PACKAGE_VERSION already published to npm, skipping"
+            echo "skip=true" >> $GITHUB_OUTPUT
+          else
+            echo "Version $PACKAGE_VERSION not yet published"
+            echo "skip=false" >> $GITHUB_OUTPUT
+          fi
 
       - name: Publish to npm with provenance
+        if: steps.check-version.outputs.skip != 'true'
         run: npm publish --provenance --access public
