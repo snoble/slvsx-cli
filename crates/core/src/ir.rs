@@ -383,6 +383,21 @@ pub enum Constraint {
         #[serde(skip_serializing_if = "Option::is_none")]
         workplane: Option<String>, // Optional workplane for 2D points
     },
+    /// Convenience constraint: ensures 3+ points are collinear.
+    /// Expands to: first two points define a line, remaining points use point_on_line.
+    Collinear {
+        /// List of 3+ point entity IDs that should lie on the same line
+        points: Vec<String>,
+    },
+    /// Convenience constraint: ensures equal angles between consecutive lines from a common point.
+    /// Expands to: angle constraints between each pair of adjacent lines.
+    EqualAngles {
+        /// List of 2+ line entity IDs sharing a common endpoint
+        lines: Vec<String>,
+        /// Optional: specific angle value (if omitted, angles are made equal to each other)
+        #[serde(skip_serializing_if = "Option::is_none")]
+        value: Option<ExprOrNumber>,
+    },
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, JsonSchema)]

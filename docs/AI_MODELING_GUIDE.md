@@ -48,6 +48,8 @@ Different constraints use different field names. Check the schema carefully:
 | `point_on_line` | `point`, `line` |
 | `point_on_circle` | `point`, `circle` |
 | `coincident` | `entities: [point1, point2]` |
+| `collinear` | `points: [p1, p2, p3, ...]` (3+ points on same line) |
+| `equal_angles` | `lines: [line1, line2, ...]`, optional `value` |
 | `fixed` | `entity`, `workplane` (optional, for 2D points) |
 | `horizontal` | `a: line`, `workplane: plane` (2D only!) |
 | `vertical` | `a: line`, `workplane: plane` (2D only!) |
@@ -510,6 +512,45 @@ Here's a working slider-crank mechanism that avoids all pitfalls:
     {"type": "angle", "between": ["crank", "guide"], "value": "$crank_angle"}
   ]
 }
+```
+
+## Convenience Constraints
+
+SLVSX provides convenience constraints that expand into multiple primitive constraints automatically:
+
+### Collinear (3+ Points on a Line)
+
+Instead of creating a helper line and multiple `point_on_line` constraints:
+
+```json
+// Old way (verbose)
+{"type": "line", "id": "helper", "p1": "p1", "p2": "p2"},
+{"type": "point_on_line", "point": "p3", "line": "helper"},
+{"type": "point_on_line", "point": "p4", "line": "helper"}
+
+// New way (simple)
+{"type": "collinear", "points": ["p1", "p2", "p3", "p4"]}
+```
+
+The first two points define the line direction; remaining points are constrained to lie on it.
+
+### EqualAngles (Evenly Distributed Lines)
+
+For radial patterns (gears, flowers, stars), use `equal_angles` instead of chaining `angle` constraints:
+
+```json
+// Old way (verbose)
+{"type": "angle", "between": ["spoke1", "spoke2"], "value": 45},
+{"type": "angle", "between": ["spoke2", "spoke3"], "value": 45},
+{"type": "angle", "between": ["spoke3", "spoke4"], "value": 45}
+
+// New way (simple)
+{"type": "equal_angles", "lines": ["spoke1", "spoke2", "spoke3", "spoke4"]}
+```
+
+Optional: specify `value` for a specific angle:
+```json
+{"type": "equal_angles", "lines": ["spoke1", "spoke2"], "value": 45}
 ```
 
 ## Debugging Tips

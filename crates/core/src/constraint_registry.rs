@@ -388,6 +388,79 @@ impl ConstraintRegistry {
                 solver.add_arc_line_length_difference_constraint(constraint_id, arc_id, line_id, difference)
                     .map_err(|e| e.to_string())
             }
+            // ============ CONVENIENCE CONSTRAINTS ============
+            // These expand into multiple primitive constraints
+            
+            Constraint::Collinear { points } => {
+                // Collinear: first two points define a line, remaining points use point_on_line
+                // Requires at least 3 points
+                if points.len() < 3 {
+                    return Err("Collinear constraint requires at least 3 points".to_string());
+                }
+                
+                // Get the first two points (they define the implicit line direction)
+                let p1_id = entity_id_map.get(&points[0]).copied().unwrap_or(0);
+                let p2_id = entity_id_map.get(&points[1]).copied().unwrap_or(0);
+                
+                // Create an implicit line entity for the collinear constraint
+                // Use a high offset to avoid ID collisions
+                let line_id = constraint_id * 1000;
+                solver.add_line(line_id, p1_id, p2_id)
+                    .map_err(|e| e.to_string())?;
+                
+                // Add point_on_line constraints for remaining points
+                for (i, point) in points.iter().skip(2).enumerate() {
+                    let point_id = entity_id_map.get(point).copied().unwrap_or(0);
+                    let sub_constraint_id = constraint_id * 1000 + (i as i32) + 1;
+                    solver.add_point_on_line_constraint(sub_constraint_id, point_id, line_id)
+                        .map_err(|e| e.to_string())?;
+                }
+                Ok(())
+            }
+            
+            Constraint::EqualAngles { lines, value } => {
+                // EqualAngles: ensure equal angles between consecutive lines
+                // With a value: requires at least 2 lines (each pair gets that angle)
+                // Without a value: requires at least 3 lines (to compare angles)
+                if lines.len() < 2 {
+                    return Err("EqualAngles constraint requires at least 2 lines".to_string());
+                }
+                
+                // Get the angle value if specified
+                let angle = value.as_ref().map(|v| match v {
+                    crate::ir::ExprOrNumber::Number(n) => *n,
+                    crate::ir::ExprOrNumber::Expression(e) => evaluator.eval(e).unwrap_or(0.0),
+                });
+                
+                // Without a value, we need at least 3 lines to compare angles
+                // (with 2 lines there's only 1 angle, nothing to compare to)
+                if angle.is_none() && lines.len() < 3 {
+                    return Err("EqualAngles constraint without a value requires at least 3 lines (to compare angles between consecutive pairs)".to_string());
+                }
+                
+                // Add angle constraints between consecutive pairs
+                for i in 0..lines.len() - 1 {
+                    let line1_id = entity_id_map.get(&lines[i]).copied().unwrap_or(0);
+                    let line2_id = entity_id_map.get(&lines[i + 1]).copied().unwrap_or(0);
+                    let sub_constraint_id = constraint_id * 1000 + (i as i32);
+                    
+                    if let Some(angle_val) = angle {
+                        // If angle is specified, use that value
+                        solver.add_angle_constraint(sub_constraint_id, line1_id, line2_id, angle_val)
+                            .map_err(|e| e.to_string())?;
+                    } else if i > 0 {
+                        // If no angle specified, make this angle equal to the first angle
+                        // Use EqualAngle constraint: angle(line0, line1) == angle(lineI, lineI+1)
+                        let line0_id = entity_id_map.get(&lines[0]).copied().unwrap_or(0);
+                        let line1_first_id = entity_id_map.get(&lines[1]).copied().unwrap_or(0);
+                        solver.add_equal_angle_constraint(sub_constraint_id, line0_id, line1_first_id, line1_id, line2_id)
+                            .map_err(|e| e.to_string())?;
+                    }
+                    // Note: first pair (i=0) without specified angle is left unconstrained
+                    // as it sets the reference angle for equal_angle comparisons
+                }
+                Ok(())
+            }
             // COMPILER ERROR if a constraint variant is missing here!
             // This ensures we never forget to handle a new constraint type
         }
@@ -438,6 +511,8 @@ impl ConstraintRegistry {
             "ArcArcLengthDifference",
             "ArcLineLengthDifference",
             "Dragged",
+            "Collinear",
+            "EqualAngles",
         ]
     }
 }
@@ -1214,6 +1289,117 @@ mod tests {
         
         // This test verifies all constraints are implemented
         println!("All constraints are implemented!");
+    }
+
+    #[test]
+    fn test_collinear_constraint_processing() {
+        let mut solver = FfiSolver::new();
+        let mut entity_map = std::collections::HashMap::new();
+        entity_map.insert("p1".to_string(), 1);
+        entity_map.insert("p2".to_string(), 2);
+        entity_map.insert("p3".to_string(), 3);
+        entity_map.insert("p4".to_string(), 4);
+
+        // Test with 3 points (minimum)
+        let constraint = Constraint::Collinear {
+            points: vec!["p1".to_string(), "p2".to_string(), "p3".to_string()],
+        };
+        let evaluator = ExpressionEvaluator::new(std::collections::HashMap::new());
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map, &evaluator);
+        assert!(result.is_ok(), "Collinear constraint with 3 points should process successfully");
+
+        // Test with 4 points
+        let constraint = Constraint::Collinear {
+            points: vec!["p1".to_string(), "p2".to_string(), "p3".to_string(), "p4".to_string()],
+        };
+        let evaluator = ExpressionEvaluator::new(std::collections::HashMap::new());
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 101, &entity_map, &evaluator);
+        assert!(result.is_ok(), "Collinear constraint with 4 points should process successfully");
+
+        // Test with insufficient points (should fail)
+        let constraint = Constraint::Collinear {
+            points: vec!["p1".to_string(), "p2".to_string()],
+        };
+        let evaluator = ExpressionEvaluator::new(std::collections::HashMap::new());
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 102, &entity_map, &evaluator);
+        assert!(result.is_err(), "Collinear constraint with <3 points should fail");
+        assert!(result.unwrap_err().contains("at least 3 points"));
+    }
+
+    #[test]
+    fn test_equal_angles_constraint_processing() {
+        use crate::ir::ExprOrNumber;
+        let mut solver = FfiSolver::new();
+        let mut entity_map = std::collections::HashMap::new();
+        entity_map.insert("l1".to_string(), 10);
+        entity_map.insert("l2".to_string(), 11);
+        entity_map.insert("l3".to_string(), 12);
+        entity_map.insert("l4".to_string(), 13);
+
+        // Test with 3 lines (should create equal_angle constraints)
+        let constraint = Constraint::EqualAngles {
+            lines: vec!["l1".to_string(), "l2".to_string(), "l3".to_string()],
+            value: None,
+        };
+        let evaluator = ExpressionEvaluator::new(std::collections::HashMap::new());
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map, &evaluator);
+        assert!(result.is_ok(), "EqualAngles constraint with 3 lines should process successfully");
+
+        // Test with specified angle value
+        let constraint = Constraint::EqualAngles {
+            lines: vec!["l1".to_string(), "l2".to_string()],
+            value: Some(ExprOrNumber::Number(45.0)),
+        };
+        let evaluator = ExpressionEvaluator::new(std::collections::HashMap::new());
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 101, &entity_map, &evaluator);
+        assert!(result.is_ok(), "EqualAngles constraint with value should process successfully");
+
+        // Test with 4 lines and specified value
+        let constraint = Constraint::EqualAngles {
+            lines: vec!["l1".to_string(), "l2".to_string(), "l3".to_string(), "l4".to_string()],
+            value: Some(ExprOrNumber::Number(30.0)),
+        };
+        let evaluator = ExpressionEvaluator::new(std::collections::HashMap::new());
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 102, &entity_map, &evaluator);
+        assert!(result.is_ok(), "EqualAngles constraint with 4 lines and value should process successfully");
+
+        // Test with insufficient lines
+        let constraint = Constraint::EqualAngles {
+            lines: vec!["l1".to_string()],
+            value: None,
+        };
+        let evaluator = ExpressionEvaluator::new(std::collections::HashMap::new());
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 103, &entity_map, &evaluator);
+        assert!(result.is_err(), "EqualAngles constraint with <2 lines should fail");
+        assert!(result.unwrap_err().contains("at least 2 lines"));
+    }
+
+    /// BUG TEST: EqualAngles with 2 lines and no value should error, not silently do nothing
+    #[test]
+    fn test_equal_angles_two_lines_no_value_should_error() {
+        let mut solver = FfiSolver::new();
+        let mut entity_map = std::collections::HashMap::new();
+        entity_map.insert("l1".to_string(), 10);
+        entity_map.insert("l2".to_string(), 11);
+
+        // With 2 lines and no value specified, the constraint is meaningless
+        // (there's only one angle, nothing to compare it to)
+        // This should return an error, not silently succeed
+        let constraint = Constraint::EqualAngles {
+            lines: vec!["l1".to_string(), "l2".to_string()],
+            value: None,
+        };
+        let evaluator = ExpressionEvaluator::new(std::collections::HashMap::new());
+        let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map, &evaluator);
+        
+        // This test catches the bug: previously this would silently return Ok(())
+        // without adding any constraints. It should either require 3+ lines for
+        // equal_angles without a value, or require a value when only 2 lines.
+        assert!(result.is_err(), 
+            "EqualAngles with 2 lines and no value should fail (bug: previously silently did nothing)");
+        let err_msg = result.unwrap_err();
+        assert!(err_msg.contains("at least 3 lines") || err_msg.contains("requires a value"),
+            "Error should explain that 2 lines without value is invalid, got: {}", err_msg);
     }
 
     #[test]

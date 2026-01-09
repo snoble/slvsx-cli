@@ -127,6 +127,12 @@ impl Validator {
                     }
                     refs
                 }
+                Constraint::Collinear { points } => {
+                    points.iter().map(|s| s.as_str()).collect()
+                }
+                Constraint::EqualAngles { lines, .. } => {
+                    lines.iter().map(|s| s.as_str()).collect()
+                }
                 Constraint::Coincident { data } => {
                     match data {
                         CoincidentData::PointOnLine { at, of } => {
@@ -1374,6 +1380,100 @@ mod tests {
                 let banana_pos = message.find("banana").unwrap();
                 assert!(apple_pos < banana_pos);
                 assert_eq!(pointer, Some("/constraints/0".to_string()));
+            }
+            _ => panic!("Wrong error type"),
+        }
+    }
+
+    #[test]
+    fn test_validate_constraint_references_collinear() {
+        use crate::ir::Constraint;
+        let validator = Validator::new();
+        
+        // Valid collinear constraint
+        let doc = InputDocument {
+            schema: "slvs-json/1".to_string(),
+            units: "mm".to_string(),
+            parameters: HashMap::new(),
+            entities: vec![
+                Entity::Point { id: "p1".to_string(), at: vec![ExprOrNumber::Number(0.0)], construction: false, preserve: false },
+                Entity::Point { id: "p2".to_string(), at: vec![ExprOrNumber::Number(1.0)], construction: false, preserve: false },
+                Entity::Point { id: "p3".to_string(), at: vec![ExprOrNumber::Number(2.0)], construction: false, preserve: false },
+            ],
+            constraints: vec![Constraint::Collinear {
+                points: vec!["p1".to_string(), "p2".to_string(), "p3".to_string()],
+            }],
+        };
+        assert!(validator.validate_constraint_references(&doc).is_ok());
+        
+        // Invalid - references nonexistent point
+        let doc = InputDocument {
+            schema: "slvs-json/1".to_string(),
+            units: "mm".to_string(),
+            parameters: HashMap::new(),
+            entities: vec![
+                Entity::Point { id: "p1".to_string(), at: vec![ExprOrNumber::Number(0.0)], construction: false, preserve: false },
+                Entity::Point { id: "p2".to_string(), at: vec![ExprOrNumber::Number(1.0)], construction: false, preserve: false },
+            ],
+            constraints: vec![Constraint::Collinear {
+                points: vec!["p1".to_string(), "p2".to_string(), "p3".to_string()],
+            }],
+        };
+        let result = validator.validate_constraint_references(&doc);
+        assert!(result.is_err());
+        match result.unwrap_err() {
+            Error::InvalidInput { message, .. } => {
+                assert!(message.contains("p3"));
+            }
+            _ => panic!("Wrong error type"),
+        }
+    }
+
+    #[test]
+    fn test_validate_constraint_references_equal_angles() {
+        use crate::ir::Constraint;
+        let validator = Validator::new();
+        
+        // Valid equal_angles constraint
+        let doc = InputDocument {
+            schema: "slvs-json/1".to_string(),
+            units: "mm".to_string(),
+            parameters: HashMap::new(),
+            entities: vec![
+                Entity::Point { id: "p1".to_string(), at: vec![ExprOrNumber::Number(0.0)], construction: false, preserve: false },
+                Entity::Point { id: "p2".to_string(), at: vec![ExprOrNumber::Number(1.0)], construction: false, preserve: false },
+                Entity::Point { id: "p3".to_string(), at: vec![ExprOrNumber::Number(2.0)], construction: false, preserve: false },
+                Entity::Line { id: "l1".to_string(), p1: "p1".to_string(), p2: "p2".to_string(), construction: false, preserve: false },
+                Entity::Line { id: "l2".to_string(), p1: "p2".to_string(), p2: "p3".to_string(), construction: false, preserve: false },
+                Entity::Line { id: "l3".to_string(), p1: "p1".to_string(), p2: "p3".to_string(), construction: false, preserve: false },
+            ],
+            constraints: vec![Constraint::EqualAngles {
+                lines: vec!["l1".to_string(), "l2".to_string(), "l3".to_string()],
+                value: None,
+            }],
+        };
+        assert!(validator.validate_constraint_references(&doc).is_ok());
+        
+        // Invalid - references nonexistent line
+        let doc = InputDocument {
+            schema: "slvs-json/1".to_string(),
+            units: "mm".to_string(),
+            parameters: HashMap::new(),
+            entities: vec![
+                Entity::Point { id: "p1".to_string(), at: vec![ExprOrNumber::Number(0.0)], construction: false, preserve: false },
+                Entity::Point { id: "p2".to_string(), at: vec![ExprOrNumber::Number(1.0)], construction: false, preserve: false },
+                Entity::Line { id: "l1".to_string(), p1: "p1".to_string(), p2: "p2".to_string(), construction: false, preserve: false },
+            ],
+            constraints: vec![Constraint::EqualAngles {
+                lines: vec!["l1".to_string(), "l2".to_string()],
+                value: Some(ExprOrNumber::Number(45.0)),
+            }],
+        };
+        let result = validator.validate_constraint_references(&doc);
+        assert!(result.is_err());
+        match result.unwrap_err() {
+            Error::InvalidInput { message, .. } => {
+                assert!(message.contains("l2"));
             }
             _ => panic!("Wrong error type"),
         }

@@ -1,0 +1,15 @@
+{
+  "schema": "slvs-json/1",
+  "units": "mm",
+  "entities": [
+    {"type": "point", "id": "p1", "at": [0, 0, 0]},
+    {"type": "point", "id": "p2", "at": [100, 0, 0]},
+    {"type": "point", "id": "p3", "at": [30, 20, 0]},
+    {"type": "point", "id": "p4", "at": [70, -15, 0]}
+  ],
+  "constraints": [
+    {"type": "fixed", "entity": "p1"},
+    {"type": "fixed", "entity": "p2"},
+    {"type": "collinear", "points": ["p1", "p2", "p3", "p4"]}
+  ]
+}
