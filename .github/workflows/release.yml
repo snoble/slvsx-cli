@@ -352,6 +352,12 @@ jobs:
           node-version: '20'
           registry-url: 'https://registry.npmjs.org'
 
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build docs index
+        run: npm run build:docs
+
       - name: Check if version already published
         id: check-version
         run: |
