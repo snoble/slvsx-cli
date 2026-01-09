@@ -325,4 +325,36 @@ mod tests {
         // Translator is a unit struct, so size is 0, but we can verify it can be created
         let _ = translator;
     }
+
+    #[test]
+    fn test_get_constraint_refs_collinear() {
+        let translator = Translator::new();
+
+        let constraint = Constraint::Collinear {
+            points: vec!["p1".to_string(), "p2".to_string(), "p3".to_string()],
+        };
+        let refs = translator.get_constraint_refs(&constraint);
+        assert_eq!(refs, vec!["p1", "p2", "p3"]);
+    }
+
+    #[test]
+    fn test_get_constraint_refs_equal_angles() {
+        let translator = Translator::new();
+
+        // Test without value
+        let constraint = Constraint::EqualAngles {
+            lines: vec!["l1".to_string(), "l2".to_string(), "l3".to_string()],
+            value: None,
+        };
+        let refs = translator.get_constraint_refs(&constraint);
+        assert_eq!(refs, vec!["l1", "l2", "l3"]);
+
+        // Test with value
+        let constraint = Constraint::EqualAngles {
+            lines: vec!["l1".to_string(), "l2".to_string()],
+            value: Some(ExprOrNumber::Number(45.0)),
+        };
+        let refs = translator.get_constraint_refs(&constraint);
+        assert_eq!(refs, vec!["l1", "l2"]);
+    }
 }
