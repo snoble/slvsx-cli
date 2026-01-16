@@ -529,14 +529,10 @@ impl Solver {
                         ffi_solver.get_point_position(start_id),
                         ffi_solver.get_point_position(end_id),
                     ) {
-                        // Extract normal vector (similar to how Circle handles it)
-                        let (nx, ny, nz) = if let Some(crate::ir::ExprOrNumber::Number(n)) = normal.as_ref().and_then(|n| n.get(0)) {
-                            let ny = normal.as_ref().and_then(|n| n.get(1)).and_then(|e| e.as_f64()).unwrap_or(0.0);
-                            let nz = normal.as_ref().and_then(|n| n.get(2)).and_then(|e| e.as_f64()).unwrap_or(1.0);
-                            (*n, ny, nz)
-                        } else {
-                            (0.0, 0.0, 1.0)
-                        };
+                        // Extract normal vector from Vec<ExprOrNumber>
+                        let nx = normal.get(0).and_then(|e| e.as_f64()).unwrap_or(0.0);
+                        let ny = normal.get(1).and_then(|e| e.as_f64()).unwrap_or(0.0);
+                        let nz = normal.get(2).and_then(|e| e.as_f64()).unwrap_or(1.0);
                         
                         resolved_entities.insert(
                             id.clone(),
