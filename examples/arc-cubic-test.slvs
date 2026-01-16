@@ -1,0 +1,56 @@
+{
+  "entities": [
+    {
+      "type": "Point",
+      "id": "p_arc_center",
+      "at": [50, 50, 0]
+    },
+    {
+      "type": "Point",
+      "id": "p_arc_start",
+      "at": [100, 50, 0]
+    },
+    {
+      "type": "Point",
+      "id": "p_arc_end",
+      "at": [50, 100, 0]
+    },
+    {
+      "type": "Arc",
+      "id": "arc1",
+      "center": "p_arc_center",
+      "start": "p_arc_start",
+      "end": "p_arc_end",
+      "normal": [0, 0, 1]
+    },
+    {
+      "type": "Point",
+      "id": "p_cubic_start",
+      "at": [150, 50, 0]
+    },
+    {
+      "type": "Point",
+      "id": "p_cubic_cp1",
+      "at": [180, 100, 0]
+    },
+    {
+      "type": "Point",
+      "id": "p_cubic_cp2",
+      "at": [220, 100, 0]
+    },
+    {
+      "type": "Point",
+      "id": "p_cubic_end",
+      "at": [250, 50, 0]
+    },
+    {
+      "type": "Cubic",
+      "id": "cubic1",
+      "start": "p_cubic_start",
+      "control1": "p_cubic_cp1",
+      "control2": "p_cubic_cp2",
+      "end": "p_cubic_end"
+    }
+  ],
+  "constraints": []
+}
