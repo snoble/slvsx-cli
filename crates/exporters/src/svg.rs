@@ -132,6 +132,37 @@ impl SvgExporter {
                     min_y = min_y.min(y1.min(y2));
                     max_y = max_y.max(y1.max(y2));
                 }
+                ResolvedEntity::Arc { center, start, end, .. } => {
+                    // For bounding box, include center and both endpoints
+                    // This is conservative but safe
+                    let (cx, cy) = self.project_point(center);
+                    let (sx, sy) = self.project_point(start);
+                    let (ex, ey) = self.project_point(end);
+                    
+                    // Calculate radius for conservative bounds
+                    let dx = start[0] - center[0];
+                    let dy = start[1] - center[1];
+                    let dz = start.get(2).copied().unwrap_or(0.0) - center.get(2).copied().unwrap_or(0.0);
+                    let radius = (dx * dx + dy * dy + dz * dz).sqrt();
+                    
+                    // Conservative bounding box that includes the full potential arc
+                    min_x = min_x.min((cx - radius).min(sx.min(ex)));
+                    max_x = max_x.max((cx + radius).max(sx.max(ex)));
+                    min_y = min_y.min((cy - radius).min(sy.min(ey)));
+                    max_y = max_y.max((cy + radius).max(sy.max(ey)));
+                }
+                ResolvedEntity::Cubic { start, control1, control2, end } => {
+                    // For cubic bezier, include all control points in bounding box
+                    let (x0, y0) = self.project_point(start);
+                    let (x1, y1) = self.project_point(control1);
+                    let (x2, y2) = self.project_point(control2);
+                    let (x3, y3) = self.project_point(end);
+                    
+                    min_x = min_x.min(x0.min(x1.min(x2.min(x3))));
+                    max_x = max_x.max(x0.max(x1.max(x2.max(x3))));
+                    min_y = min_y.min(y0.min(y1.min(y2.min(y3))));
+                    max_y = max_y.max(y0.max(y1.max(y2.max(y3))));
+                }
             }
         }
 
@@ -216,6 +247,65 @@ impl SvgExporter {
                         r#"  <line id="{}" x1="{}" y1="{}" x2="{}" y2="{}" stroke="black"/>"#,
                         id, fmt_svg(x1, self.precision), fmt_svg(y1, self.precision), 
                         fmt_svg(x2, self.precision), fmt_svg(y2, self.precision)
+                    ));
+                    svg.push('\n');
+                }
+                ResolvedEntity::Arc { center, start, end, normal } => {
+                    // Project the arc points
+                    let (cx, cy) = self.project_point(center);
+                    let (sx, sy) = self.project_point(start);
+                    let (ex, ey) = self.project_point(end);
+                    
+                    // Calculate radius from center to start point
+                    let dx = start[0] - center[0];
+                    let dy = start[1] - center[1];
+                    let dz = start.get(2).copied().unwrap_or(0.0) - center.get(2).copied().unwrap_or(0.0);
+                    let radius = (dx * dx + dy * dy + dz * dz).sqrt();
+                    
+                    // Project as ellipse based on normal
+                    let (rx, ry, rotation) = self.project_circle_as_ellipse(radius, normal);
+                    
+                    // Determine sweep parameters for SVG arc
+                    // Calculate angles
+                    let start_angle = (sy - cy).atan2(sx - cx);
+                    let end_angle = (ey - cy).atan2(ex - cx);
+                    let mut angle_diff = end_angle - start_angle;
+                    
+                    // Normalize angle difference to [0, 2π)
+                    if angle_diff < 0.0 {
+                        angle_diff += 2.0 * std::f64::consts::PI;
+                    }
+                    
+                    // Determine if it's a large arc (> 180 degrees)
+                    let large_arc = if angle_diff > std::f64::consts::PI { 1 } else { 0 };
+                    
+                    // SVG path for arc
+                    svg.push_str(&format!(
+                        r#"  <path id="{}" d="M {} {} A {} {} {} {} 0 {} {}" fill="none" stroke="black"/>"#,
+                        id,
+                        fmt_svg(sx, self.precision), fmt_svg(sy, self.precision),
+                        fmt_svg(rx, self.precision), fmt_svg(ry, self.precision),
+                        fmt_svg(rotation, self.precision),
+                        large_arc,
+                        fmt_svg(ex, self.precision), fmt_svg(ey, self.precision)
+                    ));
+                    svg.push('\n');
+                }
+                ResolvedEntity::Cubic { start, control1, control2, end } => {
+                    // Project all control points
+                    let (x0, y0) = self.project_point(start);
+                    let (x1, y1) = self.project_point(control1);
+                    let (x2, y2) = self.project_point(control2);
+                    let (x3, y3) = self.project_point(end);
+                    
+                    // SVG path for cubic Bezier curve
+                    svg.push_str(&format!(
+                        r#"  <path id="{}" d="M {} {} C {} {}, {} {}, {} {}" fill="none" stroke="black"/>"#,
+                        id,
+                        fmt_svg(x0, self.precision), fmt_svg(y0, self.precision),
+                        fmt_svg(x1, self.precision), fmt_svg(y1, self.precision),
+                        fmt_svg(x2, self.precision), fmt_svg(y2, self.precision),
+                        fmt_svg(x3, self.precision), fmt_svg(y3, self.precision)
                     ));
                     svg.push('\n');
                 }
@@ -455,5 +545,150 @@ mod tests {
         let (x, y) = exporter.project_point(&[50.0, 30.0, 20.0]);
         assert_eq!(x, 20.0); // 50 - 30
         assert!((y - 20.0).abs() < 0.001); // (50 + 30) / 2 - 20 = 40 - 20 = 20
+    }
+
+    #[test]
+    fn test_export_arc() {
+        let exporter = SvgExporter::default();
+        let mut entities = HashMap::new();
+        entities.insert(
+            "arc1".to_string(),
+            ResolvedEntity::Arc {
+                center: vec![50.0, 50.0, 0.0],
+                start: vec![100.0, 50.0, 0.0],
+                end: vec![50.0, 100.0, 0.0],
+                normal: vec![0.0, 0.0, 1.0],
+            },
+        );
+
+        let svg = exporter.export(&entities).unwrap();
+        assert!(svg.contains(r#"id="arc1""#));
+        assert!(svg.contains(r#"<path"#));
+        assert!(svg.contains(r#"M 100.000000 50.000000"#)); // Start point
+        assert!(svg.contains(r#"A"#)); // Arc command
+        assert!(svg.contains(r#"50.000000 100.000000"#)); // End point
+    }
+
+    #[test]
+    fn test_export_arc_different_planes() {
+        let exporter = SvgExporter::new(ViewPlane::XZ);
+        let mut entities = HashMap::new();
+        entities.insert(
+            "arc_xz".to_string(),
+            ResolvedEntity::Arc {
+                center: vec![50.0, 0.0, 50.0],
+                start: vec![100.0, 0.0, 50.0],
+                end: vec![50.0, 0.0, 100.0],
+                normal: vec![0.0, 1.0, 0.0],
+            },
+        );
+
+        let svg = exporter.export(&entities).unwrap();
+        assert!(svg.contains(r#"id="arc_xz""#));
+        assert!(svg.contains(r#"<path"#));
+    }
+
+    #[test]
+    fn test_export_cubic() {
+        let exporter = SvgExporter::default();
+        let mut entities = HashMap::new();
+        entities.insert(
+            "cubic1".to_string(),
+            ResolvedEntity::Cubic {
+                start: vec![0.0, 0.0, 0.0],
+                control1: vec![30.0, 50.0, 0.0],
+                control2: vec![70.0, 50.0, 0.0],
+                end: vec![100.0, 0.0, 0.0],
+            },
+        );
+
+        let svg = exporter.export(&entities).unwrap();
+        assert!(svg.contains(r#"id="cubic1""#));
+        assert!(svg.contains(r#"<path"#));
+        assert!(svg.contains(r#"M 0.000000 0.000000"#)); // Start point
+        assert!(svg.contains(r#"C"#)); // Cubic command
+        assert!(svg.contains(r#"30.000000 50.000000"#)); // Control point 1
+        assert!(svg.contains(r#"70.000000 50.000000"#)); // Control point 2
+        assert!(svg.contains(r#"100.000000 0.000000"#)); // End point
+    }
+
+    #[test]
+    fn test_export_cubic_3d_projection() {
+        let exporter = SvgExporter::new(ViewPlane::Isometric);
+        let mut entities = HashMap::new();
+        entities.insert(
+            "cubic_3d".to_string(),
+            ResolvedEntity::Cubic {
+                start: vec![0.0, 0.0, 0.0],
+                control1: vec![50.0, 0.0, 50.0],
+                control2: vec![0.0, 50.0, 50.0],
+                end: vec![50.0, 50.0, 0.0],
+            },
+        );
+
+        let svg = exporter.export(&entities).unwrap();
+        assert!(svg.contains(r#"id="cubic_3d""#));
+        assert!(svg.contains(r#"<path"#));
+        // Verify it contains path data with cubic bezier
+        assert!(svg.contains(r#"M"#));
+        assert!(svg.contains(r#"C"#));
+    }
+
+    #[test]
+    fn test_export_mixed_entities() {
+        let exporter = SvgExporter::default();
+        let mut entities = HashMap::new();
+        
+        // Add various entity types
+        entities.insert(
+            "pt".to_string(),
+            ResolvedEntity::Point { at: vec![10.0, 10.0, 0.0] },
+        );
+        entities.insert(
+            "line".to_string(),
+            ResolvedEntity::Line {
+                p1: vec![0.0, 0.0, 0.0],
+                p2: vec![50.0, 50.0, 0.0],
+            },
+        );
+        entities.insert(
+            "circle".to_string(),
+            ResolvedEntity::Circle {
+                center: vec![25.0, 25.0, 0.0],
+                diameter: 30.0,
+                normal: vec![0.0, 0.0, 1.0],
+            },
+        );
+        entities.insert(
+            "arc".to_string(),
+            ResolvedEntity::Arc {
+                center: vec![75.0, 75.0, 0.0],
+                start: vec![100.0, 75.0, 0.0],
+                end: vec![75.0, 100.0, 0.0],
+                normal: vec![0.0, 0.0, 1.0],
+            },
+        );
+        entities.insert(
+            "cubic".to_string(),
+            ResolvedEntity::Cubic {
+                start: vec![100.0, 0.0, 0.0],
+                control1: vec![125.0, 25.0, 0.0],
+                control2: vec![125.0, 75.0, 0.0],
+                end: vec![100.0, 100.0, 0.0],
+            },
+        );
+
+        let svg = exporter.export(&entities).unwrap();
+        
+        // Verify all entities are present
+        assert!(svg.contains(r#"id="pt""#));
+        assert!(svg.contains(r#"id="line""#));
+        assert!(svg.contains(r#"id="circle""#));
+        assert!(svg.contains(r#"id="arc""#));
+        assert!(svg.contains(r#"id="cubic""#));
+        
+        // Verify proper SVG structure
+        assert!(svg.starts_with("<svg"));
+        assert!(svg.ends_with("</svg>"));
     }
 }

@@ -518,6 +518,73 @@ impl Solver {
                         },
                     );
                 }
+                crate::ir::Entity::Arc { id, center, start, end, normal, .. } => {
+                    // Get the center point position
+                    if let Some(&center_id) = entity_id_map.get(center) {
+                        if let Ok((cx, cy, cz)) = ffi_solver.get_point_position(center_id) {
+                            // Get start point position
+                            if let Some(&start_id) = entity_id_map.get(start) {
+                                if let Ok((sx, sy, sz)) = ffi_solver.get_point_position(start_id) {
+                                    // Get end point position
+                                    if let Some(&end_id) = entity_id_map.get(end) {
+                                        if let Ok((ex, ey, ez)) = ffi_solver.get_point_position(end_id) {
+                                            // Extract normal vector
+                                            let (nx, ny, nz) = match normal {
+                                                Some(n) => (
+                                                    extract_value(&n[0], &solved_params),
+                                                    extract_value(&n[1], &solved_params),
+                                                    extract_value(&n[2], &solved_params),
+                                                ),
+                                                None => (0.0, 0.0, 1.0), // Default to z-normal
+                                            };
+                                            
+                                            resolved_entities.insert(
+                                                id.clone(),
+                                                crate::ir::ResolvedEntity::Arc {
+                                                    center: vec![cx, cy, cz],
+                                                    start: vec![sx, sy, sz],
+                                                    end: vec![ex, ey, ez],
+                                                    normal: vec![nx, ny, nz],
+                                                },
+                                            );
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                crate::ir::Entity::Cubic { id, start, control1, control2, end, .. } => {
+                    // Get start point position
+                    if let Some(&start_id) = entity_id_map.get(start) {
+                        if let Ok((sx, sy, sz)) = ffi_solver.get_point_position(start_id) {
+                            // Get control point 1 position
+                            if let Some(&control1_id) = entity_id_map.get(control1) {
+                                if let Ok((c1x, c1y, c1z)) = ffi_solver.get_point_position(control1_id) {
+                                    // Get control point 2 position
+                                    if let Some(&control2_id) = entity_id_map.get(control2) {
+                                        if let Ok((c2x, c2y, c2z)) = ffi_solver.get_point_position(control2_id) {
+                                            // Get end point position
+                                            if let Some(&end_id) = entity_id_map.get(end) {
+                                                if let Ok((ex, ey, ez)) = ffi_solver.get_point_position(end_id) {
+                                                    resolved_entities.insert(
+                                                        id.clone(),
+                                                        crate::ir::ResolvedEntity::Cubic {
+                                                            start: vec![sx, sy, sz],
+                                                            control1: vec![c1x, c1y, c1z],
+                                                            control2: vec![c2x, c2y, c2z],
+                                                            end: vec![ex, ey, ez],
+                                                        },
+                                                    );
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
                 _ => {} // Handle other entity types as needed
             }
         }
