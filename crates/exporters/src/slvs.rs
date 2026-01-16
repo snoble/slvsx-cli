@@ -99,6 +99,61 @@ impl SlvsExporter {
                     param_id += 6;
                     entity_id += 1;
                 }
+                ResolvedEntity::Arc { center, start, end, .. } => {
+                    // For SLVS format, we'll export arc as three points
+                    // This is a simplification - proper arc entity would be more complex
+                    
+                    // Center point
+                    for (i, coord) in center.iter().enumerate() {
+                        slvs.push_str(&format!("Param.h.v={:08x}\n", param_id + i));
+                        slvs.push_str(&format!("Param.val={:.p$}\n\n", coord, p = self.precision));
+                    }
+                    
+                    // Start point
+                    for (i, coord) in start.iter().enumerate() {
+                        slvs.push_str(&format!("Param.h.v={:08x}\n", param_id + 3 + i));
+                        slvs.push_str(&format!("Param.val={:.p$}\n\n", coord, p = self.precision));
+                    }
+                    
+                    // End point  
+                    for (i, coord) in end.iter().enumerate() {
+                        slvs.push_str(&format!("Param.h.v={:08x}\n", param_id + 6 + i));
+                        slvs.push_str(&format!("Param.val={:.p$}\n\n", coord, p = self.precision));
+                    }
+                    
+                    // Export as arc entity (type 5000)
+                    slvs.push_str(&format!("Entity.h.v={:08x}\n", entity_id));
+                    slvs.push_str("Entity.type=5000\n"); // Arc type
+                    slvs.push_str(&format!("Entity.name={}\n", id));
+                    
+                    param_id += 9;
+                    entity_id += 1;
+                }
+                ResolvedEntity::Cubic { start, control1, control2, end } => {
+                    // For SLVS format, cubic beziers aren't directly supported
+                    // Export as line from start to end as simplification
+                    
+                    // Start point parameters
+                    for (i, coord) in start.iter().enumerate() {
+                        slvs.push_str(&format!("Param.h.v={:08x}\n", param_id + i));
+                        slvs.push_str(&format!("Param.val={:.p$}\n\n", coord, p = self.precision));
+                    }
+
+                    // End point parameters
+                    for (i, coord) in end.iter().enumerate() {
+                        slvs.push_str(&format!("Param.h.v={:08x}\n", param_id + 3 + i));
+                        slvs.push_str(&format!("Param.val={:.p$}\n\n", coord, p = self.precision));
+                    }
+
+                    slvs.push_str(&format!("Entity.h.v={:08x}\n", entity_id));
+                    slvs.push_str("Entity.type=3000\n"); // Line segment type (simplified)
+                    slvs.push_str(&format!("Entity.name={}_cubic\n", id));
+                    slvs.push_str(&format!("Entity.point[0].v={:08x}\n", entity_id + 0x1000));
+                    slvs.push_str(&format!("Entity.point[1].v={:08x}\n\n", entity_id + 0x1001));
+
+                    param_id += 6;
+                    entity_id += 1;
+                }
             }
         }
 

@@ -61,6 +61,43 @@ impl DxfExporter {
                         p = self.precision
                     ));
                 }
+                ResolvedEntity::Arc { center, start, end, .. } => {
+                    // DXF ARC entity
+                    // Calculate radius and angles
+                    let cx = center.get(0).copied().unwrap_or(0.0);
+                    let cy = center.get(1).copied().unwrap_or(0.0);
+                    let cz = center.get(2).copied().unwrap_or(0.0);
+                    
+                    let sx = start.get(0).copied().unwrap_or(0.0);
+                    let sy = start.get(1).copied().unwrap_or(0.0);
+                    
+                    let ex = end.get(0).copied().unwrap_or(0.0);
+                    let ey = end.get(1).copied().unwrap_or(0.0);
+                    
+                    let radius = ((sx - cx).powi(2) + (sy - cy).powi(2)).sqrt();
+                    let start_angle = (sy - cy).atan2(sx - cx).to_degrees();
+                    let end_angle = (ey - cy).atan2(ex - cx).to_degrees();
+                    
+                    dxf.push_str(&format!(
+                        "0\nARC\n8\n0\n10\n{:.p$}\n20\n{:.p$}\n30\n{:.p$}\n40\n{:.p$}\n50\n{:.p$}\n51\n{:.p$}\n",
+                        cx, cy, cz, radius, start_angle, end_angle,
+                        p = self.precision
+                    ));
+                }
+                ResolvedEntity::Cubic { start, control1, control2, end } => {
+                    // DXF doesn't have native cubic bezier support, approximate with polyline
+                    // For now, just draw a line from start to end (simplified)
+                    dxf.push_str(&format!(
+                        "0\nLINE\n8\n0\n10\n{:.p$}\n20\n{:.p$}\n30\n{:.p$}\n11\n{:.p$}\n21\n{:.p$}\n31\n{:.p$}\n",
+                        start.get(0).copied().unwrap_or(0.0),
+                        start.get(1).copied().unwrap_or(0.0),
+                        start.get(2).copied().unwrap_or(0.0),
+                        end.get(0).copied().unwrap_or(0.0),
+                        end.get(1).copied().unwrap_or(0.0),
+                        end.get(2).copied().unwrap_or(0.0),
+                        p = self.precision
+                    ));
+                }
             }
         }
 

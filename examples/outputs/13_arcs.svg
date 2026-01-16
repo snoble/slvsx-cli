@@ -1,6 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="30.0 30.0 90.0 90.0" width="800" height="800">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-20.0 -20.0 140.0 140.0" width="800" height="800">
   <circle id="center" cx="50.000000" cy="50.000000" r="2" fill="black"/>
   <circle id="end" cx="50.000000" cy="100.000000" r="2" fill="black"/>
+  <path id="quarter_circle" d="M 100.000000 50.000000 A 50.000000 50.000000 0.000000 0 0 50.000000 100.000000" fill="none" stroke="black"/>
   <line id="radius_end" x1="50.000000" y1="50.000000" x2="50.000000" y2="100.000000" stroke="black"/>
   <line id="radius_start" x1="50.000000" y1="50.000000" x2="100.000000" y2="50.000000" stroke="black"/>
   <circle id="start" cx="100.000000" cy="50.000000" r="2" fill="black"/>

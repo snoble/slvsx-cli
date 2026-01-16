@@ -425,6 +425,8 @@ pub enum ResolvedEntity {
     Point { at: Vec<f64> },
     Circle { center: Vec<f64>, diameter: f64, normal: Vec<f64> },
     Line { p1: Vec<f64>, p2: Vec<f64> },
+    Arc { center: Vec<f64>, start: Vec<f64>, end: Vec<f64>, normal: Vec<f64> },
+    Cubic { start: Vec<f64>, control1: Vec<f64>, control2: Vec<f64>, end: Vec<f64> },
 }
 
 #[cfg(test)]
