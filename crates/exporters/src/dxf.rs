@@ -61,6 +61,35 @@ impl DxfExporter {
                         p = self.precision
                     ));
                 }
+                ResolvedEntity::Arc { center, start, end, .. } => {
+                    // DXF ARC entity - approximate as line from start to end for now
+                    // TODO: Implement proper DXF ARC with angles
+                    dxf.push_str(&format!(
+                        "0\nLINE\n8\n0\n10\n{:.p$}\n20\n{:.p$}\n30\n{:.p$}\n11\n{:.p$}\n21\n{:.p$}\n31\n{:.p$}\n",
+                        start.get(0).copied().unwrap_or(0.0),
+                        start.get(1).copied().unwrap_or(0.0),
+                        start.get(2).copied().unwrap_or(0.0),
+                        end.get(0).copied().unwrap_or(0.0),
+                        end.get(1).copied().unwrap_or(0.0),
+                        end.get(2).copied().unwrap_or(0.0),
+                        p = self.precision
+                    ));
+                    let _ = center; // Suppress unused warning
+                }
+                ResolvedEntity::Cubic { start, control1: _, control2: _, end } => {
+                    // DXF doesn't have native cubic bezier - approximate as line from start to end
+                    // TODO: Implement as SPLINE or polyline approximation
+                    dxf.push_str(&format!(
+                        "0\nLINE\n8\n0\n10\n{:.p$}\n20\n{:.p$}\n30\n{:.p$}\n11\n{:.p$}\n21\n{:.p$}\n31\n{:.p$}\n",
+                        start.get(0).copied().unwrap_or(0.0),
+                        start.get(1).copied().unwrap_or(0.0),
+                        start.get(2).copied().unwrap_or(0.0),
+                        end.get(0).copied().unwrap_or(0.0),
+                        end.get(1).copied().unwrap_or(0.0),
+                        end.get(2).copied().unwrap_or(0.0),
+                        p = self.precision
+                    ));
+                }
             }
         }
 

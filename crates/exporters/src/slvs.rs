@@ -99,6 +99,48 @@ impl SlvsExporter {
                     param_id += 6;
                     entity_id += 1;
                 }
+                ResolvedEntity::Arc { center, start, end, .. } => {
+                    // Arc export: center, start, end points
+                    // TODO: Implement proper SLVS Arc entity type
+                    for (i, coord) in center.iter().enumerate() {
+                        slvs.push_str(&format!("Param.h.v={:08x}\n", param_id + i));
+                        slvs.push_str(&format!("Param.val={:.p$}\n\n", coord, p = self.precision));
+                    }
+                    for (i, coord) in start.iter().enumerate() {
+                        slvs.push_str(&format!("Param.h.v={:08x}\n", param_id + 3 + i));
+                        slvs.push_str(&format!("Param.val={:.p$}\n\n", coord, p = self.precision));
+                    }
+                    for (i, coord) in end.iter().enumerate() {
+                        slvs.push_str(&format!("Param.h.v={:08x}\n", param_id + 6 + i));
+                        slvs.push_str(&format!("Param.val={:.p$}\n\n", coord, p = self.precision));
+                    }
+
+                    slvs.push_str(&format!("Entity.h.v={:08x}\n", entity_id));
+                    slvs.push_str("Entity.type=5000\n"); // Arc type
+                    slvs.push_str(&format!("Entity.name={}\n\n", id));
+
+                    param_id += 9;
+                    entity_id += 1;
+                }
+                ResolvedEntity::Cubic { start, control1: _, control2: _, end } => {
+                    // Cubic bezier export: for now, export start and end as line
+                    // TODO: Implement proper SLVS Cubic entity type
+                    for (i, coord) in start.iter().enumerate() {
+                        slvs.push_str(&format!("Param.h.v={:08x}\n", param_id + i));
+                        slvs.push_str(&format!("Param.val={:.p$}\n\n", coord, p = self.precision));
+                    }
+                    for (i, coord) in end.iter().enumerate() {
+                        slvs.push_str(&format!("Param.h.v={:08x}\n", param_id + 3 + i));
+                        slvs.push_str(&format!("Param.val={:.p$}\n\n", coord, p = self.precision));
+                    }
+
+                    slvs.push_str(&format!("Entity.h.v={:08x}\n", entity_id));
+                    slvs.push_str("Entity.type=6000\n"); // Cubic type
+                    slvs.push_str(&format!("Entity.name={}\n\n", id));
+
+                    param_id += 6;
+                    entity_id += 1;
+                }
             }
         }
 
