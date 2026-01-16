@@ -355,6 +355,8 @@ jobs:
         with:
           node-version: '22'
           registry-url: 'https://registry.npmjs.org'
+          # Don't set up .npmrc for OIDC - it interferes
+          always-auth: false
 
       - name: Install dependencies
         run: npm ci
@@ -382,23 +384,10 @@ jobs:
             echo "skip=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Check npm authentication
-        id: check-auth
+      - name: Publish to npm
+        if: steps.check-version.outputs.skip != 'true'
         run: |
-          if [ -n "${{ secrets.NPM_TOKEN }}" ]; then
-            echo "Using NPM_TOKEN for authentication"
-            echo "auth_method=token" >> $GITHUB_OUTPUT
-          else
-            echo "Using OIDC provenance for authentication"
-            echo "auth_method=oidc" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Publish to npm with token
-        if: steps.check-version.outputs.skip != 'true' && steps.check-auth.outputs.auth_method == 'token'
-        run: npm publish --access public
+          echo "Publishing @sknoble/slvsx-mcp-server version $(jq -r .version package.json)"
+          npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-      
-      - name: Publish to npm with OIDC provenance
-        if: steps.check-version.outputs.skip != 'true' && steps.check-auth.outputs.auth_method == 'oidc'
-        run: npm publish --access public --provenance
