@@ -519,70 +519,53 @@ impl Solver {
                     );
                 }
                 crate::ir::Entity::Arc { id, center, start, end, normal, .. } => {
-                    // Get the center point position
-                    if let Some(&center_id) = entity_id_map.get(center) {
-                        if let Ok((cx, cy, cz)) = ffi_solver.get_point_position(center_id) {
-                            // Get start point position
-                            if let Some(&start_id) = entity_id_map.get(start) {
-                                if let Ok((sx, sy, sz)) = ffi_solver.get_point_position(start_id) {
-                                    // Get end point position
-                                    if let Some(&end_id) = entity_id_map.get(end) {
-                                        if let Ok((ex, ey, ez)) = ffi_solver.get_point_position(end_id) {
-                                            // Extract normal vector
-                                            let (nx, ny, nz) = match normal {
-                                                Some(n) => (
-                                                    extract_value(&n[0], &solved_params),
-                                                    extract_value(&n[1], &solved_params),
-                                                    extract_value(&n[2], &solved_params),
-                                                ),
-                                                None => (0.0, 0.0, 1.0), // Default to z-normal
-                                            };
-                                            
-                                            resolved_entities.insert(
-                                                id.clone(),
-                                                crate::ir::ResolvedEntity::Arc {
-                                                    center: vec![cx, cy, cz],
-                                                    start: vec![sx, sy, sz],
-                                                    end: vec![ex, ey, ez],
-                                                    normal: vec![nx, ny, nz],
-                                                },
-                                            );
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                    // Get positions of center, start, and end points
+                    let center_id = entity_id_map.get(center).copied().unwrap_or(0);
+                    let start_id = entity_id_map.get(start).copied().unwrap_or(0);
+                    let end_id = entity_id_map.get(end).copied().unwrap_or(0);
+
+                    if let (Ok((cx, cy, cz)), Ok((sx, sy, sz)), Ok((ex, ey, ez))) = (
+                        ffi_solver.get_point_position(center_id),
+                        ffi_solver.get_point_position(start_id),
+                        ffi_solver.get_point_position(end_id),
+                    ) {
+                        // Extract normal vector from Vec<ExprOrNumber>
+                        let nx = normal.get(0).and_then(|e| e.as_f64()).unwrap_or(0.0);
+                        let ny = normal.get(1).and_then(|e| e.as_f64()).unwrap_or(0.0);
+                        let nz = normal.get(2).and_then(|e| e.as_f64()).unwrap_or(1.0);
+
+                        resolved_entities.insert(
+                            id.clone(),
+                            crate::ir::ResolvedEntity::Arc {
+                                center: vec![cx, cy, cz],
+                                start: vec![sx, sy, sz],
+                                end: vec![ex, ey, ez],
+                                normal: vec![nx, ny, nz],
+                            },
+                        );
                     }
                 }
-                crate::ir::Entity::Cubic { id, start, control1, control2, end, .. } => {
-                    // Get start point position
-                    if let Some(&start_id) = entity_id_map.get(start) {
-                        if let Ok((sx, sy, sz)) = ffi_solver.get_point_position(start_id) {
-                            // Get control point 1 position
-                            if let Some(&control1_id) = entity_id_map.get(control1) {
-                                if let Ok((c1x, c1y, c1z)) = ffi_solver.get_point_position(control1_id) {
-                                    // Get control point 2 position
-                                    if let Some(&control2_id) = entity_id_map.get(control2) {
-                                        if let Ok((c2x, c2y, c2z)) = ffi_solver.get_point_position(control2_id) {
-                                            // Get end point position
-                                            if let Some(&end_id) = entity_id_map.get(end) {
-                                                if let Ok((ex, ey, ez)) = ffi_solver.get_point_position(end_id) {
-                                                    resolved_entities.insert(
-                                                        id.clone(),
-                                                        crate::ir::ResolvedEntity::Cubic {
-                                                            start: vec![sx, sy, sz],
-                                                            control1: vec![c1x, c1y, c1z],
-                                                            control2: vec![c2x, c2y, c2z],
-                                                            end: vec![ex, ey, ez],
-                                                        },
-                                                    );
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
+                crate::ir::Entity::Cubic { id, control_points, .. } => {
+                    // Get positions of all control points
+                    let mut points = Vec::new();
+                    for point_id_str in control_points {
+                        let point_id = entity_id_map.get(point_id_str).copied().unwrap_or(0);
+                        if let Ok((x, y, z)) = ffi_solver.get_point_position(point_id) {
+                            points.push(vec![x, y, z]);
                         }
+                    }
+
+                    // Cubic requires exactly 4 control points
+                    if points.len() == 4 {
+                        resolved_entities.insert(
+                            id.clone(),
+                            crate::ir::ResolvedEntity::Cubic {
+                                start: points[0].clone(),
+                                control1: points[1].clone(),
+                                control2: points[2].clone(),
+                                end: points[3].clone(),
+                            },
+                        );
                     }
                 }
                 _ => {} // Handle other entity types as needed
