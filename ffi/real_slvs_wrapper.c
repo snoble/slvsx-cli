@@ -678,20 +678,22 @@ int real_slvs_add_midpoint_constraint(RealSlvsSystem* s, int id, int point_id, i
 }
 
 // Add point on line constraint
-int real_slvs_add_point_on_line_constraint(RealSlvsSystem* s, int id, int point_id, int line_id) {
+// workplane_id: use -1 for 3D (SLVS_FREE_IN_3D), or the workplane entity ID for 2D
+int real_slvs_add_point_on_line_constraint(RealSlvsSystem* s, int id, int point_id, int line_id, int workplane_id) {
     if (!s) return -1;
-    
+
     Slvs_hGroup g = 1;
-    
+
     // Use proper ID mapping for constraint and entities
     Slvs_hConstraint constraint_id = 10000 + id;
     Slvs_hEntity point = 1000 + point_id;
     Slvs_hEntity line = 1000 + line_id;
-    
+    Slvs_hEntity wrkpl = (workplane_id >= 0) ? (1000 + workplane_id) : SLVS_FREE_IN_3D;
+
     s->sys.constraint[s->sys.constraints++] = Slvs_MakeConstraint(
-        constraint_id, g, SLVS_C_PT_ON_LINE, SLVS_FREE_IN_3D,
+        constraint_id, g, SLVS_C_PT_ON_LINE, wrkpl,
         0, point, 0, line, 0);
-    
+
     return 0;
 }
 

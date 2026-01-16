@@ -257,6 +257,9 @@ pub enum Constraint {
     PointOnLine {
         point: String,
         line: String,
+        /// Workplane for 2D constraints (required for Point2D/Line2D, omit for 3D)
+        #[serde(skip_serializing_if = "Option::is_none")]
+        workplane: Option<String>,
     },
     PointOnCircle {
         point: String,

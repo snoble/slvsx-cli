@@ -145,6 +145,7 @@ extern "C" {
         id: c_int,
         point_id: c_int,
         line_id: c_int,
+        workplane_id: c_int,
     ) -> c_int;
     pub fn real_slvs_add_points_coincident_constraint(
         sys: *mut SolverSystem,
@@ -620,14 +621,18 @@ impl Solver {
         }
     }
 
+    /// Add point on line constraint
+    /// workplane_id: use -1 for 3D (SLVS_FREE_IN_3D), or the workplane entity ID for 2D
     pub fn add_point_on_line_constraint(
         &mut self,
         id: i32,
         point_id: i32,
         line_id: i32,
+        workplane_id: Option<i32>,
     ) -> Result<(), String> {
         unsafe {
-            let result = real_slvs_add_point_on_line_constraint(self.system, id, point_id, line_id);
+            let wp_id = workplane_id.unwrap_or(-1);
+            let result = real_slvs_add_point_on_line_constraint(self.system, id, point_id, line_id, wp_id);
             if result == 0 {
                 Ok(())
             } else {

@@ -126,6 +126,7 @@ fn test_point_on_line_constraint() {
             Constraint::PointOnLine {
                 point: "p3".to_string(),
                 line: "line1".to_string(),
+                workplane: None,
             },
         ],
     );
