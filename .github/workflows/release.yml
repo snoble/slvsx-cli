@@ -382,6 +382,11 @@ jobs:
             echo "skip=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Publish to npm with OIDC provenance
+      - name: Publish to npm
         if: steps.check-version.outputs.skip != 'true'
-        run: npm publish --provenance --access public
+        run: |
+          echo "Publishing @sknoble/slvsx-mcp-server version $(jq -r .version package.json)"
+          # Try with provenance if available, otherwise without
+          npm publish --access public --provenance || npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN || '' }}
