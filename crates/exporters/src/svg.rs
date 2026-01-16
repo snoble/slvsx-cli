@@ -132,6 +132,37 @@ impl SvgExporter {
                     min_y = min_y.min(y1.min(y2));
                     max_y = max_y.max(y1.max(y2));
                 }
+                ResolvedEntity::Arc { center, start, end, .. } => {
+                    // For bounding box, include center and both endpoints
+                    // This is conservative but safe
+                    let (cx, cy) = self.project_point(center);
+                    let (sx, sy) = self.project_point(start);
+                    let (ex, ey) = self.project_point(end);
+                    
+                    // Calculate radius for conservative bounds
+                    let dx = start[0] - center[0];
+                    let dy = start[1] - center[1];
+                    let dz = start.get(2).copied().unwrap_or(0.0) - center.get(2).copied().unwrap_or(0.0);
+                    let radius = (dx * dx + dy * dy + dz * dz).sqrt();
+                    
+                    // Conservative bounding box that includes the full potential arc
+                    min_x = min_x.min((cx - radius).min(sx.min(ex)));
+                    max_x = max_x.max((cx + radius).max(sx.max(ex)));
+                    min_y = min_y.min((cy - radius).min(sy.min(ey)));
+                    max_y = max_y.max((cy + radius).max(sy.max(ey)));
+                }
+                ResolvedEntity::Cubic { start, control1, control2, end } => {
+                    // For cubic bezier, include all control points in bounding box
+                    let (x0, y0) = self.project_point(start);
+                    let (x1, y1) = self.project_point(control1);
+                    let (x2, y2) = self.project_point(control2);
+                    let (x3, y3) = self.project_point(end);
+                    
+                    min_x = min_x.min(x0.min(x1.min(x2.min(x3))));
+                    max_x = max_x.max(x0.max(x1.max(x2.max(x3))));
+                    min_y = min_y.min(y0.min(y1.min(y2.min(y3))));
+                    max_y = max_y.max(y0.max(y1.max(y2.max(y3))));
+                }
             }
         }
 
@@ -216,6 +247,65 @@ impl SvgExporter {
                         r#"  <line id="{}" x1="{}" y1="{}" x2="{}" y2="{}" stroke="black"/>"#,
                         id, fmt_svg(x1, self.precision), fmt_svg(y1, self.precision), 
                         fmt_svg(x2, self.precision), fmt_svg(y2, self.precision)
+                    ));
+                    svg.push('\n');
+                }
+                ResolvedEntity::Arc { center, start, end, normal } => {
+                    // Project the arc points
+                    let (cx, cy) = self.project_point(center);
+                    let (sx, sy) = self.project_point(start);
+                    let (ex, ey) = self.project_point(end);
+                    
+                    // Calculate radius from center to start point
+                    let dx = start[0] - center[0];
+                    let dy = start[1] - center[1];
+                    let dz = start.get(2).copied().unwrap_or(0.0) - center.get(2).copied().unwrap_or(0.0);
+                    let radius = (dx * dx + dy * dy + dz * dz).sqrt();
+                    
+                    // Project as ellipse based on normal
+                    let (rx, ry, rotation) = self.project_circle_as_ellipse(radius, normal);
+                    
+                    // Determine sweep parameters for SVG arc
+                    // Calculate angles
+                    let start_angle = (sy - cy).atan2(sx - cx);
+                    let end_angle = (ey - cy).atan2(ex - cx);
+                    let mut angle_diff = end_angle - start_angle;
+                    
+                    // Normalize angle difference to [0, 2π)
+                    if angle_diff < 0.0 {
+                        angle_diff += 2.0 * std::f64::consts::PI;
+                    }
+                    
+                    // Determine if it's a large arc (> 180 degrees)
+                    let large_arc = if angle_diff > std::f64::consts::PI { 1 } else { 0 };
+                    
+                    // SVG path for arc
+                    svg.push_str(&format!(
+                        r#"  <path id="{}" d="M {} {} A {} {} {} {} 0 {} {}" fill="none" stroke="black"/>"#,
+                        id,
+                        fmt_svg(sx, self.precision), fmt_svg(sy, self.precision),
+                        fmt_svg(rx, self.precision), fmt_svg(ry, self.precision),
+                        fmt_svg(rotation, self.precision),
+                        large_arc,
+                        fmt_svg(ex, self.precision), fmt_svg(ey, self.precision)
+                    ));
+                    svg.push('\n');
+                }
+                ResolvedEntity::Cubic { start, control1, control2, end } => {
+                    // Project all control points
+                    let (x0, y0) = self.project_point(start);
+                    let (x1, y1) = self.project_point(control1);
+                    let (x2, y2) = self.project_point(control2);
+                    let (x3, y3) = self.project_point(end);
+                    
+                    // SVG path for cubic Bezier curve
+                    svg.push_str(&format!(
+                        r#"  <path id="{}" d="M {} {} C {} {}, {} {}, {} {}" fill="none" stroke="black"/>"#,
+                        id,
+                        fmt_svg(x0, self.precision), fmt_svg(y0, self.precision),
+                        fmt_svg(x1, self.precision), fmt_svg(y1, self.precision),
+                        fmt_svg(x2, self.precision), fmt_svg(y2, self.precision),
+                        fmt_svg(x3, self.precision), fmt_svg(y3, self.precision)
                     ));
                     svg.push('\n');
                 }
