@@ -339,8 +339,8 @@ jobs:
     name: Publish to npm
     needs: [release]
     runs-on: ubuntu-latest
-    # Only publish on tag pushes (not workflow_dispatch to avoid accidental publishes)
-    if: startsWith(github.ref, 'refs/tags/')
+    # Publish on tag pushes or when explicitly triggered with a tag parameter
+    if: startsWith(github.ref, 'refs/tags/') || (github.event_name == 'workflow_dispatch' && github.event.inputs.tag != '')
     # OIDC requires id-token permission at job level
     permissions:
       contents: read
