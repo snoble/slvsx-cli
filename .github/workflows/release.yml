@@ -354,9 +354,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-          registry-url: 'https://registry.npmjs.org'
-          # Don't set up .npmrc for OIDC - it interferes
-          always-auth: false
 
       - name: Install dependencies
         run: npm ci
@@ -384,10 +381,8 @@ jobs:
             echo "skip=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Publish to npm
+      - name: Publish to npm with provenance
         if: steps.check-version.outputs.skip != 'true'
         run: |
-          echo "Publishing @sknoble/slvsx-mcp-server version $(jq -r .version package.json)"
-          npm publish --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          echo "Publishing @sknoble/slvsx-mcp-server version $(jq -r .version package.json) with provenance"
+          npm publish --access public --provenance
