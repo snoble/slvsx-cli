@@ -82,7 +82,14 @@ impl Validator {
                 Constraint::Diameter { circle: a, .. } => {
                     vec![a.as_str()]
                 }
-                Constraint::PointOnLine { point, line } | Constraint::PointLineDistance { point, line, .. } | 
+                Constraint::PointOnLine { point, line, workplane } => {
+                    let mut refs = vec![point.as_str(), line.as_str()];
+                    if let Some(wp) = workplane {
+                        refs.push(wp.as_str());
+                    }
+                    refs
+                }
+                Constraint::PointLineDistance { point, line, .. } |
                 Constraint::EqualLengthPointLineDistance { point, line, .. } => {
                     vec![point.as_str(), line.as_str()]
                 }
@@ -1209,6 +1216,7 @@ mod tests {
                 Constraint::PointOnLine {
                     point: "p3".to_string(),
                     line: "l1".to_string(),
+                    workplane: None,
                 },
                 Constraint::PointOnCircle {
                     point: "p1".to_string(),

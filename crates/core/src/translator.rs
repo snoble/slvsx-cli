@@ -79,8 +79,14 @@ impl Translator {
                 refs
             }
             Constraint::Diameter { circle: a, .. } => vec![a.clone()],
-            Constraint::PointOnLine { point, line }
-            | Constraint::PointLineDistance { point, line, .. }
+            Constraint::PointOnLine { point, line, workplane } => {
+                let mut refs = vec![point.clone(), line.clone()];
+                if let Some(wp) = workplane {
+                    refs.push(wp.clone());
+                }
+                refs
+            }
+            Constraint::PointLineDistance { point, line, .. }
             | Constraint::EqualLengthPointLineDistance { point, line, .. }
             | Constraint::PointOnCircle {
                 point,
@@ -292,6 +298,7 @@ mod tests {
             Constraint::PointOnLine {
                 point: "p1".to_string(),
                 line: "l1".to_string(),
+                workplane: None,
             },
             Constraint::PointOnCircle {
                 point: "p1".to_string(),

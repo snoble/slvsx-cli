@@ -86,7 +86,8 @@ impl ConstraintRegistry {
                         if of.len() == 1 {
                             let point_id = entity_id_map.get(at).copied().unwrap_or(0);
                             let line_id = entity_id_map.get(&of[0]).copied().unwrap_or(0);
-                            solver.add_point_on_line_constraint(constraint_id, point_id, line_id)
+                            // For coincident PointOnLine, use FREE_IN_3D (None) for backwards compatibility
+                            solver.add_point_on_line_constraint(constraint_id, point_id, line_id, None)
                         } else {
                             Err("Coincident point-on-line requires exactly 1 line".to_string())
                         }
@@ -156,10 +157,11 @@ impl ConstraintRegistry {
                 solver.add_tangent_constraint(constraint_id, entity1_id, entity2_id)
                     .map_err(|e| e.to_string())
             }
-            Constraint::PointOnLine { point, line } => {
+            Constraint::PointOnLine { point, line, workplane } => {
                 let point_id = entity_id_map.get(point).copied().unwrap_or(0);
                 let line_id = entity_id_map.get(line).copied().unwrap_or(0);
-                solver.add_point_on_line_constraint(constraint_id, point_id, line_id)
+                let workplane_id = workplane.as_ref().and_then(|wp| entity_id_map.get(wp).copied());
+                solver.add_point_on_line_constraint(constraint_id, point_id, line_id, workplane_id)
             }
             Constraint::PointOnCircle { point, circle } => {
                 let point_id = entity_id_map.get(point).copied().unwrap_or(0);
@@ -409,10 +411,11 @@ impl ConstraintRegistry {
                     .map_err(|e| e.to_string())?;
                 
                 // Add point_on_line constraints for remaining points
+                // For collinear constraint, use FREE_IN_3D (None) since we create a 3D line
                 for (i, point) in points.iter().skip(2).enumerate() {
                     let point_id = entity_id_map.get(point).copied().unwrap_or(0);
                     let sub_constraint_id = constraint_id * 1000 + (i as i32) + 1;
-                    solver.add_point_on_line_constraint(sub_constraint_id, point_id, line_id)
+                    solver.add_point_on_line_constraint(sub_constraint_id, point_id, line_id, None)
                         .map_err(|e| e.to_string())?;
                 }
                 Ok(())
