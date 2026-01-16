@@ -456,4 +456,58 @@ mod tests {
         assert_eq!(x, 20.0); // 50 - 30
         assert!((y - 20.0).abs() < 0.001); // (50 + 30) / 2 - 20 = 40 - 20 = 20
     }
+
+    #[test]
+    fn test_export_arc_entity() {
+        // This test should fail initially because Arc is not yet implemented
+        let exporter = SvgExporter::default();
+        let mut entities = HashMap::new();
+        
+        // Create an Arc entity (this type doesn't exist yet in ResolvedEntity)
+        // This will cause a compile error initially
+        entities.insert(
+            "arc1".to_string(),
+            ResolvedEntity::Arc {
+                center: vec![50.0, 50.0, 0.0],
+                start: vec![100.0, 50.0, 0.0],
+                end: vec![50.0, 100.0, 0.0],
+                normal: vec![0.0, 0.0, 1.0],
+            },
+        );
+
+        let svg = exporter.export(&entities).unwrap();
+        
+        // Verify the arc is rendered as an SVG path element
+        assert!(svg.contains(r#"id="arc1""#), "Arc should have correct ID");
+        assert!(svg.contains(r#"<path"#), "Arc should be rendered as a path element");
+        assert!(svg.contains(r#"M 100"#), "Arc path should start at the start point");
+        assert!(svg.contains(r#"A"#), "Arc path should contain arc command");
+    }
+
+    #[test] 
+    fn test_export_cubic_entity() {
+        // This test should fail initially because Cubic is not yet implemented
+        let exporter = SvgExporter::default();
+        let mut entities = HashMap::new();
+        
+        // Create a Cubic Bezier entity (this type doesn't exist yet in ResolvedEntity)
+        // This will cause a compile error initially
+        entities.insert(
+            "cubic1".to_string(),
+            ResolvedEntity::Cubic {
+                start: vec![0.0, 0.0, 0.0],
+                control1: vec![30.0, 50.0, 0.0],
+                control2: vec![70.0, 50.0, 0.0],
+                end: vec![100.0, 0.0, 0.0],
+            },
+        );
+
+        let svg = exporter.export(&entities).unwrap();
+        
+        // Verify the cubic is rendered as an SVG path element
+        assert!(svg.contains(r#"id="cubic1""#), "Cubic should have correct ID");
+        assert!(svg.contains(r#"<path"#), "Cubic should be rendered as a path element");
+        assert!(svg.contains(r#"M 0"#), "Cubic path should start at the start point");
+        assert!(svg.contains(r#"C"#), "Cubic path should contain cubic command");
+    }
 }
