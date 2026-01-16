@@ -382,11 +382,23 @@ jobs:
             echo "skip=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Publish to npm
-        if: steps.check-version.outputs.skip != 'true'
+      - name: Check npm authentication
+        id: check-auth
         run: |
-          echo "Publishing @sknoble/slvsx-mcp-server version $(jq -r .version package.json)"
-          # Try with provenance if available, otherwise without
-          npm publish --access public --provenance || npm publish --access public
+          if [ -n "${{ secrets.NPM_TOKEN }}" ]; then
+            echo "Using NPM_TOKEN for authentication"
+            echo "auth_method=token" >> $GITHUB_OUTPUT
+          else
+            echo "Using OIDC provenance for authentication"
+            echo "auth_method=oidc" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Publish to npm with token
+        if: steps.check-version.outputs.skip != 'true' && steps.check-auth.outputs.auth_method == 'token'
+        run: npm publish --access public
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN || '' }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      
+      - name: Publish to npm with OIDC provenance
+        if: steps.check-version.outputs.skip != 'true' && steps.check-auth.outputs.auth_method == 'oidc'
+        run: npm publish --access public --provenance
