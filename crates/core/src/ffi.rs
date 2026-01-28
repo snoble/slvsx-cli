@@ -189,6 +189,7 @@ extern "C" {
         id: c_int,
         line1_id: c_int,
         line2_id: c_int,
+        workplane_id: c_int,
     ) -> c_int;
     pub fn real_slvs_add_equal_radius_constraint(
         sys: *mut SolverSystem,
@@ -743,9 +744,10 @@ impl Solver {
         id: i32,
         line1_id: i32,
         line2_id: i32,
+        workplane_id: i32,
     ) -> Result<(), FfiError> {
         unsafe {
-            let result = real_slvs_add_equal_length_constraint(self.system, id, line1_id, line2_id);
+            let result = real_slvs_add_equal_length_constraint(self.system, id, line1_id, line2_id, workplane_id);
             if result == 0 {
                 Ok(())
             } else {
@@ -1552,8 +1554,8 @@ mod tests {
         solver.add_fixed_constraint(100, 1, 0).unwrap();
         solver.add_fixed_constraint(101, 3, 0).unwrap();
 
-        // Add equal length constraint
-        let result = solver.add_equal_length_constraint(102, 10, 11);
+        // Add equal length constraint (0 = 3D / FREE_IN_3D)
+        let result = solver.add_equal_length_constraint(102, 10, 11, 0);
         assert!(result.is_ok(), "Should be able to add equal length constraint via FFI");
 
         // Solve - should succeed

@@ -23,6 +23,13 @@ pub enum Error {
     #[error("System is underconstrained (DOF: {dof})")]
     Underconstrained { dof: u32 },
 
+    #[error("Invalid solver system: constraint matrix is singular. This typically means:\n  \
+             - Redundant constraints (e.g., distance constraints on both lines + equal_length)\n  \
+             - Conflicting 2D/3D constraint workplanes\n  \
+             - Identical constraints applied multiple times\n\
+             Tip: Use distance on ONE entity + equal_length, not distance on BOTH + equal_length")]
+    InvalidSystem,
+
     #[error("Entity not found: {0}")]
     EntityNotFound(String),
 
@@ -50,6 +57,7 @@ impl Error {
             Error::Overconstrained => 4,
             Error::Underconstrained { .. } => 5,
             Error::Ffi(_) => 6,
+            Error::InvalidSystem => 7,
             _ => 1,
         }
     }
@@ -74,6 +82,7 @@ mod tests {
         assert_eq!(Error::Overconstrained.exit_code(), 4);
         assert_eq!(Error::Underconstrained { dof: 3 }.exit_code(), 5);
         assert_eq!(Error::Ffi("test".into()).exit_code(), 6);
+        assert_eq!(Error::InvalidSystem.exit_code(), 7);
         assert_eq!(
             Error::Io(std::io::Error::new(std::io::ErrorKind::NotFound, "test")).exit_code(),
             1
@@ -100,6 +109,10 @@ mod tests {
 
         let err = Error::Underconstrained { dof: 2 };
         assert_eq!(err.to_string(), "System is underconstrained (DOF: 2)");
+
+        let err = Error::InvalidSystem;
+        assert!(err.to_string().contains("Invalid solver system"));
+        assert!(err.to_string().contains("Redundant constraints"));
     }
 
     #[test]

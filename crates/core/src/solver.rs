@@ -47,9 +47,7 @@ impl Solver {
                 // Try to get DOF from solver if possible, otherwise default to 0
                 crate::error::Error::Underconstrained { dof: 0 }
             }
-            crate::ffi::FfiError::InvalidSystem => {
-                crate::error::Error::Ffi("Invalid solver system".to_string())
-            }
+            crate::ffi::FfiError::InvalidSystem => crate::error::Error::InvalidSystem,
             crate::ffi::FfiError::Unknown(code) => {
                 crate::error::Error::Ffi(format!("Unknown solver error (code: {})", code))
             }
@@ -651,7 +649,7 @@ mod tests {
         assert!(matches!(error, crate::error::Error::Underconstrained { dof: 0 }));
 
         let error = Solver::map_ffi_error(crate::ffi::FfiError::InvalidSystem, 1000);
-        assert!(matches!(error, crate::error::Error::Ffi(_)));
+        assert!(matches!(error, crate::error::Error::InvalidSystem));
 
         let error = Solver::map_ffi_error(crate::ffi::FfiError::Unknown(42), 1000);
         if let crate::error::Error::Ffi(msg) = error {
@@ -716,14 +714,12 @@ mod property_tests {
                 "TooManyUnknowns should always map to Underconstrained with dof 0"
             );
 
-            // InvalidSystem always produces a specific Ffi error
+            // InvalidSystem always produces InvalidSystem error
             let error = Solver::map_ffi_error(crate::ffi::FfiError::InvalidSystem, max_iterations);
-            match error {
-                crate::error::Error::Ffi(msg) => {
-                    prop_assert_eq!(msg, "Invalid solver system");
-                }
-                _ => prop_assert!(false, "InvalidSystem should map to Ffi error"),
-            }
+            prop_assert!(
+                matches!(error, crate::error::Error::InvalidSystem),
+                "InvalidSystem should map to InvalidSystem error"
+            );
         }
 
         /// Property: SolverConfig default max_iterations should be used in convergence errors

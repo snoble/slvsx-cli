@@ -70,7 +70,7 @@ impl Validator {
                 Constraint::SameOrientation { a, b } | Constraint::CubicLineTangent { cubic: a, line: b } => {
                     vec![a.as_str(), b.as_str()]
                 }
-                Constraint::Parallel { entities } | Constraint::EqualLength { entities } => {
+                Constraint::Parallel { entities } | Constraint::EqualLength { entities, .. } => {
                     entities.iter().map(|s| s.as_str()).collect()
                 }
                 Constraint::EqualAngle { lines } => {
@@ -1204,6 +1204,7 @@ mod tests {
                 },
                 Constraint::EqualLength {
                     entities: vec!["l1".to_string(), "l2".to_string()],
+                    workplane: None,
                 },
                 Constraint::Horizontal {
                     a: "l1".to_string(),
