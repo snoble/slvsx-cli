@@ -670,8 +670,8 @@ All constraints with their field names:
 | \`tangent\` | \`a\`, \`b\` | Make arc/line tangent (NOT for circles!) |
 | \`diameter\` | \`circle\`, \`value\` | Set circle diameter |
 | \`symmetric\` | \`a\`, \`b\`, \`about\` | Mirror symmetry (2D only!) |
-| \`symmetric_horizontal\` | \`a\`, \`b\`, \`workplane\` | Horizontal mirror symmetry |
-| \`symmetric_vertical\` | \`a\`, \`b\`, \`workplane\` | Vertical mirror symmetry |
+| \`symmetric_horizontal\` | \`a\`, \`b\`, \`workplane\` | Same Y, opposite X (mirror across Y-axis) |
+| \`symmetric_vertical\` | \`a\`, \`b\`, \`workplane\` | Same X, opposite Y (mirror across X-axis) |
 | \`dragged\` | \`point\`, \`workplane?\` | Lock point position absolutely |
 
 ## Important Notes

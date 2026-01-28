@@ -66,7 +66,7 @@ impl Translator {
             | Constraint::Tangent { a, b }
             | Constraint::SameOrientation { a, b }
             | Constraint::CubicLineTangent { cubic: a, line: b } => vec![a.clone(), b.clone()],
-            Constraint::Parallel { entities } | Constraint::EqualLength { entities } => entities.clone(),
+            Constraint::Parallel { entities } | Constraint::EqualLength { entities, .. } => entities.clone(),
             Constraint::EqualAngle { lines } => lines.clone(),
             Constraint::Horizontal { a, workplane } | Constraint::Vertical { a, workplane } => {
                 vec![a.clone(), workplane.clone()]
@@ -286,6 +286,7 @@ mod tests {
             Constraint::Vertical { a: "l1".to_string(), workplane: "wp1".to_string() },
             Constraint::EqualLength {
                 entities: vec!["l1".to_string(), "l2".to_string()],
+                workplane: None,
             },
             Constraint::EqualRadius {
                 a: "c1".to_string(),

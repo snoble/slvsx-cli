@@ -130,17 +130,21 @@ impl ConstraintRegistry {
                 solver.add_vertical_constraint(constraint_id, line_id, workplane_id)
                     .map_err(|e| e.to_string())
             }
-            Constraint::EqualLength { entities } => {
+            Constraint::EqualLength { entities, workplane } => {
                 if entities.len() < 2 {
                     return Err("EqualLength constraint requires at least 2 entities".to_string());
                 }
                 // Create pairwise constraints: entity[0] with each of entity[1..n]
                 // This ensures all entities have equal length
                 let base_line_id = entity_id_map.get(&entities[0]).copied().unwrap_or(0);
+                let workplane_id = workplane
+                    .as_ref()
+                    .and_then(|wp| entity_id_map.get(wp).copied())
+                    .unwrap_or(0); // 0 means 3D (FREE_IN_3D)
                 for (idx, entity_id_str) in entities.iter().skip(1).enumerate() {
                     let other_line_id = entity_id_map.get(entity_id_str).copied().unwrap_or(0);
                     // Use constraint_id + idx to create unique constraint IDs
-                    solver.add_equal_length_constraint(constraint_id + idx as i32, base_line_id, other_line_id)
+                    solver.add_equal_length_constraint(constraint_id + idx as i32, base_line_id, other_line_id, workplane_id)
                         .map_err(|e| e.to_string())?;
                 }
                 Ok(())
@@ -546,7 +550,8 @@ mod tests {
             value: crate::ir::ExprOrNumber::Number(45.0)
         });
         test_constraint(Constraint::EqualLength {
-            entities: vec!["l1".to_string(), "l2".to_string()]
+            entities: vec!["l1".to_string(), "l2".to_string()],
+            workplane: None,
         });
         test_constraint(Constraint::EqualRadius {
             a: "c1".to_string(),
@@ -772,6 +777,7 @@ mod tests {
         // Test with 2 entities
         let constraint = Constraint::EqualLength {
             entities: vec!["l1".to_string(), "l2".to_string()],
+            workplane: None,
         };
         let evaluator = ExpressionEvaluator::new(std::collections::HashMap::new());
         let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 100, &entity_map, &evaluator);
@@ -780,6 +786,7 @@ mod tests {
         // Test with 3 entities (should create 2 pairwise constraints)
         let constraint = Constraint::EqualLength {
             entities: vec!["l1".to_string(), "l2".to_string(), "l3".to_string()],
+            workplane: None,
         };
         let evaluator = ExpressionEvaluator::new(std::collections::HashMap::new());
         let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 101, &entity_map, &evaluator);
@@ -788,6 +795,7 @@ mod tests {
         // Test with insufficient entities
         let constraint = Constraint::EqualLength {
             entities: vec!["l1".to_string()],
+            workplane: None,
         };
         let evaluator = ExpressionEvaluator::new(std::collections::HashMap::new());
         let result = ConstraintRegistry::process_constraint(&constraint, &mut solver, 102, &entity_map, &evaluator);
@@ -1496,6 +1504,7 @@ mod tests {
             },
             Constraint::EqualLength {
                 entities: vec!["l1".to_string(), "l2".to_string()],
+                workplane: None,
             },
             Constraint::EqualRadius {
                 a: "c1".to_string(),

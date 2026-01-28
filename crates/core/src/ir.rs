@@ -245,6 +245,9 @@ pub enum Constraint {
     },
     EqualLength {
         entities: Vec<String>,
+        /// Workplane for 2D lines (required for Line2D, omit for 3D Line)
+        #[serde(skip_serializing_if = "Option::is_none")]
+        workplane: Option<String>,
     },
     EqualRadius {
         a: String,

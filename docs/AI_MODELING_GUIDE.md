@@ -57,8 +57,8 @@ Different constraints use different field names. Check the schema carefully:
 | `equal_radius` | `a: circle/arc`, `b: circle/arc` |
 | `diameter` | `circle: circle_id`, `value` |
 | `symmetric` | `a: point`, `b: point`, `about: line` (**NOT supported in 3D!**) |
-| `symmetric_horizontal` | `a: point`, `b: point`, `workplane: plane` |
-| `symmetric_vertical` | `a: point`, `b: point`, `workplane: plane` |
+| `symmetric_horizontal` | `a: point`, `b: point`, `workplane: plane` — **Y1=Y2, X1=-X2** (mirror across Y-axis) |
+| `symmetric_vertical` | `a: point`, `b: point`, `workplane: plane` — **X1=X2, Y1=-Y2** (mirror across X-axis) |
 | `dragged` | `point`, `workplane` (optional) - locks point position |
 
 ## 2D Geometry Setup (Required for horizontal/vertical/symmetric)

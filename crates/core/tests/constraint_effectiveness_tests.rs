@@ -369,6 +369,7 @@ fn test_equal_length_constraint_changes_solution() {
     let mut constraints_with = base_constraints.clone();
     constraints_with.push(Constraint::EqualLength {
         entities: vec!["l1".to_string(), "l2".to_string()],
+        workplane: None,
     });
     let doc_with = create_test_doc(base_entities.clone(), constraints_with);
     let result_with = solve_and_get(&doc_with).expect("Should solve");

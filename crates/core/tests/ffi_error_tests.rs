@@ -29,6 +29,7 @@ fn test_error_mapping_with_iterations(ffi_error: FfiError, expected_error: Error
         (Error::Ffi(a), Error::Ffi(b)) => {
             assert_eq!(a, b);
         }
+        (Error::InvalidSystem, Error::InvalidSystem) => {}
         _ => panic!("Error types don't match: {:?} vs {:?}", mapped, expected_error),
     }
 }
@@ -67,7 +68,7 @@ fn test_ffi_error_mapping_too_many_unknowns() {
 fn test_ffi_error_mapping_invalid_system() {
     test_error_mapping(
         FfiError::InvalidSystem,
-        Error::Ffi("Invalid solver system".to_string()),
+        Error::InvalidSystem,
     );
 }
 

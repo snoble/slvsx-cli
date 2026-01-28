@@ -515,20 +515,22 @@ int real_slvs_add_vertical_constraint(RealSlvsSystem* s, int id, int line_id, in
 }
 
 // Add equal length constraint (between two lines)
-int real_slvs_add_equal_length_constraint(RealSlvsSystem* s, int id, int line1_id, int line2_id) {
+// For 2D lines, pass the workplane_id; for 3D lines, pass 0
+int real_slvs_add_equal_length_constraint(RealSlvsSystem* s, int id, int line1_id, int line2_id, int workplane_id) {
     if (!s) return -1;
-    
+
     Slvs_hGroup g = 1;
-    
+
     // Use proper ID mapping for constraint and entities
     Slvs_hConstraint constraint_id = 10000 + id;
     Slvs_hEntity line1 = 1000 + line1_id;
     Slvs_hEntity line2 = 1000 + line2_id;
-    
+    Slvs_hEntity workplane = (workplane_id > 0) ? (1000 + workplane_id) : SLVS_FREE_IN_3D;
+
     s->sys.constraint[s->sys.constraints++] = Slvs_MakeConstraint(
-        constraint_id, g, SLVS_C_EQUAL_LENGTH_LINES, SLVS_FREE_IN_3D,
+        constraint_id, g, SLVS_C_EQUAL_LENGTH_LINES, workplane,
         0, 0, 0, line1, line2);
-    
+
     return 0;
 }
 
